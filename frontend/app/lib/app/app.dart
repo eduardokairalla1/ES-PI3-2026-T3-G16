@@ -2,6 +2,7 @@
 
 /// --- IMPORTS ---
 import 'package:flutter/material.dart';
+import 'package:mesclainvest/app/routes.dart';
 
 
 /// --- CODE ---
@@ -21,14 +22,12 @@ class MesclaInvestApp extends StatelessWidget {
   /// :returns: Widget configured as application root.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
       title: 'MesclaInvest',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: const Scaffold(
-        body: Center(child: Text('MesclaInvest')),
-      ),
+      routerConfig: router,
     );
   }
 }
