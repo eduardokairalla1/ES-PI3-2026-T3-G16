@@ -2,6 +2,7 @@
 
 // --- IMPORTS ---
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 
 // --- CODE ---
@@ -28,6 +29,20 @@ class HomePage extends StatelessWidget {
 
             // app title
             const Text('MesclaInvest'),
+            const SizedBox(height: 24),
+
+            // login button
+            ElevatedButton(
+              onPressed: () => context.go('/login'),
+              child: const Text('Login'),
+            ),
+            const SizedBox(height: 8),
+
+            // register button
+            ElevatedButton(
+              onPressed: () => context.go('/register'),
+              child: const Text('Register'),
+            ),
           ],
         ),
       ),
