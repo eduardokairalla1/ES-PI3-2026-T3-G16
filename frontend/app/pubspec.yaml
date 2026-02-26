@@ -37,6 +37,9 @@ dependencies:
   firebase_core: ^3.13.0
   firebase_auth: ^5.5.2
 
+  # Navigation
+  go_router: ^14.8.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
