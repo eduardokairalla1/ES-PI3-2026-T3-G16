@@ -37,6 +37,9 @@ dependencies:
   firebase_core: ^3.13.0
   firebase_auth: ^5.5.2
 
+  # Environment variables
+  flutter_dotenv: ^6.0.0
+
   # Navigation
   go_router: ^14.8.1
 
@@ -61,6 +64,10 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+
+  # Define assets to be included in the application bundle.
+  assets:
+    - .env
 
   # To add assets to your application, add an assets section, like this:
   # assets:
