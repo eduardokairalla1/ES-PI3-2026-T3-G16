@@ -3,6 +3,9 @@
 // --- IMPORTS ---
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mesclainvest/core/exceptions/auth.dart';
+import 'package:mesclainvest/core/exceptions/infrastructure.dart';
+import 'package:mesclainvest/core/services/auth.dart';
 
 
 /// --- CODE ---
@@ -26,8 +29,11 @@ class RegisterPage extends StatefulWidget {
 class _RegisterPageState extends State<RegisterPage> {
 
   // define controllers for text fields
+  final _authService = AuthService();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  bool _isLoading = false;
+  String? _error;
 
 
   /// I clean up the controllers when the widget is disposed.
@@ -38,6 +44,53 @@ class _RegisterPageState extends State<RegisterPage> {
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+
+  /// I submit the register form.
+  /// 
+  /// returns: void
+  Future<void> _submit() async {
+
+    // set loading state and clear previous error
+    setState(() { _isLoading = true; _error = null; });
+
+    // try to register the user
+    try {
+      await _authService.register(
+        _emailController.text,
+        _passwordController.text
+      );
+
+      // registration successful: navigate to the login page
+      if (mounted) context.go('/login');
+    }
+
+    // authentication error: display the error message
+    on AuthException catch (e) {
+      setState(() => _error = e.message);
+    }
+
+    // infrastructure error: display the error message
+    on InfrastructureException {
+      setState(
+        () => _error = ('Ocorreu um erro inesperado. '
+                        'Tente novamente em alguns minutos.')
+      );
+    }
+
+    // any other error: display a generic error message
+    catch (_) {
+      setState(
+        () => _error = ('Ocorreu um erro inesperado. '
+                        'Tente novamente em alguns minutos.')
+      );
+    }
+
+    // reset loading state
+    finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
 
@@ -76,10 +129,18 @@ class _RegisterPageState extends State<RegisterPage> {
             ),
             const SizedBox(height: 24),
 
+            // error message
+            if (_error != null) ...[
+              Text(_error!, style: const TextStyle(color: Colors.red)),
+              const SizedBox(height: 12),
+            ],
+
             // register button
             ElevatedButton(
-              onPressed: () {},
-              child: const Text('Register'),
+              onPressed: _isLoading ? null : _submit,
+              child: _isLoading
+                  ? const CircularProgressIndicator()
+                  : const Text('Cadastrar'),
             ),
 
             // login redirect
