@@ -3,6 +3,9 @@
 // --- IMPORTS ---
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mesclainvest/core/exceptions/auth.dart';
+import 'package:mesclainvest/core/exceptions/infrastructure.dart';
+import 'package:mesclainvest/core/services/auth.dart';
 
 
 /// --- CODE ---
@@ -26,8 +29,11 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
 
   // define controllers for text fields
+  final _authService = AuthService();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  bool _isLoading = false;
+  String? _error;
 
 
   /// I clean up the controllers when the widget is disposed.
@@ -38,6 +44,51 @@ class _LoginPageState extends State<LoginPage> {
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+
+  /// I submit the login form.
+  /// 
+  /// returns: void
+  Future<void> _submit() async {
+
+    // set loading state and clear previous error
+    setState(() { _isLoading = true; _error = null; });
+
+    // try to sign in the user
+    try {
+      await _authService.signIn(
+        _emailController.text,
+        _passwordController.text
+      );
+
+      // login successful: navigate to the dashboard page
+      if (mounted) context.go('/dashboard');
+    }
+
+    // authentication error: display the error message
+    on AuthException catch (e) {
+      setState(() => _error = e.message);
+    }
+    
+    // infrastructure error: display the error message
+    on InfrastructureException catch (e) {
+      setState(() => _error = e.message);
+    }
+
+    // any other error: display a generic error message
+    on Exception {
+      setState(
+        () => _error = 'An unexpected error occurred. Please try again.'
+      );
+    }
+
+    // reset loading state
+    finally {
+
+      // widget is still mounted: reset the loading state
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
 
@@ -76,10 +127,18 @@ class _LoginPageState extends State<LoginPage> {
             ),
             const SizedBox(height: 24),
 
+            // error message
+            if (_error != null) ...[
+              Text(_error!, style: const TextStyle(color: Colors.red)),
+              const SizedBox(height: 12),
+            ],
+
             // login button
             ElevatedButton(
-              onPressed: () {},
-              child: const Text('Login'),
+              onPressed: _isLoading ? null : _submit,
+              child: _isLoading
+                  ? const CircularProgressIndicator()
+                  : const Text('Login'),
             ),
 
             // register redirect
