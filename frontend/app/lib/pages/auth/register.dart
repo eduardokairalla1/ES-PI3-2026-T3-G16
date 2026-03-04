@@ -47,23 +47,30 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
 
-  /// I submit the register form.
+  /// I submit the register form and navigate to the email verification page
+  /// on success.
   /// 
-  /// returns: void
+  /// :returns: void
   Future<void> _submit() async {
+
+    // capture values before async gap to avoid reading disposed controllers
+    final email = _emailController.text;
+    final password = _passwordController.text;
 
     // set loading state and clear previous error
     setState(() { _isLoading = true; _error = null; });
 
     // try to register the user
     try {
-      await _authService.register(
-        _emailController.text,
-        _passwordController.text
-      );
+      await _authService.register(email, password);
 
-      // registration successful: navigate to the login page
-      if (mounted) context.go('/login');
+      // registration successful: navigate to email verification page
+      if (mounted) {
+        context.go(
+          '/email-verification',
+          extra: {'email': email, 'password': password},
+        );
+      }
     }
 
     // authentication error: display the error message
