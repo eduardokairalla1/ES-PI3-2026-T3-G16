@@ -2,7 +2,7 @@
 
 /// --- IMPORTS ---
 import 'package:flutter/material.dart';
-
+import 'package:mesclainvest/features/dashboard/dashboard_screen.dart';
 
 /// --- CODE ---
 
@@ -11,7 +11,6 @@ class MesclaInvestApp extends StatelessWidget {
 
   // constructor
   const MesclaInvestApp({super.key});
-
 
   /// I describe the UI structure and return the visual representation
   /// of this widget.
@@ -25,10 +24,9 @@ class MesclaInvestApp extends StatelessWidget {
       title: 'MesclaInvest',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        useMaterial3: true,
       ),
-      home: const Scaffold(
-        body: Center(child: Text('MesclaInvest')),
-      ),
+      home: const DashboardScreen(),
     );
   }
 }
