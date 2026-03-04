@@ -63,7 +63,8 @@ class _LoginPageState extends State<LoginPage> {
         _passwordController.text
       );
 
-      // check if the email has been verified
+      // reload user to get fresh emailVerified state from the server
+      await _authService.currentUser?.reload();
       final isVerified = _authService.currentUser?.emailVerified ?? false;
 
       if (!isVerified) {
