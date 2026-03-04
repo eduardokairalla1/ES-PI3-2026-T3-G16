@@ -2,7 +2,8 @@
 
 /// --- IMPORTS ---
 import 'package:flutter/material.dart';
-import 'package:mesclainvest/features/dashboard/dashboard_screen.dart';
+import 'package:mesclainvest/app/routes.dart';
+
 
 /// --- CODE ---
 
@@ -20,13 +21,14 @@ class MesclaInvestApp extends StatelessWidget {
   /// :returns: Widget configured as application root.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
       title: 'MesclaInvest',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const DashboardScreen(),
+      // use the centralized GoRouter instance
+      routerConfig: router,
     );
   }
 }
