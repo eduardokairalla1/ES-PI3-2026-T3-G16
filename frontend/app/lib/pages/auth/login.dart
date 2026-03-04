@@ -47,9 +47,10 @@ class _LoginPageState extends State<LoginPage> {
   }
 
 
-  /// I submit the login form.
+  /// I submit the login form, checking that the user's email is verified
+  /// before granting access to the dashboard.
   /// 
-  /// returns: void
+  /// :returns: void
   Future<void> _submit() async {
 
     // set loading state and clear previous error
@@ -62,7 +63,16 @@ class _LoginPageState extends State<LoginPage> {
         _passwordController.text
       );
 
-      // login successful: navigate to the dashboard page
+      // check if the email has been verified
+      final isVerified = _authService.currentUser?.emailVerified ?? false;
+
+      if (!isVerified) {
+        // email not verified: sign out and surface the appropriate error
+        await _authService.signOut();
+        throw AuthException.emailNotVerified();
+      }
+
+      // login successful and email verified: navigate to the dashboard
       if (mounted) context.go('/dashboard');
     }
 
