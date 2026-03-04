@@ -99,9 +99,9 @@ final router = GoRouter(
         // extract credentials passed from RegisterPage via extra
         final extra = state.extra as Map<String, String>? ?? {};
         final email = extra['email'] ?? '';
-        final password = extra['password'] ?? '';
+        
 
-        return EmailVerificationPage(email: email, password: password);
+        return EmailVerificationPage(email: email);
       },
     ),
   ],

@@ -16,19 +16,15 @@ class EmailVerificationPage extends StatefulWidget {
   // the email to which the verification was sent
   final String email;
 
-  // the password needed to re-authenticate when resending
-  final String password;
-
   // constructor
   const EmailVerificationPage({
     super.key,
     required this.email,
-    required this.password,
   });
 
 
   /// I create the mutable state for this widget.
-  /// 
+  ///
   /// :returns: the state object for this widget.
   @override
   State<EmailVerificationPage> createState() => _EmailVerificationPageState();
@@ -38,27 +34,48 @@ class EmailVerificationPage extends StatefulWidget {
 /// I represent the mutable state for the email verification page.
 class _EmailVerificationPageState extends State<EmailVerificationPage> {
 
-  // service and UI state
+  // service, controllers and UI state
   final _authService = AuthService();
+  final _passwordController = TextEditingController();
   bool _isLoading = false;
   String? _error;
   String? _successMessage;
 
 
-  /// I resend the verification email by calling AuthService.resendVerificationEmail.
-  /// 
+  /// I clean up the password controller when the widget is disposed.
+  ///
+  /// :returns: void
+  @override
+  void dispose() {
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+
+  /// I resend the verification email after re-authenticating with the given password.
+  ///
   /// :returns: void
   Future<void> _resendEmail() async {
+
+    // require password before attempting resend
+    if (_passwordController.text.isEmpty) {
+      setState(() => _error = 'Digite sua senha para reenviar o email.');
+      return;
+    }
 
     // set loading state and clear previous messages
     setState(() { _isLoading = true; _error = null; _successMessage = null; });
 
     // attempt to resend the verification email
     try {
-      await _authService.resendVerificationEmail(widget.email, widget.password);
+      await _authService.resendVerificationEmail(
+        widget.email,
+        _passwordController.text,
+      );
 
-      // success: inform the user
+      // success: inform the user and clear the password field
       if (mounted) {
+        _passwordController.clear();
         setState(() => _successMessage = 'Email de verificação reenviado!');
       }
     }
@@ -72,7 +89,7 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
     on InfrastructureException {
       if (mounted) {
         setState(
-          () => _error = 'Ocorreu um erro inesperado. Tente novamente.'
+          () => _error = 'Ocorreu um erro inesperado. Tente novamente.',
         );
       }
     }
@@ -81,7 +98,7 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
     catch (_) {
       if (mounted) {
         setState(
-          () => _error = 'Ocorreu um erro inesperado. Tente novamente.'
+          () => _error = 'Ocorreu um erro inesperado. Tente novamente.',
         );
       }
     }
@@ -94,9 +111,9 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
 
 
   /// I build the email verification page widget tree.
-  /// 
+  ///
   /// :param context: the build context
-  /// 
+  ///
   /// :returns: the email verification page widget tree
   @override
   Widget build(BuildContext context) {
@@ -142,6 +159,17 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 32),
+
+            // password field for re-authentication on resend
+            TextField(
+              controller: _passwordController,
+              decoration: const InputDecoration(
+                labelText: 'Senha',
+                helperText: 'Necessária para reenviar o email',
+              ),
+              obscureText: true,
+            ),
+            const SizedBox(height: 16),
 
             // error message
             if (_error != null) ...[

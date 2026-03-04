@@ -68,7 +68,7 @@ class _RegisterPageState extends State<RegisterPage> {
       if (mounted) {
         context.go(
           '/email-verification',
-          extra: {'email': email, 'password': password},
+          extra: {'email': email},
         );
       }
     }
