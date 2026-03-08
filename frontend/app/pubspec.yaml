@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 0.1.0
+version: 0.2.0
 
 environment:
   sdk: ^3.11.0
@@ -36,6 +36,12 @@ dependencies:
   # Firebase
   firebase_core: ^3.13.0
   firebase_auth: ^5.5.2
+
+  # Environment variables
+  flutter_dotenv: ^6.0.0
+
+  # Navigation
+  go_router: ^14.8.1
 
 dev_dependencies:
   flutter_test:
@@ -58,6 +64,10 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+
+  # Define assets to be included in the application bundle.
+  assets:
+    - .env
 
   # To add assets to your application, add an assets section, like this:
   # assets:
