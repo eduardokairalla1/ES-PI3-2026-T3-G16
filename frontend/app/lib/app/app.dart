@@ -3,6 +3,7 @@
 /// --- IMPORTS ---
 import 'package:flutter/material.dart';
 import 'package:mesclainvest/app/routes.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 
 /// --- CODE ---
@@ -23,9 +24,11 @@ class MesclaInvestApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
+      debugShowCheckedModeBanner: false,
       title: 'MesclaInvest',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.white),
+        textTheme: GoogleFonts.interTextTheme(),
       ),
       routerConfig: router,
     );
