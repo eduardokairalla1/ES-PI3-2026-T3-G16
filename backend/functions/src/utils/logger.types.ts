@@ -1,6 +1,6 @@
 /**
  * Logger types
- * 
+ *
  * Eduardo Kairalla - 24024241
  */
 
