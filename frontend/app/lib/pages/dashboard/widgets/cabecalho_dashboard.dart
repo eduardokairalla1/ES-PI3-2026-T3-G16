@@ -46,7 +46,7 @@ class CabecalhoDashboard extends StatelessWidget {
 
           // nome do usuário
           const Text(
-            'Renata',
+            'Goretzka',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
@@ -56,16 +56,37 @@ class CabecalhoDashboard extends StatelessWidget {
 
           const Spacer(),
 
-          // sino de notificações
-          IconButton(
-            onPressed: () {
-              // TODO: navegar para notificações
-            },
-            icon: const Icon(
-              Icons.notifications_outlined,
-              color: Colors.black87,
-              size: 24,
-            ),
+          // sino de notificações com ponto indicador
+          Stack(
+            children: [
+
+              // botão do sino
+              IconButton(
+                onPressed: () {
+                  // TODO: navegar para notificações
+                },
+                icon: const Icon(
+                  Icons.notifications_outlined,
+                  color: Colors.black87,
+                  size: 24,
+                ),
+              ),
+
+              // ponto indicador de notificação ativa
+              Positioned(
+                right: 10,
+                top: 10,
+                child: Container(
+                  width: 8,
+                  height: 8,
+                  decoration: const BoxDecoration(
+                    color: Colors.red,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ),
+
+            ],
           ),
 
         ],
