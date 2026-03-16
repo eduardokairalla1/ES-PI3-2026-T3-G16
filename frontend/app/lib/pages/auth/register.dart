@@ -18,7 +18,7 @@ class RegisterPage extends StatefulWidget {
 
 
   /// I create the mutable state for this widget.
-  /// 
+  ///
   /// :returns: the state object for this widget.
   @override
   State<RegisterPage> createState() => _RegisterPageState();
@@ -28,41 +28,51 @@ class RegisterPage extends StatefulWidget {
 /// I represent the mutable state for the register page.
 class _RegisterPageState extends State<RegisterPage> {
 
-  // define controllers for text fields
+  // service and controllers
   final _authService = AuthService();
   final _emailController = TextEditingController();
+  final _fullNameController = TextEditingController();
+  final _cpfController = TextEditingController();
+  final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isLoading = false;
   String? _error;
 
 
   /// I clean up the controllers when the widget is disposed.
-  /// 
+  ///
   /// :returns: void
   @override
   void dispose() {
     _emailController.dispose();
+    _fullNameController.dispose();
+    _cpfController.dispose();
+    _phoneController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
 
 
   /// I submit the register form.
-  /// 
-  /// returns: void
+  ///
+  /// :returns: void
   Future<void> _submit() async {
 
     // set loading state and clear previous error
     setState(() { _isLoading = true; _error = null; });
 
-    // try to register the user
     try {
+
+      // register the user and persist their profile
       await _authService.register(
         _emailController.text,
-        _passwordController.text
+        _passwordController.text,
+        fullName: _fullNameController.text,
+        cpf: _cpfController.text,
+        phone: _phoneController.text,
       );
 
-      // registration successful: navigate to the login page
+      // navigate to login after successful registration
       if (mounted) context.go('/login');
     }
 
@@ -71,19 +81,17 @@ class _RegisterPageState extends State<RegisterPage> {
       setState(() => _error = e.message);
     }
 
-    // infrastructure error: display the error message
+    // infrastructure error: display a generic message
     on InfrastructureException {
       setState(
-        () => _error = ('Ocorreu um erro inesperado. '
-                        'Tente novamente em alguns minutos.')
+        () => _error = 'Ocorreu um erro inesperado. Tente novamente em alguns minutos.',
       );
     }
 
-    // any other error: display a generic error message
+    // any other error: display a generic message
     catch (_) {
       setState(
-        () => _error = ('Ocorreu um erro inesperado. '
-                        'Tente novamente em alguns minutos.')
+        () => _error = 'Ocorreu um erro inesperado. Tente novamente em alguns minutos.',
       );
     }
 
@@ -95,9 +103,9 @@ class _RegisterPageState extends State<RegisterPage> {
 
 
   /// I build the register page widget tree.
-  /// 
+  ///
   /// :param context: the build context
-  /// 
+  ///
   /// :returns: the register page widget tree
   @override
   Widget build(BuildContext context) {
@@ -106,18 +114,39 @@ class _RegisterPageState extends State<RegisterPage> {
       // app bar
       appBar: AppBar(title: const Text('Registro')),
 
-      // page body  
+      // page body
       body: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
 
+            // full name field
+            TextField(
+              controller: _fullNameController,
+              decoration: const InputDecoration(labelText: 'Nome Completo'),
+            ),
+            const SizedBox(height: 16),
+
             // email field
             TextField(
               controller: _emailController,
               decoration: const InputDecoration(labelText: 'Email'),
               keyboardType: TextInputType.emailAddress,
+            ),
+            const SizedBox(height: 16),
+
+            // cpf field
+            TextField(
+              controller: _cpfController,
+              decoration: const InputDecoration(labelText: 'CPF'),
+            ),
+            const SizedBox(height: 16),
+
+            // phone number field
+            TextField(
+              controller: _phoneController,
+              decoration: const InputDecoration(labelText: 'Número de Telefone'),
             ),
             const SizedBox(height: 16),
 
