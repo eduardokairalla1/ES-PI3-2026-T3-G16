@@ -31,6 +31,9 @@ class _RegisterPageState extends State<RegisterPage> {
   // define controllers for text fields
   final _authService = AuthService();
   final _emailController = TextEditingController();
+  final _fullNameController = TextEditingController();
+  final _cpfController = TextEditingController();
+  final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isLoading = false;
   String? _error;
@@ -113,6 +116,13 @@ class _RegisterPageState extends State<RegisterPage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
 
+            // full name field
+            TextField(
+              controller: _fullNameController,
+              decoration: const InputDecoration(labelText: 'Nome Completo'),
+            ),
+            const SizedBox(height: 24),
+
             // email field
             TextField(
               controller: _emailController,
@@ -120,6 +130,20 @@ class _RegisterPageState extends State<RegisterPage> {
               keyboardType: TextInputType.emailAddress,
             ),
             const SizedBox(height: 16),
+
+            // cpf field
+            TextField(
+              controller: _cpfController,
+              decoration: const InputDecoration(labelText: 'CPF'),
+            ),
+            const SizedBox(height: 24),
+
+            // phone number field
+            TextField(
+              controller: _phoneController,
+              decoration: const InputDecoration(labelText: 'Número de Telefone'),
+            ),
+            const SizedBox(height: 24),
 
             // password field
             TextField(
