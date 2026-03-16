@@ -1,8 +1,9 @@
-/// Eduardo Kairalla - 24024241 
+/// Davi da Cruz Shieh - 24798076
 
 /// --- Auth service ---
 
 // --- IMPORTS ---
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:mesclainvest/core/exceptions/auth.dart';
 import 'package:mesclainvest/core/exceptions/infrastructure.dart';
@@ -18,86 +19,102 @@ class AuthService {
 
 
   /// I return the current authenticated user.
-  /// 
+  ///
   /// :returns: the current user, or null if not authenticated
   User? get currentUser => _auth.currentUser;
 
 
   /// I return a stream of auth state changes.
-  /// 
+  ///
   /// :returns: a stream of User? representing the authentication state
   Stream<User?> get authStateChanges => _auth.authStateChanges();
 
 
   /// I sign in with email and password.
-  /// 
+  ///
   /// :param email: the user's email
   /// :param password: the user's password
-  /// 
+  ///
   /// :throws AuthException: if the sign-in fails
   /// :throws InfrastructureException: if any other error occurs
-  /// 
+  ///
   /// :returns: void
   Future<void> signIn(String email, String password) async {
 
     // sign in with Firebase Authentication
     try {
       await _auth.signInWithEmailAndPassword(
-        email: email, password: password
+        email: email, password: password,
       );
-    } 
+    }
 
-    // error occurred in Firebase Authentication: trow a custom AuthException
+    // error occurred in Firebase Authentication: throw a custom AuthException
     on FirebaseAuthException catch (e) {
       throw AuthException.fromFirebaseCode(
         e.code,
         originalError: e,
-        stackTrace: StackTrace.current
+        stackTrace: StackTrace.current,
       ) ?? InfrastructureException(
         originalError: e,
-        stackTrace: StackTrace.current
+        stackTrace: StackTrace.current,
       );
     }
 
-    // any other error: throw a InfrastructureException
+    // any other error: throw an InfrastructureException
     catch (e) {
       throw InfrastructureException(
         message: e.toString(),
         originalError: e,
-        stackTrace: StackTrace.current
+        stackTrace: StackTrace.current,
       );
     }
   }
 
 
-  /// I register a new user with email and password.
-  /// 
+  /// I register a new user and persist their profile via the onUserCreated callable.
+  ///
   /// :param email: the user's email
   /// :param password: the user's password
-  /// 
-  /// :throws AuthException: if the registration fails
+  /// :param fullName: the user's full name
+  /// :param cpf: the user's CPF document number
+  /// :param phone: the user's phone number
+  ///
+  /// :throws AuthException: if registration fails
   /// :throws InfrastructureException: if any other error occurs
-  /// 
+  ///
   /// :returns: void
-  Future<void> register(String email, String password) async {
+  Future<void> register(
+    String email,
+    String password, {
+    required String fullName,
+    required String cpf,
+    required String phone,
+  }) async {
 
-    // register with Firebase Authentication
     try {
+
+      // create the Firebase Auth account
       await _auth.createUserWithEmailAndPassword(
         email: email,
-        password: password
+        password: password,
       );
+
+      // persist the user profile via onUserCreated callable
+      await FirebaseFunctions.instance
+          .httpsCallable('onUserCreated')
+          .call({'fullName': fullName, 'cpf': cpf, 'phone': phone});
+
     }
 
-    // error occurred in Firebase Authentication: trow a custom AuthException
+    // error occurred in Firebase Authentication: throw a custom AuthException
     on FirebaseAuthException catch (e) {
       throw AuthException.fromFirebaseCode(
         e.code,
         originalError: e,
-        stackTrace: StackTrace.current
+        stackTrace: StackTrace.current,
       ) ?? InfrastructureException(
         originalError: e,
-        stackTrace: StackTrace.current
+        stackTrace: StackTrace.current,
       );
     }
 
@@ -106,14 +123,14 @@ class AuthService {
       throw InfrastructureException(
         message: e.toString(),
         originalError: e,
-        stackTrace: StackTrace.current
+        stackTrace: StackTrace.current,
       );
     }
   }
 
 
   /// I sign out the current user.
-  /// 
+  ///
   /// :returns: void
   Future<void> signOut() async {
     await _auth.signOut();
