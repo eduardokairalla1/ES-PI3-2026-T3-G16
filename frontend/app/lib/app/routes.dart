@@ -5,28 +5,28 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mesclainvest/pages/auth/login.dart';
 import 'package:mesclainvest/pages/auth/register.dart';
-import 'package:mesclainvest/pages/dashboard/dashboard.dart';
+import 'package:mesclainvest/pages/dashboard/pagina_dashboard.dart';
 import 'package:mesclainvest/pages/home/home.dart';
 
 
-/// --- GLOBALS ---
+/// --- GLOBAIS ---
 
-// initialize app router
+// inicializa o roteador do app
 final router = GoRouter(
   initialLocation: '/',
   redirect: (context, state) {
 
-    // check if user is logged
+    // verifica se o usuário está logado
     final isLoggedIn = FirebaseAuth.instance.currentUser != null;
 
-    // check if user is trying to access the dashboard
+    // verifica se o usuário está tentando acessar o dashboard
     final isDashboard = state.matchedLocation == '/dashboard';
 
-    // user is not logged and trying to access the dashboard: redirect to login
+    // usuário não está logado e tentando acessar o dashboard: redireciona para login
     if (!isLoggedIn && isDashboard) return '/login';
 
-    // user is logged and trying to access login or register: redirect to
-    // dashboard
+    // usuário está logado e tentando acessar login ou registro: redireciona para
+    // o dashboard
     return null;
 
   },
@@ -45,7 +45,7 @@ final router = GoRouter(
     ),
     GoRoute(
       path: '/dashboard',
-      builder: (context, state) => const DashboardPage(),
+      builder: (context, state) => const PaginaDashboard(),
     ),
   ],
 );
