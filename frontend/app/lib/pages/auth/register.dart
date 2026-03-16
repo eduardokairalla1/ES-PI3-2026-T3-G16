@@ -18,7 +18,7 @@ class RegisterPage extends StatefulWidget {
 
 
   /// I create the mutable state for this widget.
-  /// 
+  ///
   /// :returns: the state object for this widget.
   @override
   State<RegisterPage> createState() => _RegisterPageState();
@@ -32,13 +32,16 @@ class _RegisterPageState extends State<RegisterPage> {
   final _authService = AuthService();
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
+  final _fullNameController = TextEditingController();
+  final _cpfController = TextEditingController();
+  final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isLoading = false;
   String? _error;
 
 
   /// I clean up the controllers when the widget is disposed.
-  /// 
+  ///
   /// :returns: void
   @override
   void dispose() {
@@ -49,7 +52,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
 
   /// I submit the register form.
-  /// 
+  ///
   /// returns: void
   Future<void> _submit() async {
 
@@ -96,9 +99,9 @@ class _RegisterPageState extends State<RegisterPage> {
 
 
   /// I build the register page widget tree.
-  /// 
+  ///
   /// :param context: the build context
-  /// 
+  ///
   /// :returns: the register page widget tree
   @override
   Widget build(BuildContext context) {
@@ -107,7 +110,7 @@ class _RegisterPageState extends State<RegisterPage> {
       // app bar
       appBar: AppBar(title: const Text('Registro')),
 
-      // page body  
+      // page body
       body: Padding(
         padding: const EdgeInsets.all(24),
         child: Form(
@@ -116,7 +119,14 @@ class _RegisterPageState extends State<RegisterPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
 
-              // email field
+            // full name field
+            TextField(
+              controller: _fullNameController,
+              decoration: const InputDecoration(labelText: 'Nome Completo'),
+            ),
+            const SizedBox(height: 24),
+
+            // email field
               TextFormField(
                 controller: _emailController,
                 decoration: const InputDecoration(labelText: 'Email'),
@@ -136,23 +146,37 @@ class _RegisterPageState extends State<RegisterPage> {
               ),
               const SizedBox(height: 16),
 
-              // password field
-              TextFormField(
-                controller: _passwordController,
-                decoration: const InputDecoration(labelText: 'Senha'),
-                obscureText: true,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Informe a senha';
-                  }
+            // cpf field
+            TextField(
+              controller: _cpfController,
+              decoration: const InputDecoration(labelText: 'CPF'),
+            ),
+            const SizedBox(height: 24),
 
-                  if (value.length < 6) {
-                    return 'A senha deve ter pelo menos 6 caracteres';
-                  }
+            // phone number field
+            TextField(
+              controller: _phoneController,
+              decoration: const InputDecoration(labelText: 'Número de Telefone'),
+            ),
+            const SizedBox(height: 24),
 
-                  return null;
-                },
-              ),
+            // password field
+            TextFormField(
+              controller: _passwordController,
+              decoration: const InputDecoration(labelText: 'Senha'),
+              obscureText: true,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Informe a senha';
+                }
+
+                if (value.length < 6) {
+                  return 'A senha deve ter pelo menos 6 caracteres';
+                }
+
+                return null;
+              },
+            ),
               const SizedBox(height: 24),
 
               // error message
@@ -163,8 +187,8 @@ class _RegisterPageState extends State<RegisterPage> {
 
               // register button
               ElevatedButton(
-                onPressed: _isLoading 
-                ? null 
+                onPressed: _isLoading
+                ? null
                 : () {
                     if (_formKey.currentState!.validate()) {
                       _submit();
