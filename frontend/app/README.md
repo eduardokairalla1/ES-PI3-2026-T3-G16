@@ -21,6 +21,16 @@ Connect the app to Firebase (generates `lib/firebase_options.dart`):
 flutterfire configure
 ```
 
+## Environment
+
+Create the `.env` file at the project root from the example:
+
+```bash
+cp .env.example .env
+```
+
+Edit `.env` as needed:
+
 ## Commands
 
 | Command | Description |
