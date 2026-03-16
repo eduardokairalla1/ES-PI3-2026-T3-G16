@@ -26,17 +26,17 @@ class CabecalhoDashboard extends StatelessWidget {
           Container(
             width: 40,
             height: 40,
-            decoration: BoxDecoration(
-              color: Colors.grey.shade300,
+            decoration: const BoxDecoration(
+              color: Colors.black,
               shape: BoxShape.circle,
             ),
             child: const Center(
               child: Text(
-                'U',
+                'u',
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: 18,
                   fontWeight: FontWeight.w600,
-                  color: Colors.black54,
+                  color: Colors.white,
                 ),
               ),
             ),
