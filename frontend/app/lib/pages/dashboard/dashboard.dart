@@ -25,28 +25,22 @@ class DashboardPage extends StatelessWidget {
     final authService = AuthService();
 
     return Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
 
-            // welcome message
-            const Text('Dashboard'),
-            const SizedBox(height: 24),
+              // TODO: Header - App Brand
+              // TODO: Patrimônio card
+              // TODO: Action buttons (Depositar, Comprar, Vender, etc.)
+              // TODO: Stats row (Startups, Rentabilidade, Investidores)
+              // TODO: Startups do Ecossistema
+              // TODO: Meus Investimentos
 
-            // logout button
-            ElevatedButton(
-              onPressed: () async {
-
-                // sign out the user
-                await authService.signOut();
-
-                // widget is still mounted: navigate to the login page
-                if (context.mounted) context.go('/login');
-              },
-              child: const Text('Logout'),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
