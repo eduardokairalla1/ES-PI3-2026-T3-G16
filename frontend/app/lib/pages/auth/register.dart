@@ -63,7 +63,10 @@ class _RegisterPageState extends State<RegisterPage> {
     try {
       await _authService.register(
         _emailController.text,
-        _passwordController.text
+        _passwordController.text,
+        _fullNameController.text,
+        _cpfController.text,
+        _phoneController.text,
       );
 
       // registration successful: navigate to the login page
