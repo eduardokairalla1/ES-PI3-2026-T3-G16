@@ -18,7 +18,7 @@ class RegisterPage extends StatefulWidget {
 
 
   /// I create the mutable state for this widget.
-  /// 
+  ///
   /// :returns: the state object for this widget.
   @override
   State<RegisterPage> createState() => _RegisterPageState();
@@ -40,7 +40,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
 
   /// I clean up the controllers when the widget is disposed.
-  /// 
+  ///
   /// :returns: void
   @override
   void dispose() {
@@ -51,7 +51,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
 
   /// I submit the register form.
-  /// 
+  ///
   /// returns: void
   Future<void> _submit() async {
 
@@ -62,7 +62,10 @@ class _RegisterPageState extends State<RegisterPage> {
     try {
       await _authService.register(
         _emailController.text,
-        _passwordController.text
+        _passwordController.text,
+        _fullNameController.text,
+        _cpfController.text,
+        _phoneController.text,
       );
 
       // registration successful: navigate to the login page
@@ -98,9 +101,9 @@ class _RegisterPageState extends State<RegisterPage> {
 
 
   /// I build the register page widget tree.
-  /// 
+  ///
   /// :param context: the build context
-  /// 
+  ///
   /// :returns: the register page widget tree
   @override
   Widget build(BuildContext context) {
@@ -109,7 +112,7 @@ class _RegisterPageState extends State<RegisterPage> {
       // app bar
       appBar: AppBar(title: const Text('Registro')),
 
-      // page body  
+      // page body
       body: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
