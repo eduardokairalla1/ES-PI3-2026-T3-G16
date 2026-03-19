@@ -13,7 +13,7 @@ import * as z from 'zod';
 /**
  * TYPES
  */
-export const requestSchema = z.object(
+export const CreateUserRequest = z.object(
     {
         fullName: z.string(),
         cpf: z.string(),
@@ -21,4 +21,8 @@ export const requestSchema = z.object(
     },
 );
 
-export type OnUserCreatedRequest = z.infer<typeof requestSchema>;
+
+/**
+ * EXPORTS
+ */
+export type CreateUserRequest = z.infer<typeof CreateUserRequest>;

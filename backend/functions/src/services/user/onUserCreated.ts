@@ -25,7 +25,7 @@ import {ValidationError} from '../../errors/validationError';
  * TYPES
  */
 import type {CallableRequest} from 'firebase-functions/v2/https';
-import {requestSchema} from './types';
+import {CreateUserRequest} from '../../types/responders/user';
 
 
 /**
@@ -39,7 +39,7 @@ import {requestSchema} from './types';
  *
  * @returns created user data
  */
-async function handleOnUserCreated(request: CallableRequest)
+export async function handleOnUserCreated(request: CallableRequest)
 {
     try
     {
@@ -62,7 +62,7 @@ async function handleOnUserCreated(request: CallableRequest)
         }
 
         // validate request data
-        const parsed = parseRequest(requestSchema, request.data);
+        const parsed = parseRequest(CreateUserRequest, request.data);
 
         // add user
         logger.info(`Adding user "${uid}"...`, {data: {uid, email}});
@@ -105,7 +105,3 @@ async function handleOnUserCreated(request: CallableRequest)
         throw new HttpsError('internal', internal.message);
     }
 }
-
-
-// export the callable function
-export const onUserCreated = onCall(handleOnUserCreated);
