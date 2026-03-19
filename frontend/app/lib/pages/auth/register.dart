@@ -116,75 +116,75 @@ class _RegisterPageState extends State<RegisterPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
 
-            // email field
-            TextFormField(
-              controller: _emailController,
-              decoration: const InputDecoration(labelText: 'Email'),
-              keyboardType: TextInputType.emailAddress,
-              validator: (value) {
-                if (value == null || value.trim().isEmpty) {
-                  return 'Informe o e-mail';
-                }
-
-                final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+$');
-                if (!emailRegex.hasMatch(value.trim())) {
-                  return 'E-mail inválido';
-                }
-
-                return null;
-              },
-            ),
-            const SizedBox(height: 16),
-
-            // password field
-            TextFormField(
-              controller: _passwordController,
-              decoration: const InputDecoration(labelText: 'Senha'),
-              obscureText: true,
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Informe a senha';
-                }
-
-                if (value.length < 6) {
-                  return 'A senha deve ter pelo menos 6 caracteres';
-                }
-
-                return null;
-              },
-            ),
-            const SizedBox(height: 24),
-
-            // error message
-            if (_error != null) ...[
-              Text(_error!, style: const TextStyle(color: Colors.red)),
-              const SizedBox(height: 12),
-            ],
-
-            // register button
-            ElevatedButton(
-              onPressed: _isLoading 
-              ? null 
-              : () {
-                  if (_formKey.currentState!.validate()) {
-                    _submit();
+              // email field
+              TextFormField(
+                controller: _emailController,
+                decoration: const InputDecoration(labelText: 'Email'),
+                keyboardType: TextInputType.emailAddress,
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Informe o e-mail';
                   }
+
+                  final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+$');
+                  if (!emailRegex.hasMatch(value.trim())) {
+                    return 'E-mail inválido';
+                  }
+
+                  return null;
                 },
+              ),
+              const SizedBox(height: 16),
 
-              child: _isLoading
-                  ? const CircularProgressIndicator()
-                  : const Text('Cadastrar'),
-            ),
+              // password field
+              TextFormField(
+                controller: _passwordController,
+                decoration: const InputDecoration(labelText: 'Senha'),
+                obscureText: true,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Informe a senha';
+                  }
 
-            // login redirect
-            TextButton(
-              onPressed: () => context.go('/login'),
-              child: const Text('Já tem uma conta? Iniciar sessão'),
-            ),
-          ],
+                  if (value.length < 6) {
+                    return 'A senha deve ter pelo menos 6 caracteres';
+                  }
+
+                  return null;
+                },
+              ),
+              const SizedBox(height: 24),
+
+              // error message
+              if (_error != null) ...[
+                Text(_error!, style: const TextStyle(color: Colors.red)),
+                const SizedBox(height: 12),
+              ],
+
+              // register button
+              ElevatedButton(
+                onPressed: _isLoading 
+                ? null 
+                : () {
+                    if (_formKey.currentState!.validate()) {
+                      _submit();
+                    }
+                  },
+
+                child: _isLoading
+                    ? const CircularProgressIndicator()
+                    : const Text('Cadastrar'),
+              ),
+
+              // login redirect
+              TextButton(
+                onPressed: () => context.go('/login'),
+                child: const Text('Já tem uma conta? Iniciar sessão'),
+              ),
+            ],
+          ),
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 }
