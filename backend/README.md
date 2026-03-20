@@ -6,6 +6,7 @@ Firebase project using Cloud Functions (TypeScript) and Firestore.
 
 - [Node.js LTS](https://nodejs.org/)
 - [Firebase CLI](https://firebase.google.com/docs/cli) — `npm install -g firebase-tools`
+- Java (required by the Firestore emulator) — `sudo apt install default-jre -y`
 
 ## Setup
 
@@ -22,6 +23,13 @@ npm --prefix functions install
 | `npm run build:functions` | Compile TypeScript functions once |
 | `npm run watch:functions` | Compile TypeScript functions in watch mode |
 | `npm run deploy` | Deploy everything to Firebase |
+
+## Tests
+
+| Command | Description |
+|---|---|
+| `npm run lint:functions` | Run ESLint and report errors |
+| `npm run lint:fix:functions` | Run ESLint and auto-fix errors |
 
 ## Emulators
 

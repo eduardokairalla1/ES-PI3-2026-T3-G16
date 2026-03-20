@@ -82,16 +82,13 @@ cd ES-PI3-2026-T0103-G16
 ### 2. Set up the backend (Firebase Emulators)
 
 ```bash
-cd backend/functions
-npm install
+cd backend
 npm --prefix functions install
 npm --prefix functions run build
 ```
 
 Start the local Firebase emulators:
-
 ```bash
-cd ..
 npm run dev
 ```
 
