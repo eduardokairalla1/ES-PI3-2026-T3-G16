@@ -21,6 +21,13 @@ class CartaoPatrimonio extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.grey.shade300),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -93,6 +100,8 @@ class CartaoPatrimonio extends StatelessWidget {
               ),
             ],
           ),
+
+          const Divider(height: 32, thickness: 1, color: Color(0xFFF5F5F5)),
         ],
       ),
     );
