@@ -77,18 +77,22 @@ class _CartaoPatrimonioState extends State<CartaoPatrimonio> {
                     _exibirPatrimonio = !_exibirPatrimonio;
                   });
                 },
-                child: Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade100,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    _exibirPatrimonio
-                        ? Icons.visibility_outlined
-                        : Icons.visibility_off_outlined,
-                    size: 20,
-                    color: Colors.grey.shade600,
+                child: Tooltip(
+                  message:
+                      _exibirPatrimonio ? 'Ocultar saldo' : 'Mostrar saldo',
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade100,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      _exibirPatrimonio
+                          ? Icons.visibility_outlined
+                          : Icons.visibility_off_outlined,
+                      size: 20,
+                      color: Colors.grey.shade600,
+                    ),
                   ),
                 ),
               ),
