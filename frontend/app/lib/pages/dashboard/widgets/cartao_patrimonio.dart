@@ -34,6 +34,35 @@ class CartaoPatrimonio extends StatelessWidget {
               letterSpacing: 0.5,
             ),
           ),
+
+          const SizedBox(height: 8),
+
+          // saldo total com ícone de visibilidade
+          Row(
+            children: [
+              const Text(
+                'R$ 999.999.999,99',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+              const Spacer(),
+              Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade100,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.visibility_outlined,
+                  size: 20,
+                  color: Colors.grey.shade600,
+                ),
+              ),
+            ],
+          ),
         ],
       ),
     );
