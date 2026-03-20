@@ -5,10 +5,19 @@ import 'package:flutter/material.dart';
 // --- CÓDIGO ---
 
 /// Eu represento o cartão de patrimônio do usuário.
-class CartaoPatrimonio extends StatelessWidget {
+class CartaoPatrimonio extends StatefulWidget {
   
   // construtor
   const CartaoPatrimonio({super.key});
+
+  @override
+  State<CartaoPatrimonio> createState() => _CartaoPatrimonioState();
+}
+
+class _CartaoPatrimonioState extends State<CartaoPatrimonio> {
+
+  // estado local: visibilidade do saldo (Task 7)
+  bool _exibirPatrimonio = true;
 
 
   /// Eu construo o container principal.
@@ -32,6 +41,8 @@ class CartaoPatrimonio extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+
+          // item: título da seção
           Text(
             'MEU PATRIMÔNIO',
             style: TextStyle(
