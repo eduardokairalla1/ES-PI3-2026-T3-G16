@@ -63,6 +63,36 @@ class CartaoPatrimonio extends StatelessWidget {
               ),
             ],
           ),
+
+          const SizedBox(height: 8),
+
+          // rentabilidade diária
+          Row(
+            children: [
+              const Icon(
+                Icons.trending_up,
+                color: Colors.green,
+                size: 16,
+              ),
+              const SizedBox(width: 4),
+              Text(
+                '+R$ 9.999,99',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.green.shade700,
+                ),
+              ),
+              const SizedBox(width: 4),
+              Text(
+                '(+ 9,99%) hoje',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey.shade600,
+                ),
+              ),
+            ],
+          ),
         ],
       ),
     );
