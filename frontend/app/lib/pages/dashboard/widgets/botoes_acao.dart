@@ -68,4 +68,39 @@ class _BotaoAcaoItem extends StatelessWidget {
   });
 
 
-  
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+
+        // container circular do ícone
+        Container(
+          width: 56,
+          height: 56,
+          decoration: BoxDecoration(
+            color: isPrimary ? Colors.black : Colors.grey.shade100,
+            shape: BoxShape.circle,
+          ),
+          child: Icon(
+            icon,
+            color: isPrimary ? Colors.white : Colors.black87,
+            size: 24,
+          ),
+        ),
+
+        const SizedBox(height: 8),
+
+        // rótulo do botão
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+            color: Colors.black54,
+          ),
+        ),
+
+      ],
+    );
+  }
+}
