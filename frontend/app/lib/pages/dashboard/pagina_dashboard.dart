@@ -31,8 +31,10 @@ class PaginaDashboard extends StatelessWidget {
               // Fase 1: Cabeçalho — Barra Superior
               const CabecalhoDashboard(),
 
-              // TODO: Fase 2 — "Meu Patrimônio" (Cartão de Patrimônio)
-              // TODO: Fase 3 — Botões de Ação Rápida
+              // Fase 2 — "Meu Patrimônio" (Cartão de Patrimônio)
+              const CartaoPatrimonio(),
+              // Fase 3 — Botões de Ação Rápida
+              const BotoesAcao(),
               // TODO: Fase 4 — Resumo de Mercado (Estatísticas KPI)
               // TODO: Fase 5 — "Startups do Ecossistema"
               // TODO: Fase 6 — "Meus Investimentos"
