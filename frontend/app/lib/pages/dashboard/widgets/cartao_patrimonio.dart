@@ -1,5 +1,21 @@
-/// --- Fase 2: Cartão de Patrimônio ---
-/// Este widget será responsável por exibir o saldo total do usuário (R$ 999.999.999,99),
-/// a rentabilidade (ex: +R$ 9.999,99 +9,99% hoje) e o ícone de ocultar/mostrar saldo.
-/// 
-/// Design previsto: Card branco com bordas arredondadas e sombra suave.
+// --- IMPORTAÇÕES ---
+import 'package:flutter/material.dart';
+
+
+// --- CÓDIGO ---
+
+/// Eu represento o cartão de patrimônio do usuário.
+class CartaoPatrimonio extends StatelessWidget {
+  
+  // construtor
+  const CartaoPatrimonio({super.key});
+
+
+  /// Eu construo o container principal.
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      
+    );
+  }
+}
