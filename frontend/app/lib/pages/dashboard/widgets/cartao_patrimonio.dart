@@ -20,6 +20,21 @@ class CartaoPatrimonio extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.shade300),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'MEU PATRIMÔNIO',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              color: Colors.grey.shade700,
+              letterSpacing: 0.5,
+            ),
+          ),
+        ],
       ),
     );
   }
