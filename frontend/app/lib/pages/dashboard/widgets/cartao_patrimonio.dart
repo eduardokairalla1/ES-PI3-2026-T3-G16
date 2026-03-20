@@ -67,16 +67,25 @@ class _CartaoPatrimonioState extends State<CartaoPatrimonio> {
                 ),
               ),
               const Spacer(),
-              Container(
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade100,
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.visibility_outlined,
-                  size: 20,
-                  color: Colors.grey.shade600,
+              GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _exibirPatrimonio = !_exibirPatrimonio;
+                  });
+                },
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade100,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    _exibirPatrimonio
+                        ? Icons.visibility_outlined
+                        : Icons.visibility_off_outlined,
+                    size: 20,
+                    color: Colors.grey.shade600,
+                  ),
                 ),
               ),
             ],
