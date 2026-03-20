@@ -1,7 +1,9 @@
 /// --- Project entry point ---
+library;
 
 // --- IMPORTS ---
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -25,6 +27,8 @@ Future<void> main() async {
   final emulatorHost = dotenv.env['EMULATOR_HOST'] ?? 'localhost';
   final authEmulatorPort =
     int.tryParse(dotenv.env['AUTH_EMULATOR_PORT'] ?? '9099') ?? 9099;
+  final functionsEmulatorPort =
+    int.tryParse(dotenv.env['FUNCTIONS_EMULATOR_PORT'] ?? '5001') ?? 5001;
 
   // initialize firebase client
   await Firebase.initializeApp(
@@ -34,6 +38,7 @@ Future<void> main() async {
   // emulator config is enabled: configure firebase auth to use it
   if (useEmulator == true) {
     await FirebaseAuth.instance.useAuthEmulator(emulatorHost, authEmulatorPort);
+    FirebaseFunctions.instance.useFunctionsEmulator(emulatorHost, functionsEmulatorPort);
   }
 
   // start root widget
