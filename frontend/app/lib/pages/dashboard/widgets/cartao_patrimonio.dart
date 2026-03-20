@@ -58,9 +58,9 @@ class _CartaoPatrimonioState extends State<CartaoPatrimonio> {
           // saldo total com ícone de visibilidade
           Row(
             children: [
-              const Text(
-                'R$ 999.999.999,99',
-                style: TextStyle(
+              Text(
+                _exibirPatrimonio ? 'R$ 999.999.999,99' : 'R$ ••••••••••••',
+                style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
                   color: Colors.black87,
@@ -96,26 +96,27 @@ class _CartaoPatrimonioState extends State<CartaoPatrimonio> {
           // rentabilidade diária
           Row(
             children: [
-              const Icon(
+              Icon(
                 Icons.trending_up,
-                color: Colors.green,
+                color: _exibirPatrimonio ? Colors.green : Colors.grey.shade300,
                 size: 16,
               ),
               const SizedBox(width: 4),
               Text(
-                '+R$ 9.999,99',
+                _exibirPatrimonio ? '+R$ 9.999,99' : '•••••••',
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: Colors.green.shade700,
+                  color:
+                      _exibirPatrimonio ? Colors.green.shade700 : Colors.grey,
                 ),
               ),
               const SizedBox(width: 4),
               Text(
-                '(+ 9,99%) hoje',
+                _exibirPatrimonio ? '(+ 9,99%) hoje' : '(••••) ••••',
                 style: TextStyle(
                   fontSize: 14,
-                  color: Colors.grey.shade600,
+                  color: _exibirPatrimonio ? Colors.grey.shade600 : Colors.grey,
                 ),
               ),
             ],
