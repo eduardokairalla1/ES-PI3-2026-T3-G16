@@ -58,12 +58,16 @@ class _CartaoPatrimonioState extends State<CartaoPatrimonio> {
           // saldo total com ícone de visibilidade
           Row(
             children: [
-              Text(
-                _exibirPatrimonio ? 'R$ 999.999.999,99' : 'R$ ••••••••••••',
-                style: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 200),
+                child: Text(
+                  _exibirPatrimonio ? 'R$ 999.999.999,99' : 'R$ *********',
+                  key: ValueKey<bool>(_exibirPatrimonio),
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
                 ),
               ),
               const Spacer(),
@@ -93,33 +97,38 @@ class _CartaoPatrimonioState extends State<CartaoPatrimonio> {
 
           const SizedBox(height: 8),
 
-          // rentabilidade diária
-          Row(
-            children: [
-              Icon(
-                Icons.trending_up,
-                color: _exibirPatrimonio ? Colors.green : Colors.grey.shade300,
-                size: 16,
-              ),
-              const SizedBox(width: 4),
-              Text(
-                _exibirPatrimonio ? '+R$ 9.999,99' : '•••••••',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color:
-                      _exibirPatrimonio ? Colors.green.shade700 : Colors.grey,
+          // rentabilidade diária (suave com AnimatedOpacity)
+          AnimatedOpacity(
+            duration: const Duration(milliseconds: 200),
+            opacity: _exibirPatrimonio ? 1.0 : 0.5,
+            child: Row(
+              children: [
+                Icon(
+                  Icons.trending_up,
+                  color: _exibirPatrimonio ? Colors.green : Colors.grey.shade300,
+                  size: 16,
                 ),
-              ),
-              const SizedBox(width: 4),
-              Text(
-                _exibirPatrimonio ? '(+ 9,99%) hoje' : '(••••) ••••',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: _exibirPatrimonio ? Colors.grey.shade600 : Colors.grey,
+                const SizedBox(width: 4),
+                Text(
+                  _exibirPatrimonio ? '+R$ 9.999,99' : '*******',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color:
+                        _exibirPatrimonio ? Colors.green.shade700 : Colors.grey,
+                  ),
                 ),
-              ),
-            ],
+                const SizedBox(width: 4),
+                Text(
+                  _exibirPatrimonio ? '(+ 9,99%) hoje' : '(****) ****',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color:
+                        _exibirPatrimonio ? Colors.grey.shade600 : Colors.grey,
+                  ),
+                ),
+              ],
+            ),
           ),
 
           const Divider(height: 32, thickness: 1, color: Color(0xFFF5F5F5)),
