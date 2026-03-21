@@ -4,46 +4,72 @@
 // --- IMPORTAÇÕES ---
 import 'package:flutter/material.dart';
 import 'package:mesclainvest/pages/dashboard/widgets/widgets.dart';
+import 'package:mesclainvest/pages/dashboard/controllers/dashboard_controller.dart';
 
 
 // --- CÓDIGO ---
 
 /// Eu represento a página do dashboard.
-class PaginaDashboard extends StatelessWidget {
+class PaginaDashboard extends StatefulWidget {
 
   // construtor
   const PaginaDashboard({super.key});
 
+  @override
+  State<PaginaDashboard> createState() => _PaginaDashboardState();
+}
 
-  /// Eu construo a árvore de widgets para a página do dashboard.
-  ///
-  /// :returns: a árvore de widgets para esta página
+class _PaginaDashboardState extends State<PaginaDashboard> {
+  // A verdadeira chamada para APIs reais acontecerá nesse controlador
+  final DashboardController _controller = DashboardController();
+
+  @override
+  void initState() {
+    super.initState();
+    // Simula a obtenção de dados e inicialização de variáveis via API.
+    _controller.loadDashboard();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  /// Eu construo a árvore de widgets reagindo dinamicamente.
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        return Scaffold(
+          backgroundColor: Colors.white,
+          body: SafeArea(
+            child: _controller.isLoading
+                ? const Center(child: CircularProgressIndicator(color: Colors.black))
+                : SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Fase 1: Cabeçalho — Barra Superior
+                        const CabecalhoDashboard(),
 
-              // Fase 1: Cabeçalho — Barra Superior
-              const CabecalhoDashboard(),
-
-              // Fase 2 — "Meu Patrimônio" (Cartão de Patrimônio)
-              const CartaoPatrimonio(),
-              // Fase 3 — Botões de Ação Rápida
-              const BotoesAcao(),
-              // TODO: Fase 4 — Resumo de Mercado (Estatísticas KPI)
-              // TODO: Fase 5 — "Startups do Ecossistema"
-              // TODO: Fase 6 — "Meus Investimentos"
-
-            ],
+                        // Fase 2 — "Meu Patrimônio"
+                        CartaoPatrimonio(controller: _controller),
+                        
+                        // Fase 3 — Botões de Ação Rápida
+                        const BotoesAcao(),
+                        
+                        // TODO: Fase 4 — Resumo de Mercado (Estatísticas KPI)
+                        // TODO: Fase 5 — "Startups do Ecossistema"
+                        // TODO: Fase 6 — "Meus Investimentos"
+                      ],
+                    ),
+                  ),
           ),
-        ),
-      ),
-      // TODO: Fase 7 — Navegação Global (Barra de Navegação Inferior)
+          // TODO: Fase 7 — Navegação Global (Barra de Navegação Inferior)
+        );
+      },
     );
   }
 }
