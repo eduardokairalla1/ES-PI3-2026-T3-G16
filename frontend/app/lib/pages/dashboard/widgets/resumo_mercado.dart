@@ -8,11 +8,22 @@ class ResumoMercado extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Retornamos apenas a estrutura de encapsulamento vazia
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-      // os os `StatsBox` aqui dentro
-      child: const SizedBox.shrink(),
+      // Renderizando explicitamente os dois primeiros cards (Task 13)
+      child: const Row(
+        children: [
+          StatsBox(
+            primaryText: '99',
+            secondaryText: 'Startups\ndisponíveis',
+          ),
+          SizedBox(width: 12),
+          StatsBox(
+            primaryText: '+9,9%',
+            secondaryText: 'Rentabilidade\neste mês',
+          ),
+        ],
+      ),
     );
   }
 }
