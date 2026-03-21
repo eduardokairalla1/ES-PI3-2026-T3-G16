@@ -1,24 +1,31 @@
-/// --- Modelo de Dados do Dashboard ---
-/// Representa o estado dos dados do usuário na tela principal.
-
 class DashboardData {
-  
+  final String nomeUsuario;
   final double patrimonioTotal;
-  final double rentabilidadeDiariaValor;
-  final double rentabilidadeDiariaPercentual;
+  final double rendimentoDiarioValor;
+  final double rendimentoDiarioPorcentagem;
+  final int totalStartupsMercado;
+  final double rentabilidadeMediaMercado;
+  final int totalInvestidoresMercado;
 
   DashboardData({
+    required this.nomeUsuario,
     required this.patrimonioTotal,
-    required this.rentabilidadeDiariaValor,
-    required this.rentabilidadeDiariaPercentual,
+    required this.rendimentoDiarioValor,
+    required this.rendimentoDiarioPorcentagem,
+    required this.totalStartupsMercado,
+    required this.rentabilidadeMediaMercado,
+    required this.totalInvestidoresMercado,
   });
 
-  /// Fábrica de mock para testes iniciais
   factory DashboardData.mock() {
     return DashboardData(
-      patrimonioTotal: 999999999.99,
-      rentabilidadeDiariaValor: 9999.99,
-      rentabilidadeDiariaPercentual: 9.99,
+      nomeUsuario: 'Goretzka',
+      patrimonioTotal: 15340.50,
+      rendimentoDiarioValor: 245.30,
+      rendimentoDiarioPorcentagem: 1.6,
+      totalStartupsMercado: 99,
+      rentabilidadeMediaMercado: 9.9,
+      totalInvestidoresMercado: 9900,
     );
   }
 }

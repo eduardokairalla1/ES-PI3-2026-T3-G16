@@ -2,16 +2,21 @@
 /// Fase 1 etapa 2: Barra superior com avatar do usuário, nome e ícone de notificação.
 
 import 'package:flutter/material.dart';
+import 'package:mesclainvest/pages/dashboard/controllers/dashboard_controller.dart';
 
 /// Barra superior com dados do usuário e notificações.
 class CabecalhoDashboard extends StatelessWidget {
-
+  final DashboardController controller;
+  
   // construtor
-  const CabecalhoDashboard({super.key});
+  const CabecalhoDashboard({super.key, required this.controller});
 
 
   @override
   Widget build(BuildContext context) {
+    final nomeUsuario = controller.data?.nomeUsuario ?? 'Usuário';
+    final inicial = nomeUsuario.isNotEmpty ? nomeUsuario[0].toUpperCase() : 'U';
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       child: Row(
@@ -25,10 +30,10 @@ class CabecalhoDashboard extends StatelessWidget {
               color: Colors.black,
               shape: BoxShape.circle,
             ),
-            child: const Center(
+            child: Center(
               child: Text(
-                'u',
-                style: TextStyle(
+                inicial,
+                style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
                   color: Colors.white,
@@ -40,9 +45,9 @@ class CabecalhoDashboard extends StatelessWidget {
           const SizedBox(width: 10),
 
           // nome do usuário
-          const Text(
-            'Goretzka',
-            style: TextStyle(
+          Text(
+            nomeUsuario,
+            style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
               color: Colors.black87,

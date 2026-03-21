@@ -48,7 +48,7 @@ class _PaginaDashboardState extends State<PaginaDashboard> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // Fase 1: Cabeçalho — Barra Superior
-                        const CabecalhoDashboard(),
+                        CabecalhoDashboard(controller: _controller),
 
                         // Fase 2 — "Meu Patrimônio"
                         CartaoPatrimonio(controller: _controller),
@@ -56,7 +56,8 @@ class _PaginaDashboardState extends State<PaginaDashboard> {
                         // Fase 3 — Botões de Ação Rápida
                         const BotoesAcao(),
                         
-                        // TODO: Fase 4 — Resumo de Mercado (Estatísticas KPI)
+                        // Fase 4 — Resumo de Mercado (Estatísticas KPI)
+                        ResumoMercado(controller: _controller),
                         // TODO: Fase 5 — "Startups do Ecossistema"
                         // TODO: Fase 6 — "Meus Investimentos"
                       ],
