@@ -9,14 +9,11 @@ class BotoesAcao extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      physics: const BouncingScrollPhysics(),
+    return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: const [
-
           // item: depositar (destaque)
           _BotaoAcaoItem(
             icon: Icons.add,
@@ -24,15 +21,11 @@ class BotoesAcao extends StatelessWidget {
             isPrimary: true,
           ),
 
-          SizedBox(width: 16),
-
           // item: comprar
           _BotaoAcaoItem(
             icon: Icons.trending_up,
             label: 'Comprar',
           ),
-
-          SizedBox(width: 16),
 
           // item: vender (venda de ativos)
           _BotaoAcaoItem(
@@ -40,23 +33,17 @@ class BotoesAcao extends StatelessWidget {
             label: 'Vender',
           ),
 
-          SizedBox(width: 16),
-
           // item: vender (saque)
-          // Task 11: "vender (Bank/Withdraw icon)"
           _BotaoAcaoItem(
             icon: Icons.account_balance_outlined,
             label: 'Vender',
           ),
-
-          SizedBox(width: 16),
 
           // item: extrato
           _BotaoAcaoItem(
             icon: Icons.receipt_long_outlined,
             label: 'Extrato',
           ),
-
         ],
       ),
     );
