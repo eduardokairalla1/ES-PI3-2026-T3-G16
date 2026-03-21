@@ -14,10 +14,12 @@ class BotoesAcao extends StatelessWidget {
   /// Eu construo a linha com os botões de ação principal.
   @override
   Widget build(BuildContext context) {
-    return Padding(
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      physics: const BouncingScrollPhysics(),
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisAlignment: MainAxisAlignment.start,
         children: const [
 
           // item: depositar (destaque)
@@ -27,17 +29,32 @@ class BotoesAcao extends StatelessWidget {
             isPrimary: true,
           ),
 
+          SizedBox(width: 16),
+
           // item: comprar
           _BotaoAcaoItem(
             icon: Icons.trending_up,
             label: 'Comprar',
           ),
 
-          // item: vender
+          SizedBox(width: 16),
+
+          // item: vender (venda de ativos)
           _BotaoAcaoItem(
             icon: Icons.trending_down,
             label: 'Vender',
           ),
+
+          SizedBox(width: 16),
+
+          // item: vender (saque)
+          // Task 11: "vender (Bank/Withdraw icon)"
+          _BotaoAcaoItem(
+            icon: Icons.account_balance_outlined,
+            label: 'Vender',
+          ),
+
+          SizedBox(width: 16),
 
           // item: extrato
           _BotaoAcaoItem(
