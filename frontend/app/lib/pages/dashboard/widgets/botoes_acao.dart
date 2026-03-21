@@ -90,13 +90,20 @@ class _BotaoAcaoItem extends StatelessWidget {
     return Column(
       children: [
 
-        // container circular do ícone
+        // container arredondado (squircle) do ícone
         Container(
           width: 56,
           height: 56,
           decoration: BoxDecoration(
-            color: isPrimary ? Colors.black : Colors.grey.shade100,
-            shape: BoxShape.circle,
+            color: isPrimary ? Colors.black : const Color(0xFFF2F2F2),
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: isPrimary ? [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.15),
+                blurRadius: 8,
+                offset: const Offset(0, 4),
+              ),
+            ] : null,
           ),
           child: Icon(
             icon,
@@ -110,10 +117,10 @@ class _BotaoAcaoItem extends StatelessWidget {
         // rótulo do botão
         Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 12,
-            fontWeight: FontWeight.w500,
-            color: Colors.black54,
+            fontWeight: isPrimary ? FontWeight.w600 : FontWeight.w500,
+            color: isPrimary ? Colors.black : Colors.grey.shade600,
           ),
         ),
 
