@@ -1,28 +1,38 @@
 // --- IMPORTAÇÕES ---
 import 'package:flutter/material.dart';
+import 'package:mesclainvest/pages/dashboard/controllers/dashboard_controller.dart';
+import 'package:intl/intl.dart';
+import 'package:mesclainvest/pages/dashboard/controllers/dashboard_controller.dart';
+import 'package:intl/intl.dart';
 
 
 // --- CÓDIGO ---
 
 /// Eu represento o cartão de patrimônio do usuário.
-class CartaoPatrimonio extends StatefulWidget {
+class CartaoPatrimonio extends StatelessWidget {
+  
+  final DashboardController controller;
   
   // construtor
-  const CartaoPatrimonio({super.key});
-
-  @override
-  State<CartaoPatrimonio> createState() => _CartaoPatrimonioState();
-}
-
-class _CartaoPatrimonioState extends State<CartaoPatrimonio> {
-
-  // estado local: visibilidade do saldo (Task 7)
-  bool _exibirPatrimonio = true;
-
+  const CartaoPatrimonio({super.key, required this.controller});
 
   /// Eu construo o container principal.
   @override
   Widget build(BuildContext context) {
+    
+    final formatter = NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
+    
+    // extração dos dados formatados e estados lidos do controller global
+    final data = controller.data;
+    final bool visivel = controller.exibirValores;
+    
+    // proteção para quando data ainda não existir (caso não lidemos no pai)
+    if (data == null) return const SizedBox(); 
+    
+    final String valPatrimonio = formatter.format(data.patrimonioTotal);
+    final String valLucroDiario = formatter.format(data.rentabilidadeDiariaValor);
+    final String valLucroPorcentagem = data.rentabilidadeDiariaPercentual.toStringAsFixed(2);
+    
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       padding: const EdgeInsets.all(16),
@@ -55,14 +65,14 @@ class _CartaoPatrimonioState extends State<CartaoPatrimonio> {
 
           const SizedBox(height: 8),
 
-          // saldo total com ícone de visibilidade
+          // saldo total com ícone de visibilidade ligado ao mock
           Row(
             children: [
               AnimatedSwitcher(
                 duration: const Duration(milliseconds: 200),
                 child: Text(
-                  _exibirPatrimonio ? 'R$ 999.999.999,99' : 'R$ *********',
-                  key: ValueKey<bool>(_exibirPatrimonio),
+                  visivel ? valPatrimonio : 'R\$ *********',
+                  key: ValueKey<bool>(visivel),
                   style: const TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
@@ -72,14 +82,10 @@ class _CartaoPatrimonioState extends State<CartaoPatrimonio> {
               ),
               const Spacer(),
               GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _exibirPatrimonio = !_exibirPatrimonio;
-                  });
-                },
+                onTap: controller.toggleVisibility, // O toggle manda para Controller
                 child: Tooltip(
                   message:
-                      _exibirPatrimonio ? 'Ocultar saldo' : 'Mostrar saldo',
+                      visivel ? 'Ocultar saldo' : 'Mostrar saldo',
                   child: Container(
                     padding: const EdgeInsets.all(4),
                     decoration: BoxDecoration(
@@ -87,7 +93,7 @@ class _CartaoPatrimonioState extends State<CartaoPatrimonio> {
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
-                      _exibirPatrimonio
+                      visivel
                           ? Icons.visibility_outlined
                           : Icons.visibility_off_outlined,
                       size: 20,
@@ -104,31 +110,31 @@ class _CartaoPatrimonioState extends State<CartaoPatrimonio> {
           // rentabilidade diária (suave com AnimatedOpacity)
           AnimatedOpacity(
             duration: const Duration(milliseconds: 200),
-            opacity: _exibirPatrimonio ? 1.0 : 0.5,
+            opacity: visivel ? 1.0 : 0.5,
             child: Row(
               children: [
                 Icon(
-                  Icons.trending_up,
-                  color: _exibirPatrimonio ? Colors.green : Colors.grey.shade300,
+                  data.rentabilidadeDiariaValor >= 0 ? Icons.trending_up : Icons.trending_down,
+                  color: visivel ? (data.rentabilidadeDiariaValor >= 0 ? Colors.green : Colors.red) : Colors.grey.shade300,
                   size: 16,
                 ),
                 const SizedBox(width: 4),
                 Text(
-                  _exibirPatrimonio ? '+R$ 9.999,99' : '*******',
+                  visivel ? '${data.rentabilidadeDiariaValor >= 0 ? '+' : ''}$valLucroDiario' : '*******',
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                     color:
-                        _exibirPatrimonio ? Colors.green.shade700 : Colors.grey,
+                        visivel ? (data.rentabilidadeDiariaValor >= 0 ? Colors.green.shade700 : Colors.red.shade700) : Colors.grey,
                   ),
                 ),
                 const SizedBox(width: 4),
                 Text(
-                  _exibirPatrimonio ? '(+ 9,99%) hoje' : '(****) ****',
+                  visivel ? '(${data.rentabilidadeDiariaPercentual >= 0 ? '+' : ''}$valLucroPorcentagem%) hoje' : '(****) ****',
                   style: TextStyle(
                     fontSize: 14,
                     color:
-                        _exibirPatrimonio ? Colors.grey.shade600 : Colors.grey,
+                        visivel ? Colors.grey.shade600 : Colors.grey,
                   ),
                 ),
               ],
