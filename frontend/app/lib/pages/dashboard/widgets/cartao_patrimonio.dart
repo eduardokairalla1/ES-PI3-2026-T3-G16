@@ -23,8 +23,8 @@ class CartaoPatrimonio extends StatelessWidget {
     if (data == null) return const SizedBox(); 
     
     final String valPatrimonio = formatter.format(data.patrimonioTotal);
-    final String valLucroDiario = formatter.format(data.rentabilidadeDiariaValor);
-    final String valLucroPorcentagem = data.rentabilidadeDiariaPercentual.toStringAsFixed(2);
+    final String valLucroDiario = formatter.format(data.rendimentoDiarioValor);
+    final String valLucroPorcentagem = data.rendimentoDiarioPorcentagem.toStringAsFixed(2);
     
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
@@ -107,23 +107,23 @@ class CartaoPatrimonio extends StatelessWidget {
             child: Row(
               children: [
                 Icon(
-                  data.rentabilidadeDiariaValor >= 0 ? Icons.trending_up : Icons.trending_down,
-                  color: visivel ? (data.rentabilidadeDiariaValor >= 0 ? Colors.green : Colors.red) : Colors.grey.shade300,
+                  data.rendimentoDiarioValor >= 0 ? Icons.trending_up : Icons.trending_down,
+                  color: visivel ? (data.rendimentoDiarioValor >= 0 ? Colors.green : Colors.red) : Colors.grey.shade300,
                   size: 16,
                 ),
                 const SizedBox(width: 4),
                 Text(
-                  visivel ? '${data.rentabilidadeDiariaValor >= 0 ? '+' : ''}$valLucroDiario' : '*******',
+                  visivel ? '${data.rendimentoDiarioValor >= 0 ? '+' : ''}$valLucroDiario' : '*******',
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                     color:
-                        visivel ? (data.rentabilidadeDiariaValor >= 0 ? Colors.green.shade700 : Colors.red.shade700) : Colors.grey,
+                        visivel ? (data.rendimentoDiarioValor >= 0 ? Colors.green.shade700 : Colors.red.shade700) : Colors.grey,
                   ),
                 ),
                 const SizedBox(width: 4),
                 Text(
-                  visivel ? '(${data.rentabilidadeDiariaPercentual >= 0 ? '+' : ''}$valLucroPorcentagem%) hoje' : '(****) ****',
+                  visivel ? '(${data.rendimentoDiarioPorcentagem >= 0 ? '+' : ''}$valLucroPorcentagem%) hoje' : '(****) ****',
                   style: TextStyle(
                     fontSize: 14,
                     color:
