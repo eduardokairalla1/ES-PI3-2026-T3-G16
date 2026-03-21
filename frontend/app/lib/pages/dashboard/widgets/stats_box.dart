@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-/// Componente visual reutilizável (Fração inicial - Apenas esqueleto)
+/// Componente base para indicadores estatísticos.
 class StatsBox extends StatelessWidget {
   
-  // Parâmetros estritos requisitados pela task 12
+  // Atributos.
   final String primaryText;
   final String secondaryText;
 
@@ -15,7 +15,7 @@ class StatsBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Geometria do Card (BoxDecoration, Shading) estabelecida.
+    // Estrutura visual e sombreamento.
     return Expanded(
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
@@ -30,7 +30,7 @@ class StatsBox extends StatelessWidget {
             ),
           ],
         ),
-        // Tipografia refinada e layout final
+        // Conteúdo e estilos.
         child: Column(
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,

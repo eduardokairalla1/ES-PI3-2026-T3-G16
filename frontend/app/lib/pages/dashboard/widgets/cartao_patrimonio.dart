@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mesclainvest/pages/dashboard/controllers/dashboard_controller.dart';
 import 'package:intl/intl.dart';
 
-/// Componente visual do cartão de patrimônio do usuário.
+/// Exibição de patrimônio e rendimento diário.
 class CartaoPatrimonio extends StatelessWidget {
   
   final DashboardController controller;
@@ -58,7 +58,7 @@ class CartaoPatrimonio extends StatelessWidget {
 
           const SizedBox(height: 8),
 
-          // saldo total e botão de visibilidade
+          // Saldo e controle de visibilidade.
           Row(
             children: [
               AnimatedSwitcher(

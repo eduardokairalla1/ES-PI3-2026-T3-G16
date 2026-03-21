@@ -1,5 +1,4 @@
-/// --- Controller do Dashboard ---
-/// Gerencia o estado reativo da UI da tela do Dashboard.
+/// Gerencia o estado e lógica da UI do Dashboard.
 
 import 'package:flutter/material.dart';
 import 'package:mesclainvest/pages/dashboard/models/dashboard_data.dart';
@@ -7,16 +6,16 @@ import 'package:mesclainvest/pages/dashboard/services/dashboard_service.dart';
 
 class DashboardController extends ChangeNotifier {
   
-  // dependências
+  // Dependências.
   final DashboardService _service = DashboardService();
 
-  // estados globais
-  bool isLoading = true; // estado de carregamento base (antes da UI)
-  bool exibirValores = true; // visibilidade global do saldo (olhinho)
-  DashboardData? data; // dados consolidados em tela
+  // Estado da UI.
+  bool isLoading = true; // Controle de carregamento.
+  bool exibirValores = true; // Visibilidade dos saldos.
+  DashboardData? data; // Dados consolidados.
   String? errorMessage;
 
-  /// Carrega/Busca os dados do dashboard
+  /// Carrega dados do dashboard.
   Future<void> loadDashboard() async {
     isLoading = true;
     errorMessage = null;
@@ -32,7 +31,7 @@ class DashboardController extends ChangeNotifier {
     }
   }
 
-  /// Alterna a visibilidade dos cifrões/saldos globalmente
+  /// Alterna a visibilidade dos saldos.
   void toggleVisibility() {
     exibirValores = !exibirValores;
     notifyListeners();

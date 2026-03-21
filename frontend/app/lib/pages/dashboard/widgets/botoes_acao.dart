@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// Linha horizontal de botões para ações rápidas.
+/// Atalhos para ações principais (Depósito, Compra, Venda, Extrato).
 class BotoesAcao extends StatelessWidget {
   
   // construtor
@@ -64,7 +64,7 @@ class BotoesAcao extends StatelessWidget {
 }
 
 
-/// Item individual interno da linha de ações.
+/// Botão de ação individual.
 class _BotaoAcaoItem extends StatelessWidget {
 
   // atributos

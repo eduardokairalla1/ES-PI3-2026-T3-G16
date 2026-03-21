@@ -1,3 +1,4 @@
+/// Modelo de dados consolidado para o Dashboard.
 class DashboardData {
   final String nomeUsuario;
   final double patrimonioTotal;
@@ -17,6 +18,7 @@ class DashboardData {
     required this.totalInvestidoresMercado,
   });
 
+  /// Mock para desenvolvimento inicial.
   factory DashboardData.mock() {
     return DashboardData(
       nomeUsuario: 'Goretzka',

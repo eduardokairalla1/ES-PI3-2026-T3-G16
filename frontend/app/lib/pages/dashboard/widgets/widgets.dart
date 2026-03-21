@@ -1,5 +1,4 @@
-/// --- Arquivo Barrel de Widgets do Dashboard ---
-/// Re-exporta todos os widgets de seção do dashboard para importações limpas.
+/// Barrel file para exportação unificada de widgets.
 
 export 'cabecalho_dashboard.dart';
 export 'cartao_patrimonio.dart';

@@ -1,5 +1,4 @@
-/// --- Widget de Cabeçalho do Dashboard ---
-/// Fase 1 etapa 2: Barra superior com avatar do usuário, nome e ícone de notificação.
+/// Cabeçalho com informações do usuário e notificações.
 
 import 'package:flutter/material.dart';
 import 'package:mesclainvest/pages/dashboard/controllers/dashboard_controller.dart';
@@ -8,7 +7,6 @@ import 'package:mesclainvest/pages/dashboard/controllers/dashboard_controller.da
 class CabecalhoDashboard extends StatelessWidget {
   final DashboardController controller;
   
-  // construtor
   const CabecalhoDashboard({super.key, required this.controller});
 
 
@@ -22,7 +20,7 @@ class CabecalhoDashboard extends StatelessWidget {
       child: Row(
         children: [
 
-          // avatar do usuário
+          // Avatar.
           Container(
             width: 40,
             height: 40,
@@ -44,7 +42,7 @@ class CabecalhoDashboard extends StatelessWidget {
 
           const SizedBox(width: 10),
 
-          // nome do usuário
+          // Nome.
           Text(
             nomeUsuario,
             style: const TextStyle(
@@ -56,11 +54,11 @@ class CabecalhoDashboard extends StatelessWidget {
 
           const Spacer(),
 
-          // sino de notificações com ponto indicador
+          // Notificações.
           Stack(
             children: [
 
-              // botão do sino
+              // Ícone.
               IconButton(
                 onPressed: () {
                   // TODO: navegar para notificações
@@ -72,7 +70,7 @@ class CabecalhoDashboard extends StatelessWidget {
                 ),
               ),
 
-              // ponto indicador de notificação ativa
+              // Alerta de notificação ativa.
               Positioned(
                 right: 10,
                 top: 10,
