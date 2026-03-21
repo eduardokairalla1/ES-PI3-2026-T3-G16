@@ -29,8 +29,22 @@ class StatsBox extends StatelessWidget {
           ),
         ],
       ),
-      // O interior ainda continuará vazio. Adicionaremos a coluna no próx ciclo.
-      child: const SizedBox.shrink(),
+      // Bindings de texto brutos acoplados na estrutura
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            primaryText,
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            secondaryText,
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
     );
   }
 }
