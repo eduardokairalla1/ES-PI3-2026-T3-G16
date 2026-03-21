@@ -10,7 +10,7 @@ class ResumoMercado extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-      // Renderizando explicitamente os dois primeiros cards (Task 13)
+      // Grade estática integral de KPIs da Dashboard estabelecida (Task 14)
       child: const Row(
         children: [
           StatsBox(
@@ -21,6 +21,11 @@ class ResumoMercado extends StatelessWidget {
           StatsBox(
             primaryText: '+9,9%',
             secondaryText: 'Rentabilidade\neste mês',
+          ),
+          SizedBox(width: 12),
+          StatsBox(
+            primaryText: '9,9k',
+            secondaryText: 'Investidores\nativos',
           ),
         ],
       ),
