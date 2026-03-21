@@ -1,15 +1,11 @@
 /// --- Página do Dashboard ---
 /// Tela principal que monta todas as seções do dashboard.
 
-// --- IMPORTAÇÕES ---
 import 'package:flutter/material.dart';
 import 'package:mesclainvest/pages/dashboard/widgets/widgets.dart';
 import 'package:mesclainvest/pages/dashboard/controllers/dashboard_controller.dart';
 
-
-// --- CÓDIGO ---
-
-/// Eu represento a página do dashboard.
+/// Tela principal que compõe o Dashboard.
 class PaginaDashboard extends StatefulWidget {
 
   // construtor
@@ -36,7 +32,7 @@ class _PaginaDashboardState extends State<PaginaDashboard> {
     super.dispose();
   }
 
-  /// Eu construo a árvore de widgets reagindo dinamicamente.
+  /// Build reativo atrelado ao DashboardController.
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(

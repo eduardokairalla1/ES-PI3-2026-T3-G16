@@ -1,17 +1,12 @@
-// --- IMPORTAÇÕES ---
 import 'package:flutter/material.dart';
 
-
-// --- CÓDIGO ---
-
-/// Eu represento a linha de botões de ações rápidas.
+/// Linha horizontal de botões para ações rápidas.
 class BotoesAcao extends StatelessWidget {
   
   // construtor
   const BotoesAcao({super.key});
 
 
-  /// Eu construo a linha com os botões de ação principal.
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -69,7 +64,7 @@ class BotoesAcao extends StatelessWidget {
 }
 
 
-/// Eu represento um item individual de botão de ação.
+/// Item individual interno da linha de ações.
 class _BotaoAcaoItem extends StatelessWidget {
 
   // atributos

@@ -1,20 +1,15 @@
 /// --- Widget de Cabeçalho do Dashboard ---
 /// Fase 1 etapa 2: Barra superior com avatar do usuário, nome e ícone de notificação.
 
-// --- IMPORTAÇÕES ---
 import 'package:flutter/material.dart';
 
-
-// --- CÓDIGO ---
-
-/// Eu represento a barra de cabeçalho superior do dashboard.
+/// Barra superior com dados do usuário e notificações.
 class CabecalhoDashboard extends StatelessWidget {
 
   // construtor
   const CabecalhoDashboard({super.key});
 
 
-  /// Eu construo a linha do cabeçalho com avatar do usuário, nome e sino de notificação.
   @override
   Widget build(BuildContext context) {
     return Padding(

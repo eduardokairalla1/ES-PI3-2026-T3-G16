@@ -1,12 +1,8 @@
-// --- IMPORTAÇÕES ---
 import 'package:flutter/material.dart';
 import 'package:mesclainvest/pages/dashboard/controllers/dashboard_controller.dart';
 import 'package:intl/intl.dart';
 
-
-// --- CÓDIGO ---
-
-/// Eu represento o cartão de patrimônio do usuário.
+/// Componente visual do cartão de patrimônio do usuário.
 class CartaoPatrimonio extends StatelessWidget {
   
   final DashboardController controller;
@@ -14,7 +10,6 @@ class CartaoPatrimonio extends StatelessWidget {
   // construtor
   const CartaoPatrimonio({super.key, required this.controller});
 
-  /// Eu construo o container principal.
   @override
   Widget build(BuildContext context) {
     
@@ -63,7 +58,7 @@ class CartaoPatrimonio extends StatelessWidget {
 
           const SizedBox(height: 8),
 
-          // saldo total com ícone de visibilidade ligado ao mock
+          // saldo total e botão de visibilidade
           Row(
             children: [
               AnimatedSwitcher(
