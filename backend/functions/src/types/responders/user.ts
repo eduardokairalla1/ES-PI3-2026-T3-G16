@@ -15,8 +15,12 @@ import * as z from 'zod';
  */
 export const CreateUserRequest = z.object(
     {
-        fullName: z.string(),
+        birthDate: z.string().regex(
+            /^\d{4}-\d{2}-\d{2}$/,
+            'Birth date must be in YYYY-MM-DD format'
+        ),
         cpf: z.string(),
+        fullName: z.string(),
         phone: z.string(),
     },
 );
