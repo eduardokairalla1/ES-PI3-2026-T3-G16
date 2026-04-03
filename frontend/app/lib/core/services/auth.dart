@@ -89,6 +89,7 @@ class AuthService {
         String fullName,
         String cpf,
         String phone,
+        String birthDate,
     ) async {
 
     // register with Firebase Authentication
@@ -105,6 +106,7 @@ class AuthService {
                 'fullName': fullName,
                 'cpf': cpf,
                 'phone': phone,
+                'birthDate': birthDate,
             });
     }
 
