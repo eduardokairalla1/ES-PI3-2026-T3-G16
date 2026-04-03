@@ -67,6 +67,7 @@ export async function handleOnUserCreated(request: CallableRequest)
         // add user
         logger.info(`Adding user "${uid}"...`, {data: {uid, email}});
         const addedUser = await addUser(
+            parsed.birthDate,
             parsed.cpf,
             email,
             parsed.fullName,
@@ -79,6 +80,7 @@ export async function handleOnUserCreated(request: CallableRequest)
             uid: addedUser.uid,
             email: addedUser.email,
             fullName: addedUser.full_name,
+            birthDate: addedUser.birth_date,
             status: addedUser.status,
             createdAt: addedUser.created_at,
             updatedAt: addedUser.updated_at,
