@@ -20,6 +20,29 @@ import type {userDocument} from './model';
 */
 
 /**
+ * I get a user by uid.
+ *
+ * @param uid the user's Firebase Auth uid
+ *
+ * @returns the user document, or null if not found
+ */
+export async function getUser(uid: string): Promise<userDocument | null>
+{
+    // query user by uid
+    const user = await db.collection('users')
+        .where('uid', '==', uid)
+        .limit(1)
+        .get();
+
+    // user not found: return null 
+    if (user.empty) return null;
+
+    // return user document
+    return user.docs[0].data() as userDocument;
+}
+
+
+/**
  * I add a user.
  *
  * @param input user input
