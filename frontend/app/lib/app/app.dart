@@ -2,6 +2,7 @@
 
 /// --- IMPORTS ---
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:mesclainvest/app/routes.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -30,6 +31,13 @@ class MesclaInvestApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.white),
         textTheme: GoogleFonts.interTextTheme(),
       ),
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [Locale('pt', 'BR')],
+      locale: const Locale('pt', 'BR'),
       routerConfig: router,
     );
   }
