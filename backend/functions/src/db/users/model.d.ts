@@ -9,6 +9,7 @@
  * TYPES
  */
 export interface userDocument {
+    birth_date: string;
     created_at: Date;
     cpf: string;
     email: string;

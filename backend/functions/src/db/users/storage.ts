@@ -27,6 +27,7 @@ import type {userDocument} from './model';
  * @returns user added
  */
 export async function addUser(
+    birth_date: string,
     cpf: string,
     email: string,
     full_name: string,
@@ -36,6 +37,7 @@ export async function addUser(
 
     // build user document
     const user: userDocument = {
+        'birth_date': birth_date,
         'created_at': new Date(),
         'cpf': cpf,
         'email': email,
