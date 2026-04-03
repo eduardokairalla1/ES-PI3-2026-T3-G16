@@ -1,3 +1,16 @@
+/**
+ * Entry point for the application.
+ * This file imports necessary configurations and exports responders to
+ * Firebase Cloud Functions.
+ */
+
+/**
+ * --- IMPORTS ---
+ */
 import './configs';
 
-export {onUserCreated} from './functions/onUserCreated/index';
+
+/**
+ * --- EXPORTS ---
+ */
+export {onUserCreated} from './responders/index';
