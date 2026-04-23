@@ -1,6 +1,7 @@
 /// --- Cabeçalho do Portfólio ---
 
 import 'package:flutter/material.dart';
+import 'package:mesclainvest/pages/portfolio/widgets/portfolio_styles.dart';
 
 /// Eu represento o cabeçalho superior da tela de portfólio.
 class CabecalhoPortfolio extends StatelessWidget {
@@ -13,40 +14,56 @@ class CabecalhoPortfolio extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final inicial = userName.isNotEmpty ? userName[0].toUpperCase() : 'U';
+
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            children: [
-              CircleAvatar(
-                radius: 20,
-                backgroundColor: Colors.blue.shade100,
+      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+        decoration: PortfolioStyles.cardDecoration,
+        child: Row(
+          children: [
+            // Avatar preto com inicial branca
+            Container(
+              width: 40,
+              height: 40,
+              decoration: const BoxDecoration(
+                color: Colors.black,
+                shape: BoxShape.circle,
+              ),
+              child: Center(
                 child: Text(
-                  userName.isNotEmpty ? userName[0].toUpperCase() : 'U',
+                  inicial,
                   style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.blue,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
                   ),
                 ),
               ),
-              const SizedBox(width: 12),
-              Text(
-                'Olá, $userName',
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
+            ),
+            const SizedBox(width: 12),
+            // Nome do usuário (sem "Olá,")
+            Text(
+              userName,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: PortfolioStyles.textPrimary,
               ),
-            ],
-          ),
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.notifications_none_outlined, size: 28),
-          ),
-        ],
+            ),
+            const Spacer(),
+            // Ícone de notificações
+            IconButton(
+              onPressed: () {},
+              icon: const Icon(
+                Icons.notifications_outlined,
+                color: PortfolioStyles.textPrimary,
+                size: 24,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

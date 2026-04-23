@@ -57,20 +57,20 @@ class CartaoPatrimonioPortfolio extends StatelessWidget {
             letterSpacing: 0.5,
           ),
         ),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          decoration: BoxDecoration(
-            color: PortfolioStyles.positiveGrowth.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Text(
-            '+ ${lucroTotal.toBRL()}',
-            style: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-              color: PortfolioStyles.positiveGrowth,
+        // Ícone de crescimento + valor do lucro em verde
+        Row(
+          children: [
+            const Icon(Icons.trending_up, color: PortfolioStyles.positiveGrowth, size: 16),
+            const SizedBox(width: 4),
+            Text(
+              '+${lucroTotal.toBRL()}',
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: PortfolioStyles.positiveGrowth,
+              ),
             ),
-          ),
+          ],
         ),
       ],
     );
@@ -105,14 +105,18 @@ class CartaoPatrimonioPortfolio extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        _buildStatItem('Investido', valorInvestido.toBRL()),
-        _buildStatItem('Lucro p/Token', lucroPorToken.toBRL()),
-        _buildStatItem('Posições', posicoesAtivas.toString()),
+        _buildStatItem('Investido', isObscured ? '••••' : valorInvestido.toBRL()),
+        _buildStatItem(
+          'Lucro p/Token',
+          isObscured ? '••••' : lucroPorToken.toBRL(),
+          valueColor: PortfolioStyles.positiveGrowth,
+        ),
+        _buildStatItem('Posições', isObscured ? '••' : posicoesAtivas.toString()),
       ],
     );
   }
 
-  Widget _buildStatItem(String label, String value) {
+  Widget _buildStatItem(String label, String value, {Color? valueColor}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -126,11 +130,11 @@ class CartaoPatrimonioPortfolio extends StatelessWidget {
         ),
         const SizedBox(height: 4),
         Text(
-          isObscured ? '••••' : value,
-          style: const TextStyle(
+          value,
+          style: TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.bold,
-            color: PortfolioStyles.textPrimary,
+            color: valueColor ?? PortfolioStyles.textPrimary,
           ),
         ),
       ],

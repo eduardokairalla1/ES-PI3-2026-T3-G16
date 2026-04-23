@@ -8,7 +8,6 @@ class PortfolioStyles {
   // Cores
   static const Color backgroundColor = Color(0xFFF5F5F5);
   static const Color cardColor = Colors.white;
-  static const Color primaryAccent = Colors.blue;
   static const Color positiveGrowth = Colors.green;
   static const Color negativeGrowth = Colors.red;
   static const Color textSecondary = Colors.grey;
