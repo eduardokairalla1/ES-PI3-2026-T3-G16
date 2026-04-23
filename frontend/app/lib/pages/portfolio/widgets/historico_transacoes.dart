@@ -1,8 +1,10 @@
 /// --- Histórico de Transações ---
 
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:mesclainvest/core/utils/formatters.dart';
 import 'package:mesclainvest/pages/portfolio/models/portfolio_data.dart';
+import 'package:mesclainvest/pages/portfolio/widgets/cartao_base.dart';
+import 'package:mesclainvest/pages/portfolio/widgets/portfolio_styles.dart';
 
 /// Eu represento um cartão mostrando uma lista de transações recentes.
 class HistoricoTransacoes extends StatelessWidget {
@@ -15,21 +17,7 @@ class HistoricoTransacoes extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
-      padding: const EdgeInsets.all(20.0),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade200),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
+    return CartaoBase(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -38,34 +26,40 @@ class HistoricoTransacoes extends StatelessWidget {
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: Colors.black87,
+              color: PortfolioStyles.textPrimary,
             ),
           ),
           const SizedBox(height: 16),
-          ListView.separated(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: transacoes.length,
-            separatorBuilder: (context, index) => const Divider(height: 24),
-            itemBuilder: (context, index) {
-              return _ItemTransacao(transacao: transacoes[index]);
-            },
-          ),
+          _buildTransactionList(),
           const SizedBox(height: 12),
-          Center(
-            child: TextButton(
-              onPressed: () {},
-              child: const Text(
-                'Ver extrato completo',
-                style: TextStyle(
-                  color: Colors.blue,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                ),
-              ),
-            ),
-          ),
+          _buildFooterButton(),
         ],
+      ),
+    );
+  }
+
+  Widget _buildTransactionList() {
+    return ListView.separated(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: transacoes.length,
+      separatorBuilder: (context, index) => const Divider(height: 24),
+      itemBuilder: (context, index) => _ItemTransacao(transacao: transacoes[index]),
+    );
+  }
+
+  Widget _buildFooterButton() {
+    return Center(
+      child: TextButton(
+        onPressed: () {},
+        child: const Text(
+          'Ver extrato completo',
+          style: TextStyle(
+            color: PortfolioStyles.primaryAccent,
+            fontWeight: FontWeight.bold,
+            fontSize: 14,
+          ),
+        ),
       ),
     );
   }
@@ -74,72 +68,71 @@ class HistoricoTransacoes extends StatelessWidget {
 /// Eu represento uma única linha no histórico de transações.
 class _ItemTransacao extends StatelessWidget {
   final PortfolioTransaction transacao;
-
   const _ItemTransacao({required this.transacao});
 
   @override
   Widget build(BuildContext context) {
-    final currencyFormat = NumberFormat.currency(locale: 'pt_BR', symbol: 'R$');
+    final statusColor = transacao.isCompra ? PortfolioStyles.positiveGrowth : PortfolioStyles.negativeGrowth;
 
     return Row(
       children: [
-        Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            color: transacao.isCompra ? Colors.green.shade50 : Colors.red.shade50,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Icon(
-            transacao.isCompra ? Icons.add_circle_outline : Icons.remove_circle_outline,
-            color: transacao.isCompra ? Colors.green : Colors.red,
-            size: 20,
-          ),
-        ),
+        _buildIcon(statusColor),
         const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                transacao.titulo,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                transacao.subtitulo,
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey,
-                ),
-              ),
-            ],
+        Expanded(child: _buildInfo()),
+        _buildValue(statusColor),
+      ],
+    );
+  }
+
+  Widget _buildIcon(Color color) {
+    return Container(
+      width: 40,
+      height: 40,
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Icon(
+        transacao.isCompra ? Icons.add_circle_outline : Icons.remove_circle_outline,
+        color: color,
+        size: 20,
+      ),
+    );
+  }
+
+  Widget _buildInfo() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          transacao.titulo,
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+            color: PortfolioStyles.textPrimary,
           ),
         ),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Text(
-              '${transacao.isCompra ? '+' : '-'} ${currencyFormat.format(transacao.valor)}',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                color: transacao.isCompra ? Colors.green : Colors.red,
-              ),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              transacao.data,
-              style: const TextStyle(
-                fontSize: 10,
-                color: Colors.grey,
-              ),
-            ),
-          ],
+        const SizedBox(height: 2),
+        Text(
+          transacao.subtitulo,
+          style: const TextStyle(fontSize: 12, color: PortfolioStyles.textSecondary),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildValue(Color color) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Text(
+          '${transacao.isCompra ? '+' : '-'} ${transacao.valor.toBRL()}',
+          style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: color),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          transacao.data,
+          style: const TextStyle(fontSize: 10, color: PortfolioStyles.textSecondary),
         ),
       ],
     );
