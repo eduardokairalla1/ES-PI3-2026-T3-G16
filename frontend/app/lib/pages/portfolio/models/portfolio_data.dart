@@ -29,26 +29,28 @@ class PortfolioData {
   /// Eu crio uma instância mock de PortfolioData para fins de teste.
   factory PortfolioData.mock() {
     return PortfolioData(
-      userName: 'Alex Gabriel',
-      patrimonioTotal: 999450.50,
-      lucroTotal: 24500.00,
-      valorInvestido: 974950.50,
-      lucroPorToken: 12.50,
-      posicoesAtivas: 12,
+      userName: 'Renata',
+      patrimonioTotal: 999999999.99,
+      lucroTotal: 9999.99,
+      valorInvestido: 9999.99,
+      lucroPorToken: 9999.99,
+      posicoesAtivas: 99,
       evolucaoPontos: [10, 25, 15, 30, 45, 40, 60],
       transacoes: [
         PortfolioTransaction(
-          titulo: 'Compra de Tokens',
-          subtitulo: 'FinnoLab - Série A',
-          data: '23 Abr, 10:30',
-          valor: 1500.00,
+          titulo: 'Compra',
+          subtitulo: 'Startup XXXX',
+          data: 'Data/99/9999',
+          valor: 9999.99,
+          quantidade: 999,
           isCompra: true,
         ),
         PortfolioTransaction(
-          titulo: 'Venda de Tokens',
-          subtitulo: 'DataBrave - Exit',
-          data: '20 Abr, 15:45',
-          valor: 2450.00,
+          titulo: 'Venda',
+          subtitulo: 'Startup XXXX',
+          data: 'Data/99/9999',
+          valor: 9999.99,
+          quantidade: 999,
           isCompra: false,
         ),
       ],
@@ -67,6 +69,7 @@ class PortfolioTransaction {
   final String subtitulo;
   final String data;
   final double valor;
+  final int quantidade;
   final bool isCompra;
 
   PortfolioTransaction({
@@ -74,6 +77,7 @@ class PortfolioTransaction {
     required this.subtitulo,
     required this.data,
     required this.valor,
+    required this.quantidade,
     required this.isCompra,
   });
 }
