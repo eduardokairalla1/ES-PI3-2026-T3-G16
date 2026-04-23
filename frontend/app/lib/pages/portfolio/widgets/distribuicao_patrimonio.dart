@@ -7,7 +7,7 @@ import 'package:mesclainvest/pages/portfolio/widgets/painters/donut_chart_painte
 import 'package:mesclainvest/pages/portfolio/widgets/portfolio_styles.dart';
 
 /// Eu represento um cartão mostrando a distribuição de ativos em um gráfico de rosca.
-class DistribuicaoPatrimonio extends StatelessWidget {
+class DistribuicaoPatrimonio extends StatefulWidget {
   final List<PortfolioDistribution> distribuicao;
 
   const DistribuicaoPatrimonio({
@@ -16,13 +16,20 @@ class DistribuicaoPatrimonio extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    final List<Color> colors = [
-      const Color(0xFF4A4A4A),  // FinnoLab - cinza escuro
-      const Color(0xFFD4A574),  // DataBrave - bege/marrom claro
-      const Color(0xFF8FBC8F),  // GreenLoop - verde suave
-    ];
+  State<DistribuicaoPatrimonio> createState() => _DistribuicaoPatrimonioState();
+}
 
+class _DistribuicaoPatrimonioState extends State<DistribuicaoPatrimonio> {
+  int? _indiceSelecionado;
+
+  final List<Color> _colors = const [
+    Color(0xFF4A4A4A),  // FinnoLab - cinza escuro
+    Color(0xFFD4A574),  // DataBrave - bege/marrom claro
+    Color(0xFF8FBC8F),  // GreenLoop - verde suave
+  ];
+
+  @override
+  Widget build(BuildContext context) {
     return CartaoBase(
       child: Column(
         children: [
@@ -39,51 +46,88 @@ class DistribuicaoPatrimonio extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 24),
-          // Gráfico de rosca centralizado
-          SizedBox(
-            height: 140,
-            width: 140,
-            child: CustomPaint(
-              painter: DonutChartPainter(
-                distribuicao: distribuicao,
-                colors: colors,
-              ),
-            ),
-          ),
+          // Gráfico de rosca com interação
+          _buildChartWithInteraction(),
           const SizedBox(height: 20),
           // Legenda em linha horizontal
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(distribuicao.length, (index) {
-              final item = distribuicao[index];
-              final color = colors[index % colors.length];
-              return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 8,
-                      height: 8,
-                      decoration: BoxDecoration(
-                        color: color,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      item.nome,
-                      style: const TextStyle(
-                        fontSize: 11,
-                        color: PortfolioStyles.textSecondary,
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            }),
-          ),
+          _buildLegend(),
         ],
       ),
+    );
+  }
+
+  Widget _buildChartWithInteraction() {
+    const double chartSize = 160.0;
+
+    return GestureDetector(
+      onTapDown: (details) => _handleTouch(details.localPosition, chartSize),
+      onPanStart: (details) => _handleTouch(details.localPosition, chartSize),
+      onPanUpdate: (details) => _handleTouch(details.localPosition, chartSize),
+      onPanEnd: (_) => setState(() => _indiceSelecionado = null),
+      onTapUp: (_) => Future.delayed(
+        const Duration(seconds: 2),
+        () { if (mounted) setState(() => _indiceSelecionado = null); },
+      ),
+      child: SizedBox(
+        height: chartSize,
+        width: chartSize,
+        child: CustomPaint(
+          painter: DonutChartPainter(
+            distribuicao: widget.distribuicao,
+            colors: _colors,
+            indiceSelecionado: _indiceSelecionado,
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _handleTouch(Offset localPosition, double chartSize) {
+    final size = Size(chartSize, chartSize);
+    final index = DonutChartPainter.hitTest(
+      localPosition,
+      size,
+      widget.distribuicao,
+    );
+
+    if (index != _indiceSelecionado) {
+      setState(() => _indiceSelecionado = index);
+    }
+  }
+
+  Widget _buildLegend() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: List.generate(widget.distribuicao.length, (index) {
+        final item = widget.distribuicao[index];
+        final color = _colors[index % _colors.length];
+        final isSelected = _indiceSelecionado == index;
+
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          child: Row(
+            children: [
+              Container(
+                width: 8,
+                height: 8,
+                decoration: BoxDecoration(
+                  color: color,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              const SizedBox(width: 4),
+              Text(
+                item.nome,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                  color: isSelected ? PortfolioStyles.textPrimary : PortfolioStyles.textSecondary,
+                ),
+              ),
+            ],
+          ),
+        );
+      }),
     );
   }
 }
