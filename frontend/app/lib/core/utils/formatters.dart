@@ -7,10 +7,12 @@ extension CurrencyFormatter on double {
 
   /// Eu formato um double para o padrão de moeda brasileiro (BRL).
   String toBRL() {
-    return NumberFormat.currency(
+    final format = NumberFormat.currency(
       locale: 'pt_BR',
       symbol: r'R$',
-    ).format(this);
+    );
+    // Removemos o espaço que o NumberFormat insere por padrão entre o símbolo e o valor
+    return format.format(this).replaceFirst(r'R$ ', r'R$');
   }
 
 }
