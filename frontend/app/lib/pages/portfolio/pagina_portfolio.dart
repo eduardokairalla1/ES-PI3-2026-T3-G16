@@ -38,7 +38,7 @@ class _PaginaPortfolioState extends State<PaginaPortfolio> {
           builder: (context, _) {
             if (_controller.isLoading) {
               return const Center(
-                child: CircularProgressIndicator(color: Colors.blue),
+                child: CircularProgressIndicator(color: Colors.black),
               );
             }
 
@@ -87,21 +87,22 @@ class _PaginaPortfolioState extends State<PaginaPortfolio> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: 1, // Portfólio selecionado
         type: BottomNavigationBarType.fixed,
-        selectedItemColor: Colors.blue,
+        backgroundColor: Colors.white,
+        selectedItemColor: Colors.black,
         unselectedItemColor: Colors.grey,
+        selectedFontSize: 12,
+        unselectedFontSize: 12,
         onTap: (index) {
           if (index == 0) context.go('/dashboard');
-          // Outras rotas ainda não implementadas conforme o plano
+          // Outras rotas ainda não implementadas
         },
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home_outlined),
-            activeIcon: Icon(Icons.home),
             label: 'Home',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.pie_chart_outline),
-            activeIcon: Icon(Icons.pie_chart),
             label: 'Portfólio',
           ),
           BottomNavigationBarItem(
@@ -110,7 +111,6 @@ class _PaginaPortfolioState extends State<PaginaPortfolio> {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person_outline),
-            activeIcon: Icon(Icons.person),
             label: 'Perfil',
           ),
         ],
