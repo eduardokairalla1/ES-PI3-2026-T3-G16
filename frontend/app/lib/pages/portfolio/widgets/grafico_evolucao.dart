@@ -1,17 +1,17 @@
 /// --- Gráfico de Evolução ---
 
 import 'package:flutter/material.dart';
+import 'package:mesclainvest/core/utils/formatters.dart';
 import 'package:mesclainvest/pages/portfolio/widgets/cartao_base.dart';
 import 'package:mesclainvest/pages/portfolio/widgets/painters/line_chart_painter.dart';
 import 'package:mesclainvest/pages/portfolio/widgets/painters/bar_chart_painter.dart';
-import 'package:mesclainvest/pages/portfolio/widgets/painters/candle_chart_painter.dart';
 import 'package:mesclainvest/pages/portfolio/widgets/portfolio_styles.dart';
 
 /// Tipos de gráfico disponíveis.
-enum TipoGrafico { linha, barra, vela }
+enum TipoGrafico { linha, barra }
 
 /// Eu represento um cartão com um gráfico que mostra a evolução do patrimônio.
-/// Permito alternar entre diferentes tipos de visualização (linha, barra, vela).
+/// Permito alternar entre visualização de linha e barra e ver valores ao tocar.
 class GraficoEvolucao extends StatefulWidget {
   final List<double> pontos;
 
@@ -26,7 +26,8 @@ class GraficoEvolucao extends StatefulWidget {
 
 class _GraficoEvolucaoState extends State<GraficoEvolucao> {
   TipoGrafico _tipoSelecionado = TipoGrafico.linha;
-  String _periodoSelecionado = '7 dias'; // Período padrão
+  String _periodoSelecionado = '7 dias';
+  int? _indiceSelecionado;
 
   @override
   Widget build(BuildContext context) {
@@ -35,8 +36,10 @@ class _GraficoEvolucaoState extends State<GraficoEvolucao> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildHeader(),
-          const SizedBox(height: 24),
-          _buildChart(),
+          const SizedBox(height: 12),
+          _buildSelectedValueDisplay(),
+          const SizedBox(height: 12),
+          _buildChartWithInteraction(),
           const SizedBox(height: 12),
           _buildTimelineLabels(),
           const SizedBox(height: 16),
@@ -66,6 +69,23 @@ class _GraficoEvolucaoState extends State<GraficoEvolucao> {
         ),
         _buildPeriodButton(),
       ],
+    );
+  }
+
+  Widget _buildSelectedValueDisplay() {
+    // Exibe o valor do ponto selecionado ou um espaço vazio
+    return SizedBox(
+      height: 20,
+      child: _indiceSelecionado != null
+          ? Text(
+              'Valor: ${widget.pontos[_indiceSelecionado!].toBRL()}',
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
+            )
+          : const SizedBox.shrink(),
     );
   }
 
@@ -102,29 +122,33 @@ class _GraficoEvolucaoState extends State<GraficoEvolucao> {
     );
   }
 
-  Widget _buildChartTypeSelector() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        _ChartTypeIcon(
-          icon: Icons.show_chart,
-          isSelected: _tipoSelecionado == TipoGrafico.linha,
-          onTap: () => setState(() => _tipoSelecionado = TipoGrafico.linha),
-        ),
-        const SizedBox(width: 8),
-        _ChartTypeIcon(
-          icon: Icons.bar_chart,
-          isSelected: _tipoSelecionado == TipoGrafico.barra,
-          onTap: () => setState(() => _tipoSelecionado = TipoGrafico.barra),
-        ),
-        const SizedBox(width: 8),
-        _ChartTypeIcon(
-          icon: Icons.candlestick_chart,
-          isSelected: _tipoSelecionado == TipoGrafico.vela,
-          onTap: () => setState(() => _tipoSelecionado = TipoGrafico.vela),
-        ),
-      ],
+  Widget _buildChartWithInteraction() {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return GestureDetector(
+          onPanUpdate: (details) => _updateSelectedIndex(details.localPosition.x, constraints.maxWidth),
+          onPanStart: (details) => _updateSelectedIndex(details.localPosition.x, constraints.maxWidth),
+          onPanEnd: (_) => setState(() => _indiceSelecionado = null),
+          onTapDown: (details) => _updateSelectedIndex(details.localPosition.x, constraints.maxWidth),
+          child: _buildChart(),
+        );
+      },
     );
+  }
+
+  void _updateSelectedIndex(double x, double totalWidth) {
+    if (widget.pontos.isEmpty) return;
+    
+    final double widthPerPoint = totalWidth / widget.pontos.length;
+    int index = (x / widthPerPoint).floor();
+    
+    if (index >= 0 && index < widget.pontos.length) {
+      if (_indiceSelecionado != index) {
+        setState(() {
+          _indiceSelecionado = index;
+        });
+      }
+    }
   }
 
   Widget _buildChart() {
@@ -133,9 +157,6 @@ class _GraficoEvolucaoState extends State<GraficoEvolucao> {
     switch (_tipoSelecionado) {
       case TipoGrafico.barra:
         painter = BarChartPainter(pontos: widget.pontos);
-        break;
-      case TipoGrafico.vela:
-        painter = CandleChartPainter(pontos: widget.pontos);
         break;
       case TipoGrafico.linha:
       default:
@@ -160,6 +181,25 @@ class _GraficoEvolucaoState extends State<GraficoEvolucao> {
         _TimeLabel('13:00'),
         _TimeLabel('15:00'),
         _TimeLabel('17:00'),
+      ],
+    );
+  }
+
+  Widget _buildChartTypeSelector() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        _ChartTypeIcon(
+          icon: Icons.show_chart,
+          isSelected: _tipoSelecionado == TipoGrafico.linha,
+          onTap: () => setState(() => _tipoSelecionado = TipoGrafico.linha),
+        ),
+        const SizedBox(width: 8),
+        _ChartTypeIcon(
+          icon: Icons.bar_chart,
+          isSelected: _tipoSelecionado == TipoGrafico.barra,
+          onTap: () => setState(() => _tipoSelecionado = TipoGrafico.barra),
+        ),
       ],
     );
   }
