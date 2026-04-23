@@ -1,6 +1,6 @@
-/// --- Portfolio data model ---
+/// --- Modelo de dados do portfólio ---
 
-/// I represent the data structure for the portfolio screen.
+/// Eu represento a estrutura de dados para a tela de portfólio.
 class PortfolioData {
 
   final String userName;
@@ -13,7 +13,7 @@ class PortfolioData {
   final List<PortfolioDistribution> distribuicao;
   final List<double> evolucaoPontos;
 
-  // constructor
+  // construtor
   PortfolioData({
     required this.userName,
     required this.patrimonioTotal,
@@ -26,7 +26,7 @@ class PortfolioData {
     required this.evolucaoPontos,
   });
 
-  /// I create a mock instance of PortfolioData for testing purposes.
+  /// Eu crio uma instância mock de PortfolioData para fins de teste.
   factory PortfolioData.mock() {
     return PortfolioData(
       userName: 'Alex Gabriel',
@@ -61,7 +61,7 @@ class PortfolioData {
   }
 }
 
-/// I represent a single transaction in the portfolio history.
+/// Eu represento uma única transação no histórico do portfólio.
 class PortfolioTransaction {
   final String titulo;
   final String subtitulo;
@@ -78,7 +78,7 @@ class PortfolioTransaction {
   });
 }
 
-/// I represent a segment in the portfolio distribution chart.
+/// Eu represento um segmento no gráfico de distribuição do portfólio.
 class PortfolioDistribution {
   final String nome;
   final double percentual;

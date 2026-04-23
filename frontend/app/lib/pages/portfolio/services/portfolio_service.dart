@@ -1,18 +1,18 @@
-/// --- Portfolio service ---
+/// --- Serviço de portfólio ---
 
 import 'package:mesclainvest/pages/portfolio/models/portfolio_data.dart';
 
-/// I provide data for the portfolio screen.
+/// Eu forneço dados para a tela de portfólio.
 class PortfolioService {
 
-  /// I fetch portfolio data, simulating a network delay.
+  /// Eu busco os dados do portfólio, simulando um atraso de rede.
   ///
-  /// :returns: Future containing PortfolioData.
+  /// :returns: Future contendo PortfolioData.
   Future<PortfolioData> getPortfolioData() async {
-    // simulate network latency
+    // simula latência de rede
     await Future.delayed(const Duration(milliseconds: 800));
 
-    // return mock data
+    // retorna dados mock
     return PortfolioData.mock();
   }
 
