@@ -55,20 +55,44 @@ class GraficoEvolucao extends StatelessWidget {
   }
 
   Widget _buildPeriodButton() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey.shade300),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: const Row(
-        children: [
-          Text(
-            'Período',
-            style: TextStyle(fontSize: 12, color: PortfolioStyles.textSecondary),
-          ),
-          Icon(Icons.arrow_drop_down, color: PortfolioStyles.textSecondary, size: 18),
-        ],
+    return PopupMenuButton<String>(
+      initialValue: 'Período',
+      onSelected: (String value) {
+        // Lógica de filtro será implementada no futuro
+      },
+      itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+        const PopupMenuItem<String>(
+          value: '7_dias',
+          child: Text('7 dias'),
+        ),
+        const PopupMenuItem<String>(
+          value: '1_mes',
+          child: Text('1 mês'),
+        ),
+        const PopupMenuItem<String>(
+          value: '6_meses',
+          child: Text('6 meses'),
+        ),
+        const PopupMenuItem<String>(
+          value: '12_meses',
+          child: Text('12 meses'),
+        ),
+      ],
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.grey.shade300),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: const Row(
+          children: [
+            Text(
+              'Período',
+              style: TextStyle(fontSize: 12, color: PortfolioStyles.textSecondary),
+            ),
+            Icon(Icons.arrow_drop_down, color: PortfolioStyles.textSecondary, size: 18),
+          ],
+        ),
       ),
     );
   }
