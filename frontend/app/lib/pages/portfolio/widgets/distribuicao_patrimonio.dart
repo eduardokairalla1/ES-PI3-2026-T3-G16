@@ -18,92 +18,69 @@ class DistribuicaoPatrimonio extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final List<Color> colors = [
-      Colors.blue,
-      Colors.orange,
-      Colors.green,
-      Colors.purple,
+      const Color(0xFF4A4A4A),  // FinnoLab - cinza escuro
+      const Color(0xFFD4A574),  // DataBrave - bege/marrom claro
+      const Color(0xFF8FBC8F),  // GreenLoop - verde suave
     ];
 
     return CartaoBase(
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Distribuição do Patrimônio',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: PortfolioStyles.textPrimary,
+          // Título
+          const Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              'Distribuição do Patrimônio',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: PortfolioStyles.textPrimary,
+              ),
             ),
           ),
           const SizedBox(height: 24),
+          // Gráfico de rosca centralizado
+          SizedBox(
+            height: 140,
+            width: 140,
+            child: CustomPaint(
+              painter: DonutChartPainter(
+                distribuicao: distribuicao,
+                colors: colors,
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+          // Legenda em linha horizontal
           Row(
-            children: [
-              _buildChart(colors),
-              const SizedBox(width: 24),
-              Expanded(child: _buildLegend(colors)),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildChart(List<Color> colors) {
-    return SizedBox(
-      height: 120,
-      width: 120,
-      child: CustomPaint(
-        painter: DonutChartPainter(
-          distribuicao: distribuicao,
-          colors: colors,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildLegend(List<Color> colors) {
-    return Column(
-      children: List.generate(distribuicao.length, (index) {
-        final item = distribuicao[index];
-        final color = colors[index % colors.length];
-        return _LegendItem(item: item, color: color);
-      }),
-    );
-  }
-}
-
-class _LegendItem extends StatelessWidget {
-  final PortfolioDistribution item;
-  final Color color;
-
-  const _LegendItem({required this.item, required this.color});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8.0),
-      child: Row(
-        children: [
-          Container(
-            width: 12,
-            height: 12,
-            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              item.nome,
-              style: const TextStyle(fontSize: 13, color: PortfolioStyles.textPrimary),
-            ),
-          ),
-          Text(
-            '${(item.percentual * 100).toInt()}%',
-            style: const TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.bold,
-              color: PortfolioStyles.textSecondary,
-            ),
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(distribuicao.length, (index) {
+              final item = distribuicao[index];
+              final color = colors[index % colors.length];
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        color: color,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      item.nome,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: PortfolioStyles.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }),
           ),
         ],
       ),
