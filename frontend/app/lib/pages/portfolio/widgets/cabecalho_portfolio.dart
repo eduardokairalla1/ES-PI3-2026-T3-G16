@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 
-/// I represent the top header of the portfolio screen.
+/// Eu represento o cabeçalho superior da tela de portfólio.
 class CabecalhoPortfolio extends StatelessWidget {
   final String userName;
 

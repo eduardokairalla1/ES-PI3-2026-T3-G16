@@ -4,7 +4,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:mesclainvest/pages/portfolio/models/portfolio_data.dart';
 
-/// I represent a card showing asset distribution in a donut chart.
+/// Eu represento um cartão mostrando a distribuição de ativos em um gráfico de rosca.
 class DistribuicaoPatrimonio extends StatelessWidget {
   final List<PortfolioDistribution> distribuicao;
 
@@ -15,7 +15,7 @@ class DistribuicaoPatrimonio extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Colors for the chart
+    // Cores para o gráfico
     final List<Color> colors = [
       Colors.blue,
       Colors.orange,
@@ -112,7 +112,7 @@ class DistribuicaoPatrimonio extends StatelessWidget {
   }
 }
 
-/// I draw a donut chart using arcs.
+/// Eu desenho um gráfico de rosca usando arcos.
 class _DonutChartPainter extends CustomPainter {
   final List<PortfolioDistribution> distribuicao;
   final List<Color> colors;
@@ -144,7 +144,7 @@ class _DonutChartPainter extends CustomPainter {
         ..strokeWidth = thickness
         ..strokeCap = StrokeCap.round;
 
-      // Draw arc slightly smaller to create gap if needed, or just full arc
+      // Desenha o arco levemente menor para criar um espaço se necessário, ou apenas o arco completo
       canvas.drawArc(rect, startAngle + 0.05, sweepAngle - 0.1, false, paint);
       startAngle += sweepAngle;
     }

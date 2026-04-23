@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 
-/// I represent a card with a line chart showing portfolio evolution.
+/// Eu represento um cartão com um gráfico de linha mostrando a evolução do portfólio.
 class GraficoEvolucao extends StatelessWidget {
   final List<double> pontos;
 
@@ -84,7 +84,7 @@ class GraficoEvolucao extends StatelessWidget {
   }
 }
 
-/// I draw a simple line chart based on provided points.
+/// Eu desenho um gráfico de linha simples baseado nos pontos fornecidos.
 class _LineChartPainter extends CustomPainter {
   final List<double> pontos;
 
@@ -117,7 +117,7 @@ class _LineChartPainter extends CustomPainter {
 
     for (int i = 0; i < pontos.length; i++) {
       final double x = i * stepX;
-      // invert Y as 0 is top
+      // inverte Y pois o 0 é no topo
       final double y = size.height - ((pontos[i] - minVal) / range * size.height);
 
       if (i == 0) {

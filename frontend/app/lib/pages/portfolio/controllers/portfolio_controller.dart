@@ -1,10 +1,10 @@
-/// --- Portfolio controller ---
+/// --- Controller do portfólio ---
 
 import 'package:flutter/material.dart';
 import 'package:mesclainvest/pages/portfolio/models/portfolio_data.dart';
 import 'package:mesclainvest/pages/portfolio/services/portfolio_service.dart';
 
-/// I manage the state of the portfolio screen.
+/// Eu gerencio o estado da tela de portfólio.
 class PortfolioController extends ChangeNotifier {
 
   final PortfolioService _service = PortfolioService();
@@ -19,13 +19,13 @@ class PortfolioController extends ChangeNotifier {
   bool get isObscured => _isObscured;
 
 
-  /// I initialize the controller and load data.
+  /// Eu inicializo o controller e carrego os dados.
   PortfolioController() {
     loadPortfolio();
   }
 
 
-  /// I fetch the portfolio data from the service.
+  /// Eu busco os dados do portfólio a partir do serviço.
   Future<void> loadPortfolio() async {
     _isLoading = true;
     notifyListeners();
@@ -33,8 +33,8 @@ class PortfolioController extends ChangeNotifier {
     try {
       _data = await _service.getPortfolioData();
     } catch (e) {
-      // handle error if needed
-      debugPrint('Error loading portfolio: $e');
+      // trata erro se necessário
+      debugPrint('Erro ao carregar portfólio: $e');
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -42,7 +42,7 @@ class PortfolioController extends ChangeNotifier {
   }
 
 
-  /// I toggle the visibility of sensitive data (balance).
+  /// Eu alterno a visibilidade de dados sensíveis (saldo).
   void toggleVisibility() {
     _isObscured = !_isObscured;
     notifyListeners();

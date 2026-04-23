@@ -1,4 +1,4 @@
-/// --- Widgets Barrel File ---
+/// --- Arquivo Barrel de Widgets ---
 
 export 'cabecalho_portfolio.dart';
 export 'cartao_patrimonio_portfolio.dart';

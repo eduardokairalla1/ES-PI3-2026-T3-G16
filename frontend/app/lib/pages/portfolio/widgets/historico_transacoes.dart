@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:mesclainvest/pages/portfolio/models/portfolio_data.dart';
 
-/// I represent a card showing a list of recent transactions.
+/// Eu represento um cartão mostrando uma lista de transações recentes.
 class HistoricoTransacoes extends StatelessWidget {
   final List<PortfolioTransaction> transacoes;
 
@@ -71,7 +71,7 @@ class HistoricoTransacoes extends StatelessWidget {
   }
 }
 
-/// I represent a single row in the transaction history.
+/// Eu represento uma única linha no histórico de transações.
 class _ItemTransacao extends StatelessWidget {
   final PortfolioTransaction transacao;
 

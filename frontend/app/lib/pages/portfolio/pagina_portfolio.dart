@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:mesclainvest/pages/portfolio/controllers/portfolio_controller.dart';
 import 'package:mesclainvest/pages/portfolio/widgets/widgets.dart';
 
-/// I represent the main Portfolio screen.
+/// Eu represento a tela principal de Portfólio.
 class PaginaPortfolio extends StatefulWidget {
   const PaginaPortfolio({super.key});
 
@@ -91,7 +91,7 @@ class _PaginaPortfolioState extends State<PaginaPortfolio> {
         unselectedItemColor: Colors.grey,
         onTap: (index) {
           if (index == 0) context.go('/dashboard');
-          // Outras rotas ainda não implementadas conforme plano
+          // Outras rotas ainda não implementadas conforme o plano
         },
         items: const [
           BottomNavigationBarItem(

@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-/// I represent the main balance card in the portfolio screen.
+/// Eu represento o cartão de saldo principal na tela de portfólio.
 class CartaoPatrimonioPortfolio extends StatelessWidget {
   final double patrimonioTotal;
   final double lucroTotal;
