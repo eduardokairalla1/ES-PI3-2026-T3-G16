@@ -7,6 +7,7 @@ import 'package:mesclainvest/pages/auth/login.dart';
 import 'package:mesclainvest/pages/auth/register.dart';
 import 'package:mesclainvest/pages/dashboard/pagina_dashboard.dart';
 import 'package:mesclainvest/pages/home/home.dart';
+import 'package:mesclainvest/pages/portfolio/pagina_portfolio.dart';
 
 
 /// --- GLOBAIS ---
@@ -19,11 +20,12 @@ final router = GoRouter(
     // verifica se o usuário está logado
     final isLoggedIn = FirebaseAuth.instance.currentUser != null;
 
-    // verifica se o usuário está tentando acessar o dashboard
-    final isDashboard = state.matchedLocation == '/dashboard';
+    // verifica se o usuário está tentando acessar áreas restritas
+    final isRestricted = state.matchedLocation == '/dashboard' || 
+                         state.matchedLocation == '/portfolio';
 
-    // usuário não está logado e tentando acessar o dashboard: redireciona para login
-    if (!isLoggedIn && isDashboard) return '/login';
+    // usuário não está logado e tentando acessar área restrita: redireciona para login
+    if (!isLoggedIn && isRestricted) return '/login';
 
     // usuário está logado e tentando acessar login ou registro: redireciona para
     // o dashboard
@@ -46,6 +48,10 @@ final router = GoRouter(
     GoRoute(
       path: '/dashboard',
       builder: (context, state) => const PaginaDashboard(),
+    ),
+    GoRoute(
+      path: '/portfolio',
+      builder: (context, state) => const PaginaPortfolio(),
     ),
   ],
 );
