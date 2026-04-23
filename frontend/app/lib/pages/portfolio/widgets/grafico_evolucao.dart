@@ -126,10 +126,10 @@ class _GraficoEvolucaoState extends State<GraficoEvolucao> {
     return LayoutBuilder(
       builder: (context, constraints) {
         return GestureDetector(
-          onPanUpdate: (details) => _updateSelectedIndex(details.localPosition.x, constraints.maxWidth),
-          onPanStart: (details) => _updateSelectedIndex(details.localPosition.x, constraints.maxWidth),
+          onPanUpdate: (details) => _updateSelectedIndex(details.localPosition.dx, constraints.maxWidth),
+          onPanStart: (details) => _updateSelectedIndex(details.localPosition.dx, constraints.maxWidth),
           onPanEnd: (_) => setState(() => _indiceSelecionado = null),
-          onTapDown: (details) => _updateSelectedIndex(details.localPosition.x, constraints.maxWidth),
+          onTapDown: (details) => _updateSelectedIndex(details.localPosition.dx, constraints.maxWidth),
           child: _buildChart(),
         );
       },
