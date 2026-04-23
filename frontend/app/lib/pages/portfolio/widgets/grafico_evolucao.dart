@@ -34,13 +34,20 @@ class GraficoEvolucao extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        const Text(
-          'Evolução do Patrimônio',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: PortfolioStyles.textPrimary,
-          ),
+        // Ícone de gráfico + título
+        const Row(
+          children: [
+            Icon(Icons.show_chart, size: 20, color: PortfolioStyles.textPrimary),
+            SizedBox(width: 8),
+            Text(
+              'Evolução do Patrimônio',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: PortfolioStyles.textPrimary,
+              ),
+            ),
+          ],
         ),
         _buildPeriodButton(),
       ],
@@ -71,7 +78,7 @@ class GraficoEvolucao extends StatelessWidget {
       height: 120,
       width: double.infinity,
       child: CustomPaint(
-        painter: LineChartPainter(pontos: pontos, color: PortfolioStyles.primaryAccent),
+        painter: LineChartPainter(pontos: pontos, color: Colors.black87),
       ),
     );
   }
