@@ -84,7 +84,7 @@ class _DistribuicaoPatrimonioState extends State<DistribuicaoPatrimonio> {
 
   void _handleTouch(Offset localPosition, double chartSize) {
     final size = Size(chartSize, chartSize);
-    final index = DonutChartPainter.hitTest(
+    final index = DonutChartPainter.getHitIndex(
       localPosition,
       size,
       widget.distribuicao,

@@ -95,7 +95,7 @@ class DonutChartPainter extends CustomPainter {
 
   /// Calcula qual segmento contém o ponto (x, y).
   /// Retorna o índice do segmento ou null se nenhum foi tocado.
-  static int? hitTest(
+  static int? getHitIndex(
     Offset position,
     Size size,
     List<PortfolioDistribution> distribuicao,
