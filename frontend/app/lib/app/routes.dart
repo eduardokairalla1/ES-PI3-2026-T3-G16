@@ -14,8 +14,7 @@ import 'package:mesclainvest/pages/portfolio/pagina_portfolio.dart';
 
 // inicializa o roteador do app
 final router = GoRouter(
-  initialLocation: '/portfolio',
-  /*
+  initialLocation: '/',
   redirect: (context, state) {
 
     // verifica se o usuário está logado
@@ -33,7 +32,6 @@ final router = GoRouter(
     return null;
 
   },
-  */
   routes: [
     GoRoute(
       path: '/',
