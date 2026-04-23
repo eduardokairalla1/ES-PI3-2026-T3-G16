@@ -1,7 +1,9 @@
 /// --- Cartão de Patrimônio do Portfólio ---
 
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:mesclainvest/core/utils/formatters.dart';
+import 'package:mesclainvest/pages/portfolio/widgets/cartao_base.dart';
+import 'package:mesclainvest/pages/portfolio/widgets/portfolio_styles.dart';
 
 /// Eu represento o cartão de saldo principal na tela de portfólio.
 class CartaoPatrimonioPortfolio extends StatelessWidget {
@@ -26,91 +28,87 @@ class CartaoPatrimonioPortfolio extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final currencyFormat = NumberFormat.currency(locale: 'pt_BR', symbol: 'R$');
-
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20.0),
-      padding: const EdgeInsets.all(20.0),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade200),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
+    return CartaoBase(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'MEU PATRIMÔNIO',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.grey,
-                  letterSpacing: 0.5,
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.green.shade50,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  '+ ${currencyFormat.format(lucroTotal)}',
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.green,
-                  ),
-                ),
-              ),
-            ],
-          ),
+          _buildHeader(),
           const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  isObscured ? '••••••••' : currencyFormat.format(patrimonioTotal),
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              IconButton(
-                onPressed: onToggleVisibility,
-                icon: Icon(
-                  isObscured ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                  color: Colors.grey,
-                ),
-              ),
-            ],
-          ),
+          _buildBalanceRow(),
           const SizedBox(height: 20),
           const Divider(height: 1),
           const SizedBox(height: 20),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _buildStatItem('Investido', currencyFormat.format(valorInvestido)),
-              _buildStatItem('Lucro p/Token', currencyFormat.format(lucroPorToken)),
-              _buildStatItem('Posições', posicoesAtivas.toString()),
-            ],
-          ),
+          _buildStatsRow(),
         ],
       ),
+    );
+  }
+
+  Widget _buildHeader() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        const Text(
+          'MEU PATRIMÔNIO',
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: PortfolioStyles.textSecondary,
+            letterSpacing: 0.5,
+          ),
+        ),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(
+            color: PortfolioStyles.positiveGrowth.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Text(
+            '+ ${lucroTotal.toBRL()}',
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              color: PortfolioStyles.positiveGrowth,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBalanceRow() {
+    return Row(
+      children: [
+        Expanded(
+          child: Text(
+            isObscured ? '••••••••' : patrimonioTotal.toBRL(),
+            style: const TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: PortfolioStyles.textPrimary,
+            ),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        IconButton(
+          onPressed: onToggleVisibility,
+          icon: Icon(
+            isObscured ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+            color: PortfolioStyles.textSecondary,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatsRow() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        _buildStatItem('Investido', valorInvestido.toBRL()),
+        _buildStatItem('Lucro p/Token', lucroPorToken.toBRL()),
+        _buildStatItem('Posições', posicoesAtivas.toString()),
+      ],
     );
   }
 
@@ -122,7 +120,7 @@ class CartaoPatrimonioPortfolio extends StatelessWidget {
           label,
           style: const TextStyle(
             fontSize: 10,
-            color: Colors.grey,
+            color: PortfolioStyles.textSecondary,
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -132,7 +130,7 @@ class CartaoPatrimonioPortfolio extends StatelessWidget {
           style: const TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.bold,
-            color: Colors.black87,
+            color: PortfolioStyles.textPrimary,
           ),
         ),
       ],
