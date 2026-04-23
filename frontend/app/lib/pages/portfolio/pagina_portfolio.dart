@@ -13,19 +13,79 @@ class PaginaPortfolio extends StatefulWidget {
   State<PaginaPortfolio> createState() => _PaginaPortfolioState();
 }
 
-class _PaginaPortfolioState extends State<PaginaPortfolio> {
+class _PaginaPortfolioState extends State<PaginaPortfolio>
+    with TickerProviderStateMixin {
   late final PortfolioController _controller;
+  late final AnimationController _entranceController;
+
+  // Animações escalonadas para cada card
+  final List<Animation<double>> _fadeAnimations = [];
+  final List<Animation<Offset>> _slideAnimations = [];
+
+  static const int _totalCards = 5; // cabeçalho, patrimônio, gráfico, distribuição, histórico
 
   @override
   void initState() {
     super.initState();
     _controller = PortfolioController();
+
+    // Controller da animação de entrada (1.2s total)
+    _entranceController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    );
+
+    // Cria animações escalonadas para cada card
+    for (int i = 0; i < _totalCards; i++) {
+      final start = i * 0.15; // 150ms de atraso entre cada card
+      final end = start + 0.4; // cada animação dura 40% do total
+
+      _fadeAnimations.add(
+        Tween<double>(begin: 0.0, end: 1.0).animate(
+          CurvedAnimation(
+            parent: _entranceController,
+            curve: Interval(start, end.clamp(0.0, 1.0), curve: Curves.easeOut),
+          ),
+        ),
+      );
+
+      _slideAnimations.add(
+        Tween<Offset>(begin: const Offset(0, 0.15), end: Offset.zero).animate(
+          CurvedAnimation(
+            parent: _entranceController,
+            curve: Interval(start, end.clamp(0.0, 1.0), curve: Curves.easeOutCubic),
+          ),
+        ),
+      );
+    }
+
+    // Inicia a animação quando os dados carregarem
+    _controller.addListener(_onControllerUpdate);
+  }
+
+  void _onControllerUpdate() {
+    if (!_controller.isLoading && _controller.data != null) {
+      _entranceController.forward();
+    }
   }
 
   @override
   void dispose() {
+    _controller.removeListener(_onControllerUpdate);
+    _entranceController.dispose();
     _controller.dispose();
     super.dispose();
+  }
+
+  /// Envolve um widget com animação de entrada escalonada.
+  Widget _animatedCard(int index, Widget child) {
+    return FadeTransition(
+      opacity: _fadeAnimations[index],
+      child: SlideTransition(
+        position: _slideAnimations[index],
+        child: child,
+      ),
+    );
   }
 
   @override
@@ -64,8 +124,8 @@ class _PaginaPortfolioState extends State<PaginaPortfolio> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  CabecalhoPortfolio(userName: data.userName),
-                  CartaoPatrimonioPortfolio(
+                  _animatedCard(0, CabecalhoPortfolio(userName: data.userName)),
+                  _animatedCard(1, CartaoPatrimonioPortfolio(
                     patrimonioTotal: data.patrimonioTotal,
                     lucroTotal: data.lucroTotal,
                     valorInvestido: data.valorInvestido,
@@ -73,10 +133,10 @@ class _PaginaPortfolioState extends State<PaginaPortfolio> {
                     posicoesAtivas: data.posicoesAtivas,
                     isObscured: _controller.isObscured,
                     onToggleVisibility: _controller.toggleVisibility,
-                  ),
-                  GraficoEvolucao(pontos: data.evolucaoPontos),
-                  DistribuicaoPatrimonio(distribuicao: data.distribuicao),
-                  HistoricoTransacoes(transacoes: data.transacoes),
+                  )),
+                  _animatedCard(2, GraficoEvolucao(pontos: data.evolucaoPontos)),
+                  _animatedCard(3, DistribuicaoPatrimonio(distribuicao: data.distribuicao)),
+                  _animatedCard(4, HistoricoTransacoes(transacoes: data.transacoes)),
                   const SizedBox(height: 32),
                 ],
               ),
@@ -85,7 +145,7 @@ class _PaginaPortfolioState extends State<PaginaPortfolio> {
         ),
       ),
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 1, // Portfólio selecionado
+        currentIndex: 1,
         type: BottomNavigationBarType.fixed,
         backgroundColor: Colors.white,
         selectedItemColor: Colors.black,
@@ -94,7 +154,6 @@ class _PaginaPortfolioState extends State<PaginaPortfolio> {
         unselectedFontSize: 12,
         onTap: (index) {
           if (index == 0) context.go('/dashboard');
-          // Outras rotas ainda não implementadas
         },
         items: const [
           BottomNavigationBarItem(

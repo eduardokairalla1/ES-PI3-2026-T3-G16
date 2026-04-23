@@ -57,17 +57,21 @@ class CartaoPatrimonioPortfolio extends StatelessWidget {
             letterSpacing: 0.5,
           ),
         ),
-        // Ícone de crescimento + valor do lucro em verde
+        // Ícone de crescimento + valor do lucro em verde com crossfade
         Row(
           children: [
             const Icon(Icons.trending_up, color: PortfolioStyles.positiveGrowth, size: 16),
             const SizedBox(width: 4),
-            Text(
-              isObscured ? r'+R$ ••••' : '+${lucroTotal.toBRL()}',
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-                color: PortfolioStyles.positiveGrowth,
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              child: Text(
+                isObscured ? r'+R$ ••••' : '+${lucroTotal.toBRL()}',
+                key: ValueKey<bool>(isObscured),
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: PortfolioStyles.positiveGrowth,
+                ),
               ),
             ),
           ],
@@ -80,21 +84,45 @@ class CartaoPatrimonioPortfolio extends StatelessWidget {
     return Row(
       children: [
         Expanded(
-          child: Text(
-            isObscured ? '••••••••' : patrimonioTotal.toBRL(),
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: PortfolioStyles.textPrimary,
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            transitionBuilder: (child, animation) {
+              return FadeTransition(
+                opacity: animation,
+                child: SlideTransition(
+                  position: Tween<Offset>(
+                    begin: const Offset(0, 0.1),
+                    end: Offset.zero,
+                  ).animate(animation),
+                  child: child,
+                ),
+              );
+            },
+            child: Text(
+              isObscured ? '••••••••' : patrimonioTotal.toBRL(),
+              key: ValueKey<bool>(isObscured),
+              style: const TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: PortfolioStyles.textPrimary,
+              ),
+              overflow: TextOverflow.ellipsis,
             ),
-            overflow: TextOverflow.ellipsis,
           ),
         ),
-        IconButton(
-          onPressed: onToggleVisibility,
-          icon: Icon(
-            isObscured ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-            color: PortfolioStyles.textSecondary,
+        // Ícone de visibilidade com rotação suave
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 200),
+          transitionBuilder: (child, animation) {
+            return ScaleTransition(scale: animation, child: child);
+          },
+          child: IconButton(
+            key: ValueKey<bool>(isObscured),
+            onPressed: onToggleVisibility,
+            icon: Icon(
+              isObscured ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+              color: PortfolioStyles.textSecondary,
+            ),
           ),
         ),
       ],
@@ -102,17 +130,21 @@ class CartaoPatrimonioPortfolio extends StatelessWidget {
   }
 
   Widget _buildStatsRow() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        _buildStatItem('Investido', isObscured ? '••••' : valorInvestido.toBRL()),
-        _buildStatItem(
-          'Lucro p/Token',
-          isObscured ? '••••' : lucroPorToken.toBRL(),
-          valueColor: PortfolioStyles.positiveGrowth,
-        ),
-        _buildStatItem('Posições', isObscured ? '••' : posicoesAtivas.toString()),
-      ],
+    return AnimatedOpacity(
+      duration: const Duration(milliseconds: 300),
+      opacity: isObscured ? 0.4 : 1.0,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          _buildStatItem('Investido', isObscured ? '••••' : valorInvestido.toBRL()),
+          _buildStatItem(
+            'Lucro p/Token',
+            isObscured ? '••••' : lucroPorToken.toBRL(),
+            valueColor: PortfolioStyles.positiveGrowth,
+          ),
+          _buildStatItem('Posições', isObscured ? '••' : posicoesAtivas.toString()),
+        ],
+      ),
     );
   }
 
@@ -129,12 +161,16 @@ class CartaoPatrimonioPortfolio extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 4),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.bold,
-            color: valueColor ?? PortfolioStyles.textPrimary,
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 300),
+          child: Text(
+            value,
+            key: ValueKey<String>(value),
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+              color: valueColor ?? PortfolioStyles.textPrimary,
+            ),
           ),
         ),
       ],
