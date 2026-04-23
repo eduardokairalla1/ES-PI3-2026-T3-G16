@@ -1,6 +1,9 @@
 /// --- Gráfico de Evolução ---
 
 import 'package:flutter/material.dart';
+import 'package:mesclainvest/pages/portfolio/widgets/cartao_base.dart';
+import 'package:mesclainvest/pages/portfolio/widgets/painters/line_chart_painter.dart';
+import 'package:mesclainvest/pages/portfolio/widgets/portfolio_styles.dart';
 
 /// Eu represento um cartão com um gráfico de linha mostrando a evolução do portfólio.
 class GraficoEvolucao extends StatelessWidget {
@@ -13,132 +16,88 @@ class GraficoEvolucao extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
-      padding: const EdgeInsets.all(20.0),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade200),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
+    return CartaoBase(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'Evolução do Patrimônio',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey.shade300),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Row(
-                  children: [
-                    Text(
-                      'Período',
-                      style: TextStyle(fontSize: 12, color: Colors.grey),
-                    ),
-                    Icon(Icons.arrow_drop_down, color: Colors.grey, size: 18),
-                  ],
-                ),
-              ),
-            ],
-          ),
+          _buildHeader(),
           const SizedBox(height: 24),
-          SizedBox(
-            height: 120,
-            width: double.infinity,
-            child: CustomPaint(
-              painter: _LineChartPainter(pontos: pontos),
-            ),
-          ),
+          _buildChart(),
           const SizedBox(height: 12),
-          const Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('11:00', style: TextStyle(fontSize: 10, color: Colors.grey)),
-              Text('13:00', style: TextStyle(fontSize: 10, color: Colors.grey)),
-              Text('15:00', style: TextStyle(fontSize: 10, color: Colors.grey)),
-              Text('17:00', style: TextStyle(fontSize: 10, color: Colors.grey)),
-            ],
-          ),
+          _buildTimelineLabels(),
         ],
       ),
     );
   }
-}
 
-/// Eu desenho um gráfico de linha simples baseado nos pontos fornecidos.
-class _LineChartPainter extends CustomPainter {
-  final List<double> pontos;
-
-  _LineChartPainter({required this.pontos});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    if (pontos.isEmpty) return;
-
-    final paint = Paint()
-      ..color = Colors.blue
-      ..strokeWidth = 3
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round;
-
-    final fillPaint = Paint()
-      ..shader = LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: [Colors.blue.withOpacity(0.2), Colors.blue.withOpacity(0.0)],
-      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
-
-    final path = Path();
-    final fillPath = Path();
-
-    final double stepX = size.width / (pontos.length - 1);
-    final double maxVal = pontos.reduce((a, b) => a > b ? a : b);
-    final double minVal = pontos.reduce((a, b) => a < b ? a : b);
-    final double range = maxVal - minVal == 0 ? 1 : maxVal - minVal;
-
-    for (int i = 0; i < pontos.length; i++) {
-      final double x = i * stepX;
-      // inverte Y pois o 0 é no topo
-      final double y = size.height - ((pontos[i] - minVal) / range * size.height);
-
-      if (i == 0) {
-        path.moveTo(x, y);
-        fillPath.moveTo(x, size.height);
-        fillPath.lineTo(x, y);
-      } else {
-        path.lineTo(x, y);
-        fillPath.lineTo(x, y);
-      }
-
-      if (i == pontos.length - 1) {
-        fillPath.lineTo(x, size.height);
-        fillPath.close();
-      }
-    }
-
-    canvas.drawPath(fillPath, fillPaint);
-    canvas.drawPath(path, paint);
+  Widget _buildHeader() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        const Text(
+          'Evolução do Patrimônio',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: PortfolioStyles.textPrimary,
+          ),
+        ),
+        _buildPeriodButton(),
+      ],
+    );
   }
 
+  Widget _buildPeriodButton() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey.shade300),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: const Row(
+        children: [
+          Text(
+            'Período',
+            style: TextStyle(fontSize: 12, color: PortfolioStyles.textSecondary),
+          ),
+          Icon(Icons.arrow_drop_down, color: PortfolioStyles.textSecondary, size: 18),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildChart() {
+    return SizedBox(
+      height: 120,
+      width: double.infinity,
+      child: CustomPaint(
+        painter: LineChartPainter(pontos: pontos, color: PortfolioStyles.primaryAccent),
+      ),
+    );
+  }
+
+  Widget _buildTimelineLabels() {
+    return const Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        _TimeLabel('11:00'),
+        _TimeLabel('13:00'),
+        _TimeLabel('15:00'),
+        _TimeLabel('17:00'),
+      ],
+    );
+  }
+}
+
+class _TimeLabel extends StatelessWidget {
+  final String label;
+  const _TimeLabel(this.label);
+
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+  Widget build(BuildContext context) {
+    return Text(
+      label,
+      style: const TextStyle(fontSize: 10, color: PortfolioStyles.textSecondary),
+    );
+  }
 }
