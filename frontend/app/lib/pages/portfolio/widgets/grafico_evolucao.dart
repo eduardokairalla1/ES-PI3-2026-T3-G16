@@ -21,7 +21,9 @@ class GraficoEvolucao extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildHeader(),
-          const SizedBox(height: 24),
+          const SizedBox(height: 12),
+          _buildChartTypeSelector(),
+          const SizedBox(height: 12),
           _buildChart(),
           const SizedBox(height: 12),
           _buildTimelineLabels(),
@@ -97,6 +99,18 @@ class GraficoEvolucao extends StatelessWidget {
     );
   }
 
+  Widget _buildChartTypeSelector() {
+    return Row(
+      children: [
+        _ChartTypeIcon(icon: Icons.show_chart, isSelected: true, label: 'Linha'),
+        const SizedBox(width: 8),
+        _ChartTypeIcon(icon: Icons.bar_chart, isSelected: false, label: 'Barra'),
+        const SizedBox(width: 8),
+        _ChartTypeIcon(icon: Icons.candlestick_chart, isSelected: false, label: 'Vela'),
+      ],
+    );
+  }
+
   Widget _buildChart() {
     return SizedBox(
       height: 120,
@@ -129,6 +143,37 @@ class _TimeLabel extends StatelessWidget {
     return Text(
       label,
       style: const TextStyle(fontSize: 10, color: PortfolioStyles.textSecondary),
+    );
+  }
+}
+
+class _ChartTypeIcon extends StatelessWidget {
+  final IconData icon;
+  final bool isSelected;
+  final String label;
+
+  const _ChartTypeIcon({
+    required this.icon,
+    required this.isSelected,
+    required this.label,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(6),
+      decoration: BoxDecoration(
+        color: isSelected ? Colors.black : Colors.transparent,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: isSelected ? Colors.black : Colors.grey.shade300,
+        ),
+      ),
+      child: Icon(
+        icon,
+        size: 18,
+        color: isSelected ? Colors.white : Colors.grey,
+      ),
     );
   }
 }
