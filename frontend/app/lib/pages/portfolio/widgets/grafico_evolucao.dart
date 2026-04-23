@@ -1,7 +1,6 @@
 /// --- Gráfico de Evolução ---
 
 import 'package:flutter/material.dart';
-import 'package:mesclainvest/core/utils/formatters.dart';
 import 'package:mesclainvest/pages/portfolio/widgets/cartao_base.dart';
 import 'package:mesclainvest/pages/portfolio/widgets/painters/line_chart_painter.dart';
 import 'package:mesclainvest/pages/portfolio/widgets/painters/bar_chart_painter.dart';
@@ -36,9 +35,7 @@ class _GraficoEvolucaoState extends State<GraficoEvolucao> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildHeader(),
-          const SizedBox(height: 12),
-          _buildSelectedValueDisplay(),
-          const SizedBox(height: 12),
+          const SizedBox(height: 24),
           _buildChartWithInteraction(),
           const SizedBox(height: 12),
           _buildTimelineLabels(),
@@ -69,23 +66,6 @@ class _GraficoEvolucaoState extends State<GraficoEvolucao> {
         ),
         _buildPeriodButton(),
       ],
-    );
-  }
-
-  Widget _buildSelectedValueDisplay() {
-    // Exibe o valor do ponto selecionado ou um espaço vazio
-    return SizedBox(
-      height: 20,
-      child: _indiceSelecionado != null
-          ? Text(
-              'Valor: ${widget.pontos[_indiceSelecionado!].toBRL()}',
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ),
-            )
-          : const SizedBox.shrink(),
     );
   }
 
@@ -156,16 +136,23 @@ class _GraficoEvolucaoState extends State<GraficoEvolucao> {
 
     switch (_tipoSelecionado) {
       case TipoGrafico.barra:
-        painter = BarChartPainter(pontos: widget.pontos);
+        painter = BarChartPainter(
+          pontos: widget.pontos,
+          indiceSelecionado: _indiceSelecionado,
+        );
         break;
       case TipoGrafico.linha:
       default:
-        painter = LineChartPainter(pontos: widget.pontos, color: Colors.black87);
+        painter = LineChartPainter(
+          pontos: widget.pontos,
+          color: Colors.black87,
+          indiceSelecionado: _indiceSelecionado,
+        );
         break;
     }
 
     return SizedBox(
-      height: 120,
+      height: 150,
       width: double.infinity,
       child: CustomPaint(
         painter: painter,
