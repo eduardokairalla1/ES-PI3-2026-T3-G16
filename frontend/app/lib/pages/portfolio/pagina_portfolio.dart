@@ -31,7 +31,7 @@ class _PaginaPortfolioState extends State<PaginaPortfolio> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: PortfolioStyles.backgroundColor,
       body: SafeArea(
         child: AnimatedBuilder(
           animation: _controller,
