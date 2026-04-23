@@ -9,7 +9,7 @@ extension CurrencyFormatter on double {
   String toBRL() {
     return NumberFormat.currency(
       locale: 'pt_BR',
-      symbol: 'R$',
+      symbol: r'R$',
     ).format(this);
   }
 

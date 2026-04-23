@@ -37,7 +37,7 @@ class GraficoEvolucao extends StatelessWidget {
         // Ícone de gráfico + título
         const Row(
           children: [
-            Icon(Icons.show_chart, size: 20, color: PortfolioStyles.textPrimary),
+            Icon(Icons.calendar_today_outlined, size: 20, color: PortfolioStyles.textPrimary),
             SizedBox(width: 8),
             Text(
               'Evolução do Patrimônio',
