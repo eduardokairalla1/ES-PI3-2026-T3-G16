@@ -68,7 +68,7 @@ class _ItemTransacao extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
       ),
       child: Icon(
-        transacao.isCompra ? Icons.arrow_outward : Icons.arrow_downward,
+        transacao.isCompra ? Icons.arrow_outward : Icons.south_west,
         color: PortfolioStyles.textPrimary,
         size: 20,
       ),

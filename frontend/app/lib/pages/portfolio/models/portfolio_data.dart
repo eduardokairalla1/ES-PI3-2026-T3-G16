@@ -29,7 +29,7 @@ class PortfolioData {
   /// Eu crio uma instância mock de PortfolioData para fins de teste.
   factory PortfolioData.mock() {
     return PortfolioData(
-      userName: 'Renata',
+      userName: 'goretzka',
       patrimonioTotal: 999999999.99,
       lucroTotal: 9999.99,
       valorInvestido: 9999.99,
