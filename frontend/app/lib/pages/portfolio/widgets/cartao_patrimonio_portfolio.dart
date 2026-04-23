@@ -63,7 +63,7 @@ class CartaoPatrimonioPortfolio extends StatelessWidget {
             const Icon(Icons.trending_up, color: PortfolioStyles.positiveGrowth, size: 16),
             const SizedBox(width: 4),
             Text(
-              '+${lucroTotal.toBRL()}',
+              isObscured ? '+R$ ••••' : '+${lucroTotal.toBRL()}',
               style: const TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
