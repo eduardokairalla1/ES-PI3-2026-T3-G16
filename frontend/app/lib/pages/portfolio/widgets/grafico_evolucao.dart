@@ -89,13 +89,13 @@ class _GraficoEvolucaoState extends State<GraficoEvolucao> {
           border: Border.all(color: Colors.grey.shade300),
           borderRadius: BorderRadius.circular(8),
         ),
-        child: const Row(
+        child: Row(
           children: [
             Text(
               _periodoSelecionado,
               style: const TextStyle(fontSize: 12, color: PortfolioStyles.textSecondary),
             ),
-            Icon(Icons.arrow_drop_down, color: PortfolioStyles.textSecondary, size: 18),
+            const Icon(Icons.arrow_drop_down, color: PortfolioStyles.textSecondary, size: 18),
           ],
         ),
       ),
