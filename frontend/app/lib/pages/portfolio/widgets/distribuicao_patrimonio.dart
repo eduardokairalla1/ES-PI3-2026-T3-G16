@@ -19,14 +19,36 @@ class DistribuicaoPatrimonio extends StatefulWidget {
   State<DistribuicaoPatrimonio> createState() => _DistribuicaoPatrimonioState();
 }
 
-class _DistribuicaoPatrimonioState extends State<DistribuicaoPatrimonio> {
+class _DistribuicaoPatrimonioState extends State<DistribuicaoPatrimonio>
+    with SingleTickerProviderStateMixin {
   int? _indiceSelecionado;
+  late final AnimationController _pulseController;
+  late final Animation<double> _pulseAnimation;
 
   final List<Color> _colors = const [
     Color(0xFF4A4A4A),  // FinnoLab - cinza escuro
     Color(0xFFD4A574),  // DataBrave - bege/marrom claro
     Color(0xFF8FBC8F),  // GreenLoop - verde suave
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    // Animação de pulsação sutil quando um segmento é selecionado
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    );
+    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.05).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -60,7 +82,12 @@ class _DistribuicaoPatrimonioState extends State<DistribuicaoPatrimonio> {
     const double chartSize = 160.0;
 
     return GestureDetector(
-      onTapDown: (details) => _handleTouch(details.localPosition, chartSize),
+      onTapDown: (details) {
+        _handleTouch(details.localPosition, chartSize);
+        if (_indiceSelecionado != null) {
+          _pulseController.forward(from: 0);
+        }
+      },
       onPanStart: (details) => _handleTouch(details.localPosition, chartSize),
       onPanUpdate: (details) => _handleTouch(details.localPosition, chartSize),
       onPanEnd: (_) => setState(() => _indiceSelecionado = null),
@@ -68,14 +95,17 @@ class _DistribuicaoPatrimonioState extends State<DistribuicaoPatrimonio> {
         const Duration(seconds: 2),
         () { if (mounted) setState(() => _indiceSelecionado = null); },
       ),
-      child: SizedBox(
-        height: chartSize,
-        width: chartSize,
-        child: CustomPaint(
-          painter: DonutChartPainter(
-            distribuicao: widget.distribuicao,
-            colors: _colors,
-            indiceSelecionado: _indiceSelecionado,
+      child: ScaleTransition(
+        scale: _pulseAnimation,
+        child: SizedBox(
+          height: chartSize,
+          width: chartSize,
+          child: CustomPaint(
+            painter: DonutChartPainter(
+              distribuicao: widget.distribuicao,
+              colors: _colors,
+              indiceSelecionado: _indiceSelecionado,
+            ),
           ),
         ),
       ),
@@ -107,22 +137,26 @@ class _DistribuicaoPatrimonioState extends State<DistribuicaoPatrimonio> {
           padding: const EdgeInsets.symmetric(horizontal: 8.0),
           child: Row(
             children: [
-              Container(
-                width: 8,
-                height: 8,
+              // Ponto com animação de tamanho
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 250),
+                width: isSelected ? 10 : 8,
+                height: isSelected ? 10 : 8,
                 decoration: BoxDecoration(
                   color: color,
                   shape: BoxShape.circle,
                 ),
               ),
               const SizedBox(width: 4),
-              Text(
-                item.nome,
+              // Texto com transição de estilo
+              AnimatedDefaultTextStyle(
+                duration: const Duration(milliseconds: 250),
                 style: TextStyle(
-                  fontSize: 11,
+                  fontSize: isSelected ? 12 : 11,
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                   color: isSelected ? PortfolioStyles.textPrimary : PortfolioStyles.textSecondary,
                 ),
+                child: Text(item.nome),
               ),
             ],
           ),
