@@ -110,7 +110,14 @@ class _GraficoEvolucaoState extends State<GraficoEvolucao> {
           onPanStart: (details) => _updateSelectedIndex(details.localPosition.dx, constraints.maxWidth),
           onPanEnd: (_) => setState(() => _indiceSelecionado = null),
           onTapDown: (details) => _updateSelectedIndex(details.localPosition.dx, constraints.maxWidth),
-          child: _buildChart(),
+          // Transição suave entre tipos de gráfico
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 400),
+            transitionBuilder: (child, animation) {
+              return FadeTransition(opacity: animation, child: child);
+            },
+            child: _buildChart(),
+          ),
         );
       },
     );
@@ -152,6 +159,7 @@ class _GraficoEvolucaoState extends State<GraficoEvolucao> {
     }
 
     return SizedBox(
+      key: ValueKey<TipoGrafico>(_tipoSelecionado),
       height: 150,
       width: double.infinity,
       child: CustomPaint(
@@ -179,13 +187,19 @@ class _GraficoEvolucaoState extends State<GraficoEvolucao> {
         _ChartTypeIcon(
           icon: Icons.show_chart,
           isSelected: _tipoSelecionado == TipoGrafico.linha,
-          onTap: () => setState(() => _tipoSelecionado = TipoGrafico.linha),
+          onTap: () => setState(() {
+            _tipoSelecionado = TipoGrafico.linha;
+            _indiceSelecionado = null;
+          }),
         ),
         const SizedBox(width: 8),
         _ChartTypeIcon(
           icon: Icons.bar_chart,
           isSelected: _tipoSelecionado == TipoGrafico.barra,
-          onTap: () => setState(() => _tipoSelecionado = TipoGrafico.barra),
+          onTap: () => setState(() {
+            _tipoSelecionado = TipoGrafico.barra;
+            _indiceSelecionado = null;
+          }),
         ),
       ],
     );
@@ -220,7 +234,10 @@ class _ChartTypeIcon extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
+      // Animação suave na cor e borda do botão
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeInOut,
         padding: const EdgeInsets.all(6),
         decoration: BoxDecoration(
           color: isSelected ? Colors.black : Colors.transparent,
@@ -229,10 +246,14 @@ class _ChartTypeIcon extends StatelessWidget {
             color: isSelected ? Colors.black : Colors.grey.shade300,
           ),
         ),
-        child: Icon(
-          icon,
-          size: 18,
-          color: isSelected ? Colors.white : Colors.grey,
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 200),
+          child: Icon(
+            icon,
+            key: ValueKey<bool>(isSelected),
+            size: 18,
+            color: isSelected ? Colors.white : Colors.grey,
+          ),
         ),
       ),
     );
