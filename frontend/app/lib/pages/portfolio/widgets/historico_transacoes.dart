@@ -1,7 +1,6 @@
 /// --- Histórico de Transações ---
 
 import 'package:flutter/material.dart';
-import 'package:mesclainvest/core/utils/formatters.dart';
 import 'package:mesclainvest/pages/portfolio/models/portfolio_data.dart';
 import 'package:mesclainvest/pages/portfolio/widgets/cartao_base.dart';
 import 'package:mesclainvest/pages/portfolio/widgets/portfolio_styles.dart';
@@ -30,36 +29,14 @@ class HistoricoTransacoes extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          _buildTransactionList(),
-          const SizedBox(height: 12),
-          _buildFooterButton(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTransactionList() {
-    return ListView.separated(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: transacoes.length,
-      separatorBuilder: (context, index) => const Divider(height: 24),
-      itemBuilder: (context, index) => _ItemTransacao(transacao: transacoes[index]),
-    );
-  }
-
-  Widget _buildFooterButton() {
-    return Center(
-      child: TextButton(
-        onPressed: () {},
-        child: const Text(
-          'Ver extrato completo',
-          style: TextStyle(
-            color: PortfolioStyles.primaryAccent,
-            fontWeight: FontWeight.bold,
-            fontSize: 14,
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: transacoes.length,
+            separatorBuilder: (context, index) => const Divider(height: 24),
+            itemBuilder: (context, index) => _ItemTransacao(transacao: transacoes[index]),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -72,29 +49,27 @@ class _ItemTransacao extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final statusColor = transacao.isCompra ? PortfolioStyles.positiveGrowth : PortfolioStyles.negativeGrowth;
-
     return Row(
       children: [
-        _buildIcon(statusColor),
+        _buildIcon(),
         const SizedBox(width: 12),
         Expanded(child: _buildInfo()),
-        _buildValue(statusColor),
+        _buildValue(),
       ],
     );
   }
 
-  Widget _buildIcon(Color color) {
+  Widget _buildIcon() {
     return Container(
       width: 40,
       height: 40,
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: Colors.grey.shade100,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Icon(
-        transacao.isCompra ? Icons.add_circle_outline : Icons.remove_circle_outline,
-        color: color,
+        transacao.isCompra ? Icons.arrow_outward : Icons.arrow_downward,
+        color: PortfolioStyles.textPrimary,
         size: 20,
       ),
     );
@@ -105,7 +80,7 @@ class _ItemTransacao extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          transacao.titulo,
+          '${transacao.isCompra ? 'Compra' : 'Venda'} - ${transacao.subtitulo}',
           style: const TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.bold,
@@ -114,25 +89,29 @@ class _ItemTransacao extends StatelessWidget {
         ),
         const SizedBox(height: 2),
         Text(
-          transacao.subtitulo,
+          transacao.data,
           style: const TextStyle(fontSize: 12, color: PortfolioStyles.textSecondary),
         ),
       ],
     );
   }
 
-  Widget _buildValue(Color color) {
+  Widget _buildValue() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         Text(
-          '${transacao.isCompra ? '+' : '-'} ${transacao.valor.toBRL()}',
-          style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: color),
+          '+${transacao.quantidade} STX',
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+            color: PortfolioStyles.positiveGrowth,
+          ),
         ),
         const SizedBox(height: 2),
-        Text(
-          transacao.data,
-          style: const TextStyle(fontSize: 10, color: PortfolioStyles.textSecondary),
+        const Text(
+          'Valor em R\$',
+          style: TextStyle(fontSize: 10, color: PortfolioStyles.textSecondary),
         ),
       ],
     );
