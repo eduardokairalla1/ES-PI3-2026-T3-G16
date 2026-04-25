@@ -84,30 +84,32 @@ class CartaoPatrimonioPortfolio extends StatelessWidget {
     return Row(
       children: [
         Expanded(
-          child: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 300),
+          child: Align(
             alignment: Alignment.centerLeft,
-            transitionBuilder: (child, animation) {
-              return FadeTransition(
-                opacity: animation,
-                child: SlideTransition(
-                  position: Tween<Offset>(
-                    begin: const Offset(0, 0.1),
-                    end: Offset.zero,
-                  ).animate(animation),
-                  child: child,
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              transitionBuilder: (child, animation) {
+                return FadeTransition(
+                  opacity: animation,
+                  child: SlideTransition(
+                    position: Tween<Offset>(
+                      begin: const Offset(0, 0.1),
+                      end: Offset.zero,
+                    ).animate(animation),
+                    child: child,
+                  ),
+                );
+              },
+              child: Text(
+                isObscured ? '••••••••' : patrimonioTotal.toBRL(),
+                key: ValueKey<bool>(isObscured),
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: PortfolioStyles.textPrimary,
                 ),
-              );
-            },
-            child: Text(
-              isObscured ? '••••••••' : patrimonioTotal.toBRL(),
-              key: ValueKey<bool>(isObscured),
-              style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: PortfolioStyles.textPrimary,
+                overflow: TextOverflow.ellipsis,
               ),
-              overflow: TextOverflow.ellipsis,
             ),
           ),
         ),
