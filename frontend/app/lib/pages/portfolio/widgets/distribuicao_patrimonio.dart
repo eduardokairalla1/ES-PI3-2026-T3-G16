@@ -39,8 +39,8 @@ class _DistribuicaoPatrimonioState extends State<DistribuicaoPatrimonio>
       vsync: this,
       duration: const Duration(milliseconds: 600),
     );
-    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.05).animate(
-      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    _pulseAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeOutBack),
     );
   }
 
@@ -95,19 +95,22 @@ class _DistribuicaoPatrimonioState extends State<DistribuicaoPatrimonio>
         const Duration(seconds: 2),
         () { if (mounted) setState(() => _indiceSelecionado = null); },
       ),
-      child: ScaleTransition(
-        scale: _pulseAnimation,
-        child: SizedBox(
-          height: chartSize,
-          width: chartSize,
-          child: CustomPaint(
-            painter: DonutChartPainter(
-              distribuicao: widget.distribuicao,
-              colors: _colors,
-              indiceSelecionado: _indiceSelecionado,
+      child: AnimatedBuilder(
+        animation: _pulseAnimation,
+        builder: (context, _) {
+          return SizedBox(
+            height: chartSize,
+            width: chartSize,
+            child: CustomPaint(
+              painter: DonutChartPainter(
+                distribuicao: widget.distribuicao,
+                colors: _colors,
+                indiceSelecionado: _indiceSelecionado,
+                animationValue: _pulseAnimation.value,
+              ),
             ),
-          ),
-        ),
+          );
+        },
       ),
     );
   }

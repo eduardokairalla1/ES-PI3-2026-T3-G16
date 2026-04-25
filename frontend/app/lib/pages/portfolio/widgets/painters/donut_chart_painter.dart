@@ -10,10 +10,12 @@ class DonutChartPainter extends CustomPainter {
   final List<PortfolioDistribution> distribuicao;
   final List<Color> colors;
   final int? indiceSelecionado;
+  final double animationValue; // 0.0 a 1.0
 
   DonutChartPainter({
     required this.distribuicao,
     required this.colors,
+    required this.animationValue,
     this.indiceSelecionado,
   });
 
@@ -30,11 +32,24 @@ class DonutChartPainter extends CustomPainter {
     for (int i = 0; i < distribuicao.length; i++) {
       final sweepAngle = distribuicao[i].percentual * 2 * math.pi;
       final isSelected = indiceSelecionado == i;
-      final currentThickness = isSelected ? selectedThickness : thickness;
+      final currentThickness = isSelected 
+          ? thickness + (selectedThickness - thickness) * animationValue 
+          : thickness;
+
+      // Calcula o centro do arco (se selecionado, desloca para fora)
+      Offset currentCenter = Offset(centerX, centerY);
+      if (isSelected) {
+        final midAngle = startAngle + sweepAngle / 2;
+        final popOutDistance = 8.0 * animationValue; // Desloca até 8px
+        currentCenter = Offset(
+          centerX + math.cos(midAngle) * popOutDistance,
+          centerY + math.sin(midAngle) * popOutDistance,
+        );
+      }
 
       final rect = Rect.fromCircle(
-        center: Offset(centerX, centerY),
-        radius: radius - (currentThickness / 2),
+        center: currentCenter,
+        radius: radius - (currentThickness / 2) - (isSelected ? 4 : 0),
       );
 
       final paint = Paint()
