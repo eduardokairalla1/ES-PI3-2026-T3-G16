@@ -1,4 +1,3 @@
-//esse arquivo deve ser reintegrado
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -9,10 +8,10 @@ class NavegacaoInferiorMock extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      decoration: BoxDecoration(
+      padding: const EdgeInsets.fromLTRB(8, 8, 8, 10),
+      decoration: const BoxDecoration(
         color: Colors.white,
-        border: Border(top: BorderSide(color: Colors.grey[200]!)),
+        border: Border(top: BorderSide(color: Color(0xFFE0E0E0))),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -33,15 +32,16 @@ class NavegacaoInferiorMock extends StatelessWidget {
       children: [
         Icon(
           icon,
-          color: isActive ? Colors.black : Colors.grey[400],
+          size: 18,
+          color: isActive ? const Color(0xFF111111) : const Color(0xFFB3B3B3),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 2),
         Text(
           label,
           style: GoogleFonts.inter(
-            color: isActive ? Colors.black : Colors.grey[400],
-            fontSize: 10,
-            fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+            color: isActive ? const Color(0xFF111111) : const Color(0xFFB3B3B3),
+            fontSize: 9,
+            fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
           ),
         ),
       ],
