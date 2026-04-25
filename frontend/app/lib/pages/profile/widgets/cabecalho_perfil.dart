@@ -7,34 +7,41 @@ class CabecalhoPerfil extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        border: Border(
+          bottom: BorderSide(color: Color(0xFFE2E2E2)),
+        ),
+      ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Logo circular preto
           Container(
-            padding: const EdgeInsets.all(8),
+            width: 26,
+            height: 26,
             decoration: const BoxDecoration(
               color: Colors.black,
               shape: BoxShape.circle,
             ),
+            alignment: Alignment.center,
             child: Text(
               'M',
               style: GoogleFonts.inter(
                 color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 20,
+                fontWeight: FontWeight.w700,
+                fontSize: 12,
               ),
             ),
           ),
-          const SizedBox(width: 10),
-          // Nome do aplicativo
+          const SizedBox(width: 6),
           Text(
             'Mescla Invest',
             style: GoogleFonts.inter(
-              fontWeight: FontWeight.bold,
-              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              fontSize: 12,
+              color: const Color(0xFF111111),
             ),
           ),
         ],
