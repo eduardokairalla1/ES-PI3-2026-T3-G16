@@ -11,28 +11,28 @@ class BotaoSair extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
+      padding: const EdgeInsets.fromLTRB(14, 14, 14, 12),
       child: TextButton(
         onPressed: () => controller.logout(),
         style: TextButton.styleFrom(
           backgroundColor: Colors.white,
-          minimumSize: const Size(double.infinity, 60),
+          minimumSize: const Size(double.infinity, 52),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15),
-            side: BorderSide(color: Colors.grey[100]!),
+            borderRadius: BorderRadius.circular(12),
+            side: const BorderSide(color: Color(0xFFE0E0E0)),
           ),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.logout, color: Colors.black),
-            const SizedBox(width: 10),
+            const Icon(Icons.logout, color: Color(0xFF333333), size: 18),
+            const SizedBox(width: 6),
             Text(
               'Sair da Conta',
               style: GoogleFonts.inter(
-                color: Colors.black,
-                fontWeight: FontWeight.bold,
-                fontSize: 18,
+                color: const Color(0xFF111111),
+                fontWeight: FontWeight.w700,
+                fontSize: 22,
               ),
             ),
           ],
