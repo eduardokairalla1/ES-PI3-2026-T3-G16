@@ -33,27 +33,21 @@ class _PaginaPerfilState extends State<PaginaPerfil> {
       animation: _controller,
       builder: (context, child) {
         return Scaffold(
-          backgroundColor: const Color(0xFFF8F9FA),
+          backgroundColor: const Color(0xFFF2F2F2),
           body: SafeArea(
             child: _controller.isLoading
                 ? const Center(child: CircularProgressIndicator(color: Colors.black))
                 : Column(
                     children: [
-                      // Cabeçalho superior
                       const CabecalhoPerfil(),
-
                       Expanded(
                         child: SingleChildScrollView(
                           child: Column(
                             children: [
-                              // Avatar e informações básicas
                               InfoUsuario(controller: _controller),
-
-                              // Resumo de investimentos e favoritas
                               CartaoEstatisticas(controller: _controller),
-                              
-                              // Configuração de segurança
                               _buildSectionContainer(
+                                margin: const EdgeInsets.symmetric(horizontal: 14),
                                 child: TileAcaoPerfil(
                                   icon: Icons.shield_outlined,
                                   title: 'Autenticação 2FA',
@@ -62,15 +56,16 @@ class _PaginaPerfilState extends State<PaginaPerfil> {
                                   trailing: Switch(
                                     value: _controller.autenticacao2FA,
                                     onChanged: (v) => _controller.toggle2FA(v),
-                                    activeColor: Colors.black,
+                                    activeThumbColor: Colors.white,
+                                    activeTrackColor: Colors.black,
+                                    inactiveThumbColor: Colors.white,
+                                    inactiveTrackColor: const Color(0xFFCFCFCF),
                                   ),
                                 ),
                               ),
-                              
-                              const SizedBox(height: 20),
-                              
-                              // Opções gerais do menu
+                              const SizedBox(height: 14),
                               _buildSectionContainer(
+                                margin: const EdgeInsets.symmetric(horizontal: 14),
                                 child: Column(
                                   children: [
                                     const TileAcaoPerfil(
@@ -95,7 +90,10 @@ class _PaginaPerfilState extends State<PaginaPerfil> {
                                       trailing: Switch(
                                         value: _controller.modoEscuro,
                                         onChanged: (v) => _controller.toggleModoEscuro(v),
-                                        activeColor: Colors.black,
+                                        activeThumbColor: Colors.white,
+                                        activeTrackColor: Colors.black,
+                                        inactiveThumbColor: Colors.white,
+                                        inactiveTrackColor: const Color(0xFFCFCFCF),
                                       ),
                                     ),
                                     _buildDivider(),
@@ -106,15 +104,11 @@ class _PaginaPerfilState extends State<PaginaPerfil> {
                                   ],
                                 ),
                               ),
-                              
-                              // Botão para encerrar sessão
                               BotaoSair(controller: _controller),
                             ],
                           ),
                         ),
                       ),
-
-                      // Barra de navegação inferior (Mock)
                       const NavegacaoInferiorMock(),
                     ],
                   ),
@@ -125,27 +119,28 @@ class _PaginaPerfilState extends State<PaginaPerfil> {
   }
 
   /// Constrói um container padrão para as seções da tela.
-  Widget _buildSectionContainer({required Widget child}) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.grey[200]!),
-        ),
-        child: child,
+  Widget _buildSectionContainer({
+    required Widget child,
+    EdgeInsetsGeometry? margin,
+  }) {
+    return Container(
+      margin: margin ?? const EdgeInsets.symmetric(horizontal: 14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE0E0E0)),
       ),
+      child: child,
     );
   }
 
   /// Cria um divisor visual entre os itens da lista.
   Widget _buildDivider() {
-    return Divider(
+    return const Divider(
       height: 1,
-      indent: 60,
-      endIndent: 20,
-      color: Colors.grey[100],
+      indent: 54,
+      endIndent: 14,
+      color: Color(0xFFECECEC),
     );
   }
 }
