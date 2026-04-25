@@ -3,11 +3,11 @@ import 'package:google_fonts/google_fonts.dart';
 
 /// Item de lista genérico para ações e configurações no perfil.
 class TileAcaoPerfil extends StatelessWidget {
-  final IconData icon; // Ícone que representa a ação
-  final String title;  // Título da ação
-  final String? subtitle; // Subtítulo opcional
-  final Widget? trailing; // Widget opcional no final (ex: Switch)
-  final bool showArrow; // Define se exibe a seta de navegação
+  final IconData icon;
+  final String title;
+  final String? subtitle;
+  final Widget? trailing;
+  final bool showArrow;
 
   const TileAcaoPerfil({
     super.key,
@@ -20,21 +20,31 @@ class TileAcaoPerfil extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(12),
+    final subtitleWidget = subtitle == null
+        ? null
+        : Text(
+            subtitle!,
+            style: GoogleFonts.inter(
+              color: const Color(0xFF8A8A8A),
+              fontSize: 11,
+            ),
+          );
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       child: Row(
         children: [
-          // Container do ícone
           Container(
-            padding: const EdgeInsets.all(10),
+            width: 28,
+            height: 28,
             decoration: BoxDecoration(
-              color: Colors.grey[100],
-              borderRadius: BorderRadius.circular(12),
+              color: const Color(0xFFF0F0F0),
+              borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(icon, color: Colors.black87, size: 24),
+            alignment: Alignment.center,
+            child: Icon(icon, color: const Color(0xFF555555), size: 16),
           ),
-          const SizedBox(width: 15),
-          // Textos (Título e Subtítulo)
+          const SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -43,24 +53,17 @@ class TileAcaoPerfil extends StatelessWidget {
                   title,
                   style: GoogleFonts.inter(
                     fontWeight: FontWeight.w600,
-                    fontSize: 16,
+                    fontSize: 12,
+                    color: const Color(0xFF111111),
                   ),
                 ),
-                if (subtitle != null)
-                  Text(
-                    subtitle!,
-                    style: GoogleFonts.inter(
-                      color: Colors.grey[500],
-                      fontSize: 12,
-                    ),
-                  ),
+                ?subtitleWidget,
               ],
             ),
           ),
-          // Espaço para widget final ou seta
-          if (trailing != null) trailing!,
+          ?trailing,
           if (showArrow)
-            Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey[400]),
+            const Icon(Icons.chevron_right, size: 16, color: Color(0xFF4A4A4A)),
         ],
       ),
     );
