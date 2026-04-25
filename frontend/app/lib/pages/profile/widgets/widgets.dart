@@ -1,4 +1,4 @@
-/// Barrel file para exportação unificada de widgets do perfil.
+// Barrel file para exportação unificada de widgets do perfil.
 
 export 'cabecalho_perfil.dart';
 export 'info_usuario.dart';
