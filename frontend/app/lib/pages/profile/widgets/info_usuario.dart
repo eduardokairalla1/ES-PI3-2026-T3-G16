@@ -10,61 +10,57 @@ class InfoUsuario extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Caso os dados ainda não tenham carregado, exibe um placeholder vazio.
     final data = controller.data;
     if (data == null) return const SizedBox.shrink();
 
     return Column(
       children: [
-        const SizedBox(height: 20),
-        // Avatar com inicial do nome
+        const SizedBox(height: 18),
         CircleAvatar(
-          radius: 50,
+          radius: 30,
           backgroundColor: Colors.black,
           child: Text(
             data.nome.isNotEmpty ? data.nome[0] : 'U',
             style: GoogleFonts.inter(
               color: Colors.white,
-              fontSize: 40,
-              fontWeight: FontWeight.bold,
+              fontSize: 34,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ),
-        const SizedBox(height: 15),
-        // Nome do usuário
+        const SizedBox(height: 10),
         Text(
           data.nome,
           style: GoogleFonts.inter(
-            fontWeight: FontWeight.bold,
-            fontSize: 20,
+            fontWeight: FontWeight.w700,
+            fontSize: 16,
+            color: const Color(0xFF1A1A1A),
           ),
         ),
-        // Email do usuário
         Text(
           data.email,
           style: GoogleFonts.inter(
-            color: Colors.grey[600],
-            fontSize: 16,
+            color: const Color(0xFF676767),
+            fontSize: 14,
           ),
         ),
-        const SizedBox(height: 10),
-        // Badge de "Perfil Verificado"
+        const SizedBox(height: 8),
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
           decoration: BoxDecoration(
-            color: Colors.grey[200],
-            borderRadius: BorderRadius.circular(20),
+            color: const Color(0xFFE6E6E6),
+            borderRadius: BorderRadius.circular(16),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.check, size: 14, color: Colors.grey[600]),
-              const SizedBox(width: 5),
+              const Icon(Icons.verified_outlined, size: 12, color: Color(0xFF666666)),
+              const SizedBox(width: 4),
               Text(
                 'Perfil Verificado',
                 style: GoogleFonts.inter(
-                  color: Colors.grey[600],
-                  fontSize: 12,
+                  color: const Color(0xFF666666),
+                  fontSize: 11,
                   fontWeight: FontWeight.w500,
                 ),
               ),
