@@ -7,6 +7,7 @@ import 'package:mesclainvest/pages/auth/login.dart';
 import 'package:mesclainvest/pages/auth/register.dart';
 import 'package:mesclainvest/pages/dashboard/pagina_dashboard.dart';
 import 'package:mesclainvest/pages/home/home.dart';
+import 'package:mesclainvest/pages/profile/pagina_perfil.dart';
 
 
 /// --- GLOBAIS ---
@@ -46,6 +47,10 @@ final router = GoRouter(
     GoRoute(
       path: '/dashboard',
       builder: (context, state) => const PaginaDashboard(),
+    ),
+    GoRoute(
+      path: '/profile',
+      builder: (context, state) => const PaginaPerfil(),
     ),
   ],
 );
