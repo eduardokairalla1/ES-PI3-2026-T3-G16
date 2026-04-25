@@ -86,6 +86,7 @@ class CartaoPatrimonioPortfolio extends StatelessWidget {
         Expanded(
           child: AnimatedSwitcher(
             duration: const Duration(milliseconds: 300),
+            alignment: Alignment.centerLeft,
             transitionBuilder: (child, animation) {
               return FadeTransition(
                 opacity: animation,
