@@ -15,25 +15,25 @@ class InfoUsuario extends StatelessWidget {
 
     return Column(
       children: [
-        const SizedBox(height: 18),
+        const SizedBox(height: 24),
         CircleAvatar(
-          radius: 30,
+          radius: 42,
           backgroundColor: Colors.black,
           child: Text(
             data.nome.isNotEmpty ? data.nome[0] : 'U',
             style: GoogleFonts.inter(
               color: Colors.white,
-              fontSize: 34,
+              fontSize: 48,
               fontWeight: FontWeight.w700,
             ),
           ),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 14),
         Text(
           data.nome,
           style: GoogleFonts.inter(
             fontWeight: FontWeight.w700,
-            fontSize: 16,
+            fontSize: 18,
             color: const Color(0xFF1A1A1A),
           ),
         ),
@@ -41,27 +41,28 @@ class InfoUsuario extends StatelessWidget {
           data.email,
           style: GoogleFonts.inter(
             color: const Color(0xFF676767),
-            fontSize: 14,
+            fontSize: 15,
+            fontWeight: FontWeight.w500,
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 12),
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
           decoration: BoxDecoration(
-            color: const Color(0xFFE6E6E6),
-            borderRadius: BorderRadius.circular(16),
+            color: const Color(0xFFEFEFEF),
+            borderRadius: BorderRadius.circular(20),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.verified_outlined, size: 12, color: Color(0xFF666666)),
-              const SizedBox(width: 4),
+              const Icon(Icons.check, size: 12, color: Color(0xFF888888)),
+              const SizedBox(width: 6),
               Text(
                 'Perfil Verificado',
                 style: GoogleFonts.inter(
                   color: const Color(0xFF666666),
-                  fontSize: 11,
-                  fontWeight: FontWeight.w500,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ],
