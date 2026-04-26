@@ -14,12 +14,12 @@ class CartaoEstatisticas extends StatelessWidget {
     if (data == null) return const SizedBox.shrink();
 
     return Container(
-      margin: const EdgeInsets.fromLTRB(14, 14, 14, 14),
-      padding: const EdgeInsets.symmetric(vertical: 12),
+      margin: const EdgeInsets.fromLTRB(14, 20, 14, 14),
+      padding: const EdgeInsets.symmetric(vertical: 16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFE0E0E0)),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE5E5E5)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -41,8 +41,8 @@ class CartaoEstatisticas extends StatelessWidget {
         Text(
           value,
           style: GoogleFonts.inter(
-            fontWeight: FontWeight.w700,
-            fontSize: 28,
+            fontWeight: FontWeight.w800,
+            fontSize: 24,
             color: const Color(0xFF111111),
           ),
         ),
@@ -50,8 +50,9 @@ class CartaoEstatisticas extends StatelessWidget {
         Text(
           label,
           style: GoogleFonts.inter(
-            color: const Color(0xFF7A7A7A),
-            fontSize: 11,
+            color: const Color(0xFF888888),
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
           ),
         ),
       ],
@@ -61,11 +62,11 @@ class CartaoEstatisticas extends StatelessWidget {
   /// Linha vertical de separação entre itens.
   Widget _buildDivider() {
     return const SizedBox(
-      height: 40,
+      height: 36,
       child: VerticalDivider(
         width: 1,
         thickness: 1,
-        color: Color(0xFFE9E9E9),
+        color: Color(0xFFEEEEEE),
       ),
     );
   }
