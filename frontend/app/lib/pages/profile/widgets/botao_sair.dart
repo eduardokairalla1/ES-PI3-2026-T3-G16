@@ -21,7 +21,7 @@ class BotaoSair extends StatelessWidget {
               offset: const Offset(0, 4),
             ),
           ],
-        ],
+        ),
         child: TextButton(
           onPressed: () => controller.logout(),
           style: TextButton.styleFrom(
