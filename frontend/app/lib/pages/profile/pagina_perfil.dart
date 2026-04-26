@@ -33,7 +33,7 @@ class _PaginaPerfilState extends State<PaginaPerfil> {
       animation: _controller,
       builder: (context, child) {
         return Scaffold(
-          backgroundColor: const Color(0xFFF2F2F2),
+          backgroundColor: const Color(0xFFF8F8F8), // Background slightly lighter
           body: SafeArea(
             child: _controller.isLoading
                 ? const Center(child: CircularProgressIndicator(color: Colors.black))
@@ -42,30 +42,38 @@ class _PaginaPerfilState extends State<PaginaPerfil> {
                       const CabecalhoPerfil(),
                       Expanded(
                         child: SingleChildScrollView(
+                          physics: const BouncingScrollPhysics(),
                           child: Column(
                             children: [
                               InfoUsuario(controller: _controller),
                               CartaoEstatisticas(controller: _controller),
+                              
+                              // Section for 2FA
                               _buildSectionContainer(
-                                margin: const EdgeInsets.symmetric(horizontal: 14),
                                 child: TileAcaoPerfil(
                                   icon: Icons.shield_outlined,
                                   title: 'Autenticação 2FA',
                                   subtitle: 'Proteção extra para sua conta',
                                   showArrow: false,
-                                  trailing: Switch(
-                                    value: _controller.autenticacao2FA,
-                                    onChanged: (v) => _controller.toggle2FA(v),
-                                    activeThumbColor: Colors.white,
-                                    activeTrackColor: Colors.black,
-                                    inactiveThumbColor: Colors.white,
-                                    inactiveTrackColor: const Color(0xFFCFCFCF),
+                                  trailing: SizedBox(
+                                    height: 32,
+                                    width: 52,
+                                    child: Switch(
+                                      value: _controller.autenticacao2FA,
+                                      onChanged: (v) => _controller.toggle2FA(v),
+                                      activeThumbColor: Colors.white,
+                                      activeTrackColor: Colors.black,
+                                      inactiveThumbColor: Colors.white,
+                                      inactiveTrackColor: const Color(0xFFCFCFCF),
+                                    ),
                                   ),
                                 ),
                               ),
-                              const SizedBox(height: 14),
+                              
+                              const SizedBox(height: 16),
+                              
+                              // Section for main actions
                               _buildSectionContainer(
-                                margin: const EdgeInsets.symmetric(horizontal: 14),
                                 child: Column(
                                   children: [
                                     const TileAcaoPerfil(
@@ -87,13 +95,17 @@ class _PaginaPerfilState extends State<PaginaPerfil> {
                                       icon: Icons.dark_mode_outlined,
                                       title: 'Modo Escuro / Claro',
                                       showArrow: false,
-                                      trailing: Switch(
-                                        value: _controller.modoEscuro,
-                                        onChanged: (v) => _controller.toggleModoEscuro(v),
-                                        activeThumbColor: Colors.white,
-                                        activeTrackColor: Colors.black,
-                                        inactiveThumbColor: Colors.white,
-                                        inactiveTrackColor: const Color(0xFFCFCFCF),
+                                      trailing: SizedBox(
+                                        height: 32,
+                                        width: 52,
+                                        child: Switch(
+                                          value: _controller.modoEscuro,
+                                          onChanged: (v) => _controller.toggleModoEscuro(v),
+                                          activeThumbColor: Colors.white,
+                                          activeTrackColor: Colors.black,
+                                          inactiveThumbColor: Colors.white,
+                                          inactiveTrackColor: const Color(0xFFCFCFCF),
+                                        ),
                                       ),
                                     ),
                                     _buildDivider(),
@@ -104,6 +116,7 @@ class _PaginaPerfilState extends State<PaginaPerfil> {
                                   ],
                                 ),
                               ),
+                              
                               BotaoSair(controller: _controller),
                             ],
                           ),
@@ -118,29 +131,27 @@ class _PaginaPerfilState extends State<PaginaPerfil> {
     );
   }
 
-  /// Constrói um container padrão para as seções da tela.
+  /// Constrói um container padrão para as seções da tela com bordas arredondadas e borda leve.
   Widget _buildSectionContainer({
     required Widget child,
-    EdgeInsetsGeometry? margin,
   }) {
     return Container(
-      margin: margin ?? const EdgeInsets.symmetric(horizontal: 14),
+      margin: const EdgeInsets.symmetric(horizontal: 14),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFE0E0E0)),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFEBEBEB)),
       ),
       child: child,
     );
   }
 
-  /// Cria um divisor visual entre os itens da lista.
+  /// Cria um divisor visual fino entre os itens da lista.
   Widget _buildDivider() {
-    return const Divider(
+    return Container(
+      margin: const EdgeInsets.only(left: 64),
       height: 1,
-      indent: 54,
-      endIndent: 14,
-      color: Color(0xFFECECEC),
+      color: const Color(0xFFF2F2F2),
     );
   }
 }
