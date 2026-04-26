@@ -11,31 +11,42 @@ class BotaoSair extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(14, 14, 14, 12),
-      child: TextButton(
-        onPressed: () => controller.logout(),
-        style: TextButton.styleFrom(
-          backgroundColor: Colors.white,
-          minimumSize: const Size(double.infinity, 52),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-            side: const BorderSide(color: Color(0xFFE0E0E0)),
-          ),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.logout, color: Color(0xFF333333), size: 18),
-            const SizedBox(width: 6),
-            Text(
-              'Sair da Conta',
-              style: GoogleFonts.inter(
-                color: const Color(0xFF111111),
-                fontWeight: FontWeight.w700,
-                fontSize: 22,
-              ),
+      padding: const EdgeInsets.fromLTRB(14, 20, 14, 20),
+      child: Container(
+        decoration: BoxDecoration(
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.02),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
             ),
           ],
+        ],
+        child: TextButton(
+          onPressed: () => controller.logout(),
+          style: TextButton.styleFrom(
+            backgroundColor: Colors.white,
+            minimumSize: const Size(double.infinity, 56),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+              side: const BorderSide(color: Color(0xFFE8E8E8)),
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.logout, color: Color(0xFF555555), size: 24),
+              const SizedBox(width: 10),
+              Text(
+                'Sair da Conta',
+                style: GoogleFonts.inter(
+                  color: const Color(0xFF111111),
+                  fontWeight: FontWeight.w800,
+                  fontSize: 18,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
