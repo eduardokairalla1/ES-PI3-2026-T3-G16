@@ -9,7 +9,7 @@ class CabecalhoPerfil extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
       decoration: const BoxDecoration(
         color: Colors.white,
         border: Border(
@@ -17,10 +17,11 @@ class CabecalhoPerfil extends StatelessWidget {
         ),
       ),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            width: 26,
-            height: 26,
+            width: 32,
+            height: 32,
             decoration: const BoxDecoration(
               color: Colors.black,
               shape: BoxShape.circle,
@@ -31,16 +32,16 @@ class CabecalhoPerfil extends StatelessWidget {
               style: GoogleFonts.inter(
                 color: Colors.white,
                 fontWeight: FontWeight.w700,
-                fontSize: 12,
+                fontSize: 16,
               ),
             ),
           ),
-          const SizedBox(width: 6),
+          const SizedBox(width: 8),
           Text(
             'Mescla Invest',
             style: GoogleFonts.inter(
               fontWeight: FontWeight.w700,
-              fontSize: 12,
+              fontSize: 14,
               color: const Color(0xFF111111),
             ),
           ),
