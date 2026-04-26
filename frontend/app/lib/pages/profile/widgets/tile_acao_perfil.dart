@@ -31,20 +31,20 @@ class TileAcaoPerfil extends StatelessWidget {
           );
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       child: Row(
         children: [
           Container(
-            width: 28,
-            height: 28,
+            width: 38,
+            height: 38,
             decoration: BoxDecoration(
               color: const Color(0xFFF0F0F0),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(10),
             ),
             alignment: Alignment.center,
-            child: Icon(icon, color: const Color(0xFF555555), size: 16),
+            child: Icon(icon, color: const Color(0xFF444444), size: 20),
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -52,18 +52,21 @@ class TileAcaoPerfil extends StatelessWidget {
                 Text(
                   title,
                   style: GoogleFonts.inter(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
                     color: const Color(0xFF111111),
                   ),
                 ),
-                ?subtitleWidget,
+                if (subtitleWidget != null) ...[
+                  const SizedBox(height: 2),
+                  subtitleWidget,
+                ],
               ],
             ),
           ),
-          ?trailing,
+          if (trailing != null) trailing!,
           if (showArrow)
-            const Icon(Icons.chevron_right, size: 16, color: Color(0xFF4A4A4A)),
+            const Icon(Icons.chevron_right, size: 20, color: Color(0xFF111111)),
         ],
       ),
     );
