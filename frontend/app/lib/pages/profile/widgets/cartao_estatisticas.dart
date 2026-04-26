@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mesclainvest/pages/profile/controllers/perfil_controller.dart';
 
-/// Cartão que exibe métricas do usuário (Investimentos, Valor Aplicado e Favoritas).
+/// [CartaoEstatisticas] exibe um resumo numérico da atividade do usuário.
+/// 
+/// Apresenta três métricas principais: Investimentos ativos, Valor total aplicado
+/// e Startups favoritadas, organizadas horizontalmente com divisores entre elas.
 class CartaoEstatisticas extends StatelessWidget {
   final PerfilController controller;
 
@@ -10,7 +13,9 @@ class CartaoEstatisticas extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Recupera os dados do controlador.
     final data = controller.data;
+    // Se os dados ainda não estiverem disponíveis, não renderiza nada (shrink).
     if (data == null) return const SizedBox.shrink();
 
     return Container(
@@ -25,7 +30,7 @@ class CartaoEstatisticas extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           _buildStatItem(data.investimentos, 'Investimentos'),
-          _buildDivider(),
+          _buildDivider(), // Divisor vertical entre as métricas.
           _buildStatItem(data.aplicado, 'Aplicado'),
           _buildDivider(),
           _buildStatItem(data.favoritas, 'Favoritas'),
@@ -34,7 +39,7 @@ class CartaoEstatisticas extends StatelessWidget {
     );
   }
 
-  /// Constrói um item de estatística individual.
+  /// Constrói um item individual de estatística (Valor em cima, Label embaixo).
   Widget _buildStatItem(String value, String label) {
     return Column(
       children: [
@@ -59,7 +64,7 @@ class CartaoEstatisticas extends StatelessWidget {
     );
   }
 
-  /// Linha vertical de separação entre itens.
+  /// Helper para criar a linha vertical fina de separação.
   Widget _buildDivider() {
     return const SizedBox(
       height: 36,

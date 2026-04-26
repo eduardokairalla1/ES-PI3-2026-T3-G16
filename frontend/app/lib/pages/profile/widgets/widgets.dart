@@ -1,4 +1,8 @@
-// Barrel file para exportação unificada de widgets do perfil.
+/// Este arquivo funciona como um "Barrel File" (arquivo barril).
+/// 
+/// Ele centraliza a exportação de todos os widgets da pasta 'profile',
+/// permitindo que outros arquivos importem todos os widgets necessários com uma única linha:
+/// `import 'package:mesclainvest/pages/profile/widgets/widgets.dart';`
 
 export 'cabecalho_perfil.dart';
 export 'info_usuario.dart';
