@@ -17,7 +17,7 @@ class PerfilService {
       nome: '*NOME*',
       email: '*email@email.com*',
       investimentos: '99',
-      aplicado: 'R\9,99',
+      aplicado: 'R\$9,99',
       favoritas: '9',
     );
   }
