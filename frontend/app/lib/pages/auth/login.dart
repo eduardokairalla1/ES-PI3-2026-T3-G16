@@ -379,7 +379,7 @@ class _LoginPageState extends State<LoginPage>
 
                     // --- forgot password ---
                     GestureDetector(
-                      onTap: () {},
+                      onTap: () => context.go('/forgot-password'),
                       child: Text(
                         'Esqueci minha senha',
                         style: GoogleFonts.inter(
