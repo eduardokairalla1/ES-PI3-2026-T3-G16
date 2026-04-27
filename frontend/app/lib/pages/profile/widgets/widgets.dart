@@ -10,3 +10,6 @@ export 'cartao_estatisticas.dart';
 export 'tile_acao_perfil.dart';
 export 'botao_sair.dart';
 export 'navegacao_inferior_mock.dart';
+export 'botão_configurações/tile_configuracao.dart';
+export 'botão_configurações/grupo_configuracoes.dart';
+export 'botão_configurações/titulo_secao.dart';
