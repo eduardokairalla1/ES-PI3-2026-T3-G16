@@ -18,7 +18,6 @@ class BotaoSair extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           boxShadow: [
-            // Sombra sutil para dar elevação ao botão de ação principal.
             BoxShadow(
               color: Colors.black.withOpacity(0.02),
               blurRadius: 10,
@@ -27,10 +26,10 @@ class BotaoSair extends StatelessWidget {
           ],
         ),
         child: TextButton(
-          onPressed: () => controller.logout(), // Dispara o método de logout no controlador.
+          onPressed: () => _mostrarConfirmacaoSair(context),
           style: TextButton.styleFrom(
             backgroundColor: Colors.white,
-            minimumSize: const Size(double.infinity, 56), // Altura maior para melhor usabilidade no toque.
+            minimumSize: const Size(double.infinity, 56),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
               side: const BorderSide(color: Color(0xFFE8E8E8)),
@@ -48,6 +47,102 @@ class BotaoSair extends StatelessWidget {
                   fontWeight: FontWeight.w800,
                   fontSize: 18,
                 ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Exibe um modal de confirmação estilizado antes de realizar o logout.
+  void _mostrarConfirmacaoSair(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        backgroundColor: Colors.white,
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Ícone de alerta visual
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF5F5F5),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.logout_rounded, size: 32, color: Colors.black),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                'Sair da Conta?',
+                style: GoogleFonts.inter(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w800,
+                  color: const Color(0xFF1A1A1A),
+                ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                'Tem certeza que deseja encerrar sua sessão? Você precisará fazer login novamente para acessar seus investimentos.',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  color: const Color(0xFF666666),
+                  height: 1.5,
+                ),
+              ),
+              const SizedBox(height: 28),
+              Row(
+                children: [
+                  // Botão de Cancelar
+                  Expanded(
+                    child: TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Text(
+                        'Cancelar',
+                        style: GoogleFonts.inter(
+                          color: const Color(0xFF888888),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  // Botão de Sair (Confirmação)
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(context); // Fecha o dialog
+                        controller.logout(); // Executa o logout
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.black,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: Text(
+                        'Sair',
+                        style: GoogleFonts.inter(
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
