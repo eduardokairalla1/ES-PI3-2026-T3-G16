@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mesclainvest/pages/profile/controllers/perfil_controller.dart';
 import 'package:mesclainvest/pages/profile/widgets/widgets.dart';
 
@@ -94,9 +95,10 @@ class _PaginaPerfilState extends State<PaginaPerfil> {
                                       title: 'Minha Carteira',
                                     ),
                                     _buildDivider(),
-                                    const TileAcaoPerfil(
+                                    TileAcaoPerfil(
                                       icon: Icons.settings_outlined,
                                       title: 'Configurações',
+                                      onTap: () => context.push('/settings'),
                                     ),
                                     _buildDivider(),
                                     const TileAcaoPerfil(
