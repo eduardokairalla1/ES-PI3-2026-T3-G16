@@ -9,6 +9,7 @@ class TileAcaoPerfil extends StatelessWidget {
   final String? subtitle;   // Subtítulo opcional para mais contexto.
   final Widget? trailing;   // Widget opcional para o lado direito (ex: Switch).
   final bool showArrow;     // Define se deve exibir a seta de navegação (>) ao final.
+  final VoidCallback? onTap; // Callback acionada ao clicar no item.
 
   const TileAcaoPerfil({
     super.key,
@@ -17,6 +18,7 @@ class TileAcaoPerfil extends StatelessWidget {
     this.subtitle,
     this.trailing,
     this.showArrow = true,
+    this.onTap,
   });
 
   @override
@@ -32,9 +34,12 @@ class TileAcaoPerfil extends StatelessWidget {
             ),
           );
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      child: Row(
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(20),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        child: Row(
         children: [
           // Container do ícone com fundo cinza arredondado (estilo Apple/Moderno).
           Container(
@@ -79,6 +84,7 @@ class TileAcaoPerfil extends StatelessWidget {
             const Icon(Icons.chevron_right, size: 20, color: Color(0xFF111111)),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 }
