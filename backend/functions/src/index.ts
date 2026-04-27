@@ -14,3 +14,4 @@ import './configs';
  * --- EXPORTS ---
  */
 export {onUserCreated} from './responders/index';
+export {onGetProfile} from './responders/index';
