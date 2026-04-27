@@ -69,7 +69,6 @@ export async function handleOnGetProfile(request: CallableRequest)
             cpf: user.cpf,
             phone: user.phone,
             birthDate: user.birth_date,
-            status: user.status,
             createdAt: user.created_at,
             updatedAt: user.updated_at,
         };
