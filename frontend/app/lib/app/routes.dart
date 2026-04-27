@@ -8,13 +8,14 @@ import 'package:mesclainvest/pages/auth/register.dart';
 import 'package:mesclainvest/pages/dashboard/pagina_dashboard.dart';
 import 'package:mesclainvest/pages/home/home.dart';
 import 'package:mesclainvest/pages/profile/pagina_perfil.dart';
+import 'package:mesclainvest/pages/profile/pagina_configuracoes.dart';
 
 
 /// --- GLOBAIS ---
 
 // inicializa o roteador do app
 final router = GoRouter(
-  initialLocation: '/',
+  initialLocation: '/profile',
   redirect: (context, state) {
 
     // verifica se o usuário está logado
@@ -51,6 +52,10 @@ final router = GoRouter(
     GoRoute(
       path: '/profile',
       builder: (context, state) => const PaginaPerfil(),
+    ),
+    GoRoute(
+      path: '/settings',
+      builder: (context, state) => const PaginaConfiguracoes(),
     ),
   ],
 );
