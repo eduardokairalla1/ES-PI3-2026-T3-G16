@@ -9,6 +9,7 @@
  */
 import {onCall} from 'firebase-functions/v2/https';
 import {handleOnUserCreated} from '../services/user/onUserCreated';
+import {handleOnGetProfile} from '../services/user/onGetProfile';
 
 
 
@@ -16,5 +17,6 @@ import {handleOnUserCreated} from '../services/user/onUserCreated';
  * CODE
  */
 
-// export the callable function
+// export the callable functions
 export const onUserCreated = onCall(handleOnUserCreated);
+export const onGetProfile  = onCall(handleOnGetProfile);

@@ -7,6 +7,7 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:mesclainvest/core/exceptions/auth.dart';
 import 'package:mesclainvest/core/exceptions/infrastructure.dart';
+import 'package:mesclainvest/core/models/user_profile.dart';
 
 
 // --- CODE ---
@@ -128,6 +129,70 @@ class AuthService {
         message: e.toString(),
         originalError: e,
         stackTrace: StackTrace.current
+      );
+    }
+  }
+
+
+  /// I send a password reset email to the given address.
+  ///
+  /// :param email: the email address to send the reset link to
+  ///
+  /// :throws AuthException: if the email is invalid or not found
+  /// :throws InfrastructureException: if any other error occurs
+  ///
+  /// :returns: void
+  Future<void> sendPasswordResetEmail(String email) async {
+    try {
+      await _auth.sendPasswordResetEmail(email: email);
+    }
+
+    // error occurred in Firebase Authentication: throw a custom AuthException
+    on FirebaseAuthException catch (e) {
+      throw AuthException.fromFirebaseCode(
+        e.code,
+        originalError: e,
+        stackTrace:    StackTrace.current,
+      ) ?? InfrastructureException(
+        originalError: e,
+        stackTrace:    StackTrace.current,
+      );
+    }
+
+    // any other error: throw an InfrastructureException
+    catch (e) {
+      throw InfrastructureException(
+        message:      e.toString(),
+        originalError: e,
+        stackTrace:    StackTrace.current,
+      );
+    }
+  }
+
+
+  /// I fetch the authenticated user's profile from the backend.
+  ///
+  /// :throws InfrastructureException: if the call fails
+  ///
+  /// :returns: the user's [UserProfile]
+  Future<UserProfile> getProfile() async {
+    try {
+
+      // call onGetProfile backend function
+      final result = await FirebaseFunctions.instance
+          .httpsCallable('onGetProfile')
+          .call<Map<String, dynamic>>();
+
+      // build and return a UserProfile from the result
+      return UserProfile.fromMap(Map<String, dynamic>.from(result.data));
+    }
+
+    // any error: throw an InfrastructureException
+    catch (e) {
+      throw InfrastructureException(
+        message: e.toString(),
+        originalError: e,
+        stackTrace: StackTrace.current,
       );
     }
   }
