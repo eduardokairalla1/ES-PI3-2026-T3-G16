@@ -1,5 +1,6 @@
-// Profile widgets barrel file.
-
+﻿/// Barrel file da feature de perfil.
+///
+/// Centraliza exports dos widgets para simplificar imports nas telas.
 export 'profile_header.dart';
 export 'profile_user_info.dart';
 export 'profile_stats_card.dart';
@@ -13,3 +14,4 @@ export 'botao_configuracoes/settings_section_title.dart';
 export 'botao_configuracoes/profile_settings_button.dart';
 
 export 'botao_ajuda/profile_help_button.dart';
+

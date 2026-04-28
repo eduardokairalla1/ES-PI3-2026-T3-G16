@@ -1,6 +1,7 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+/// Título de seção usado em telas de configurações/suporte.
 class SettingsSectionTitle extends StatelessWidget {
   final String title;
 
@@ -22,3 +23,4 @@ class SettingsSectionTitle extends StatelessWidget {
     );
   }
 }
+

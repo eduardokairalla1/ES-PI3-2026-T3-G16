@@ -1,10 +1,7 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// [ProfileHeader] representa a barra superior da tela de perfil.
-/// 
-/// Ela contém o logotipo minimalista "M" e o nome do aplicativo centralizados,
-/// seguindo o padrão visual de branding do projeto.
+/// Cabeçalho fixo exibido no topo da tela de perfil.
 class ProfileHeader extends StatelessWidget {
   const ProfileHeader({super.key});
 
@@ -15,14 +12,11 @@ class ProfileHeader extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
       decoration: const BoxDecoration(
         color: Colors.white,
-        border: Border(
-          bottom: BorderSide(color: Color(0xFFE2E2E2)), // Linha sutil de separação na parte inferior.
-        ),
+        border: Border(bottom: BorderSide(color: Color(0xFFE2E2E2))),
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.center, // Centraliza os elementos na barra.
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Container circular que simula o logo da Mescla.
           Container(
             width: 32,
             height: 32,
@@ -41,7 +35,6 @@ class ProfileHeader extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-          // Texto de branding ao lado do logo.
           Text(
             'Mescla Invest',
             style: GoogleFonts.inter(
@@ -55,3 +48,4 @@ class ProfileHeader extends StatelessWidget {
     );
   }
 }
+

@@ -1,8 +1,9 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mesclainvest/pages/profile/widgets/widgets.dart';
 
+/// Tela dedicada para ajuda e suporte ao usuário.
 class ProfileSupportPage extends StatelessWidget {
   const ProfileSupportPage({super.key});
 
@@ -72,6 +73,7 @@ class ProfileSupportPage extends StatelessWidget {
     );
   }
 
+  /// Cabeçalho da tela de suporte.
   PreferredSizeWidget _buildAppBar(BuildContext context) {
     return AppBar(
       backgroundColor: Colors.white,
@@ -96,6 +98,7 @@ class ProfileSupportPage extends StatelessWidget {
     );
   }
 
+  /// Feedback para ações ainda em desenvolvimento.
   void _showPendingMessage(BuildContext context, String action) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -105,3 +108,4 @@ class ProfileSupportPage extends StatelessWidget {
     );
   }
 }
+

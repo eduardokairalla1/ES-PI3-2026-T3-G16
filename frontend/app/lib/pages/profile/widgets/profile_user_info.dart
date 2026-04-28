@@ -1,11 +1,8 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mesclainvest/pages/profile/controllers/profile_controller.dart';
 
-/// [ProfileUserInfo] é responsável por exibir os dados principais de identificação do usuário.
-/// 
-/// Inclui o Avatar circular com a inicial do nome, o nome completo, e-mail e
-/// o selo de verificação de perfil.
+/// Bloco de identificação do usuário no perfil.
 class ProfileUserInfo extends StatelessWidget {
   final ProfileController controller;
 
@@ -19,7 +16,6 @@ class ProfileUserInfo extends StatelessWidget {
     return Column(
       children: [
         const SizedBox(height: 24),
-        // Avatar circular exibindo a inicial do nome do usuário.
         CircleAvatar(
           radius: 42,
           backgroundColor: Colors.black,
@@ -33,7 +29,6 @@ class ProfileUserInfo extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 14),
-        // Nome do usuário em negrito.
         Text(
           data.name,
           style: GoogleFonts.inter(
@@ -42,7 +37,6 @@ class ProfileUserInfo extends StatelessWidget {
             color: const Color(0xFF1A1A1A),
           ),
         ),
-        // E-mail em cor mais suave para hierarquia visual.
         Text(
           data.email,
           style: GoogleFonts.inter(
@@ -52,7 +46,6 @@ class ProfileUserInfo extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 12),
-        // Tag "Perfil Verificado" estilizada como uma pílula (pill shape).
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
           decoration: BoxDecoration(
@@ -79,3 +72,4 @@ class ProfileUserInfo extends StatelessWidget {
     );
   }
 }
+

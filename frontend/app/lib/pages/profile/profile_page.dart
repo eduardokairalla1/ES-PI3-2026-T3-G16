@@ -1,7 +1,11 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:mesclainvest/pages/profile/controllers/profile_controller.dart';
 import 'package:mesclainvest/pages/profile/widgets/widgets.dart';
 
+/// Tela principal de perfil do usuário.
+///
+/// Esta tela monta a estrutura visual do perfil e reage ao estado
+/// do [ProfileController].
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
 
@@ -10,6 +14,7 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
+  /// Controlador responsável por carregar e gerenciar o estado da tela.
   final ProfileController _controller = ProfileController();
 
   @override
@@ -44,6 +49,8 @@ class _ProfilePageState extends State<ProfilePage> {
                             children: [
                               ProfileUserInfo(controller: _controller),
                               ProfileStatsCard(controller: _controller),
+
+                              // Bloco de segurança da conta.
                               _section(
                                 child: ProfileActionTile(
                                   icon: Icons.shield_outlined,
@@ -65,6 +72,8 @@ class _ProfilePageState extends State<ProfilePage> {
                                 ),
                               ),
                               const SizedBox(height: 16),
+
+                              // Bloco principal de ações do perfil.
                               _section(
                                 child: Column(
                                   children: [
@@ -116,6 +125,7 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
+  /// Container visual padrão usado para agrupar seções da tela.
   Widget _section({required Widget child}) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 14),
@@ -128,6 +138,7 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
+  /// Divisor horizontal entre itens de ação.
   Widget _divider() {
     return Container(
       margin: const EdgeInsets.only(left: 64),
@@ -136,3 +147,4 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 }
+

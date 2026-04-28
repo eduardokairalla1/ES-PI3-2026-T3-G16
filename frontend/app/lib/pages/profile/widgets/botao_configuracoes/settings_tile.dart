@@ -1,6 +1,7 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+/// Item clicável de configuração com suporte a modo destrutivo.
 class SettingsTile extends StatelessWidget {
   final IconData icon;
   final String title;
@@ -18,7 +19,7 @@ class SettingsTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = isDestructive ? Colors.red : Colors.black;
-    
+
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(20),
@@ -49,3 +50,4 @@ class SettingsTile extends StatelessWidget {
     );
   }
 }
+

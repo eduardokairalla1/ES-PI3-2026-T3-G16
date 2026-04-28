@@ -1,11 +1,8 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mesclainvest/pages/profile/controllers/profile_controller.dart';
 
-/// [ProfileLogoutButton] representa a ação de logout na tela de perfil.
-/// 
-/// É estilizado como um botão de largura total com fundo branco, borda leve
-/// e uma sombra sutil para se destacar dos outros itens de menu.
+/// Botão de saída da conta com confirmação antes do logout.
 class ProfileLogoutButton extends StatelessWidget {
   final ProfileController controller;
 
@@ -26,7 +23,7 @@ class ProfileLogoutButton extends StatelessWidget {
           ],
         ),
         child: TextButton(
-          onPressed: () => _mostrarConfirmacaoSair(context),
+          onPressed: () => _showLogoutConfirmation(context),
           style: TextButton.styleFrom(
             backgroundColor: Colors.white,
             minimumSize: const Size(double.infinity, 56),
@@ -55,8 +52,8 @@ class ProfileLogoutButton extends StatelessWidget {
     );
   }
 
-  /// Exibe um modal de confirmação estilizado antes de realizar o logout.
-  void _mostrarConfirmacaoSair(BuildContext context) {
+  /// Abre um diálogo para confirmar a ação de logout.
+  void _showLogoutConfirmation(BuildContext context) {
     showDialog(
       context: context,
       builder: (context) => Dialog(
@@ -67,11 +64,10 @@ class ProfileLogoutButton extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Ícone de alerta visual
               Container(
                 padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF5F5F5),
+                decoration: const BoxDecoration(
+                  color: Color(0xFFF5F5F5),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(Icons.logout_rounded, size: 32, color: Colors.black),
@@ -87,7 +83,7 @@ class ProfileLogoutButton extends StatelessWidget {
               ),
               const SizedBox(height: 10),
               Text(
-                'Tem certeza que deseja encerrar sua sessão? Você precisará fazer login novamente para acessar seus investimentos.',
+                'Tem certeza que deseja encerrar sua sessao? Voce precisara fazer login novamente para acessar seus investimentos.',
                 textAlign: TextAlign.center,
                 style: GoogleFonts.inter(
                   fontSize: 14,
@@ -98,7 +94,6 @@ class ProfileLogoutButton extends StatelessWidget {
               const SizedBox(height: 28),
               Row(
                 children: [
-                  // Botão de Cancelar
                   Expanded(
                     child: TextButton(
                       onPressed: () => Navigator.pop(context),
@@ -118,12 +113,11 @@ class ProfileLogoutButton extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  // Botão de Sair (Confirmação)
                   Expanded(
                     child: ElevatedButton(
                       onPressed: () {
-                        Navigator.pop(context); // Fecha o dialog
-                        controller.logout(); // Executa o logout
+                        Navigator.pop(context);
+                        controller.logout();
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.black,
@@ -136,9 +130,7 @@ class ProfileLogoutButton extends StatelessWidget {
                       ),
                       child: Text(
                         'Sair',
-                        style: GoogleFonts.inter(
-                          fontWeight: FontWeight.w700,
-                        ),
+                        style: GoogleFonts.inter(fontWeight: FontWeight.w700),
                       ),
                     ),
                   ),
@@ -151,3 +143,4 @@ class ProfileLogoutButton extends StatelessWidget {
     );
   }
 }
+

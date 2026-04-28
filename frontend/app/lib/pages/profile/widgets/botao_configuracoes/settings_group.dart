@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
+/// Container de agrupamento para listas de configurações.
 class SettingsGroup extends StatelessWidget {
   final List<Widget> children;
 
@@ -13,13 +14,12 @@ class SettingsGroup extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: const Color(0xFFEBEBEB)),
       ),
-      child: Column(
-        children: children,
-      ),
+      child: Column(children: children),
     );
   }
 }
 
+/// Divisor padrão entre itens de configuração.
 class SettingsDivider extends StatelessWidget {
   const SettingsDivider({super.key});
 
@@ -32,3 +32,4 @@ class SettingsDivider extends StatelessWidget {
     );
   }
 }
+

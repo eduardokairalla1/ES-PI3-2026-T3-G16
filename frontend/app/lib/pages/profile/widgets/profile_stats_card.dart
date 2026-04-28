@@ -1,11 +1,8 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mesclainvest/pages/profile/controllers/profile_controller.dart';
 
-/// [ProfileStatsCard] exibe um resumo numérico da atividade do usuário.
-/// 
-/// Apresenta três métricas principais: Investimentos ativos, Valor total aplicado
-/// e Startups favoritadas, organizadas horizontalmente com divisores entre elas.
+/// Card com resumo de indicadores do perfil.
 class ProfileStatsCard extends StatelessWidget {
   final ProfileController controller;
 
@@ -13,9 +10,7 @@ class ProfileStatsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Recupera os dados do controlador.
     final data = controller.data;
-    // Se os dados ainda não estiverem disponíveis, não renderiza nada (shrink).
     if (data == null) return const SizedBox.shrink();
 
     return Container(
@@ -29,18 +24,18 @@ class ProfileStatsCard extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          _buildStatItem(data.investments, 'Investimentos'),
-          _buildDivider(), // Divisor vertical entre as métricas.
-          _buildStatItem(data.investedAmount, 'Aplicado'),
-          _buildDivider(),
-          _buildStatItem(data.favorites, 'Favoritas'),
+          _statItem(data.investments, 'Investimentos'),
+          _divider(),
+          _statItem(data.investedAmount, 'Aplicado'),
+          _divider(),
+          _statItem(data.favorites, 'Favoritas'),
         ],
       ),
     );
   }
 
-  /// Constrói um item individual de estatística (Valor em cima, Label embaixo).
-  Widget _buildStatItem(String value, String label) {
+  /// Monta um item com valor + rótulo.
+  Widget _statItem(String value, String label) {
     return Column(
       children: [
         Text(
@@ -64,8 +59,8 @@ class ProfileStatsCard extends StatelessWidget {
     );
   }
 
-  /// Helper para criar a linha vertical fina de separação.
-  Widget _buildDivider() {
+  /// Divisor vertical entre os indicadores.
+  Widget _divider() {
     return const SizedBox(
       height: 36,
       child: VerticalDivider(
@@ -76,3 +71,4 @@ class ProfileStatsCard extends StatelessWidget {
     );
   }
 }
+
