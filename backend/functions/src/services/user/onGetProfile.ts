@@ -63,13 +63,15 @@ export async function handleOnGetProfile(request: CallableRequest)
 
         // return user profile data
         return {
-            uid: user.uid,
+            birthDate: user.birth_date,
+            cpf: user.cpf,
+            createdAt: user.created_at,
             email: user.email,
             fullName: user.full_name,
-            cpf: user.cpf,
             phone: user.phone,
-            birthDate: user.birth_date,
-            createdAt: user.created_at,
+            photoUrl: user.photo_url ?? null,
+            twoFaEnabled: user.two_fa_enabled ?? false,
+            uid: user.uid,
             updatedAt: user.updated_at,
         };
     }
@@ -86,7 +88,7 @@ export async function handleOnGetProfile(request: CallableRequest)
         // for any other errors, log and throw a generic internal error
         const internal = new InternalError(
             'Failed to fetch user profile.',
-            error
+            error,
         );
         logger.error(internal.message, internal.cause);
         throw new HttpsError('internal', internal.message);
