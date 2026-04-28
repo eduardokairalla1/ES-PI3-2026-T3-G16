@@ -14,13 +14,11 @@ class PaginaDashboard extends StatefulWidget {
 }
 
 class _PaginaDashboardState extends State<PaginaDashboard> {
-  // Controlador de estado e dados.
   final DashboardController _controller = DashboardController();
 
   @override
   void initState() {
     super.initState();
-    // Carrega dados iniciais via API.
     _controller.loadDashboard();
   }
 
@@ -30,7 +28,6 @@ class _PaginaDashboardState extends State<PaginaDashboard> {
     super.dispose();
   }
 
-  /// Renderização baseada no estado do controller.
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
@@ -39,30 +36,24 @@ class _PaginaDashboardState extends State<PaginaDashboard> {
         return Scaffold(
           backgroundColor: Colors.white,
           body: SafeArea(
+            bottom: false,
             child: _controller.isLoading
                 ? const Center(child: CircularProgressIndicator(color: Colors.black))
                 : SingleChildScrollView(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Cabeçalho — Barra Superior
-                        CabecalhoDashboard(controller: _controller),
-
-                        // Patrimônio atual
+                        const CabecalhoDashboard(),
                         CartaoPatrimonio(controller: _controller),
-                        
-                        // Ações rápidas (Depósito, Compra, Venda, Extrato)
                         const BotoesAcao(),
-                        
-                        // Indicadores de Mercado (KPIs)
                         ResumoMercado(controller: _controller),
-                        // TODO: Listagem de startups
-                        // TODO: Ativos da carteira
                       ],
                     ),
                   ),
           ),
-          // TODO: Navegação Global (BottomNavigationBar)
+          bottomNavigationBar: const SafeArea(
+            child: BottomNav(currentIndex: 0),
+          ),
         );
       },
     );
