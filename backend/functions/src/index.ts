@@ -13,5 +13,5 @@ import './configs';
 /**
  * --- EXPORTS ---
  */
-export {onUserCreated} from './responders/index';
-export {onGetProfile} from './responders/index';
+export {onUserCreated, onGetProfile, onUpdateProfile, onToggle2FA} from './responders/index';
+export {onGetStartups, onGetStartup, onSendQuestion, onGetQuestions} from './responders/index';
