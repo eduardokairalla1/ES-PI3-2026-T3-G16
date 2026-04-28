@@ -1,15 +1,15 @@
-/// Este arquivo funciona como um "Barrel File" (arquivo barril).
-/// 
-/// Ele centraliza a exportação de todos os widgets da pasta 'profile',
-/// permitindo que outros arquivos importem todos os widgets necessários com uma única linha:
-/// `import 'package:mesclainvest/pages/profile/widgets/widgets.dart';`
+// Profile widgets barrel file.
 
-export 'cabecalho_perfil.dart';
-export 'info_usuario.dart';
-export 'cartao_estatisticas.dart';
-export 'tile_acao_perfil.dart';
-export 'botao_sair.dart';
-export 'navegacao_inferior_mock.dart';
-export 'botão_configurações/tile_configuracao.dart';
-export 'botão_configurações/grupo_configuracoes.dart';
-export 'botão_configurações/titulo_secao.dart';
+export 'profile_header.dart';
+export 'profile_user_info.dart';
+export 'profile_stats_card.dart';
+export 'profile_action_tile.dart';
+export 'profile_logout_button.dart';
+export 'profile_bottom_nav_mock.dart';
+
+export 'botao_configuracoes/settings_tile.dart';
+export 'botao_configuracoes/settings_group.dart';
+export 'botao_configuracoes/settings_section_title.dart';
+export 'botao_configuracoes/profile_settings_button.dart';
+
+export 'botao_ajuda/profile_help_button.dart';
