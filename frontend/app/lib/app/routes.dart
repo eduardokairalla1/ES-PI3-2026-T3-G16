@@ -8,8 +8,9 @@ import 'package:mesclainvest/pages/auth/login.dart';
 import 'package:mesclainvest/pages/auth/register.dart';
 import 'package:mesclainvest/pages/dashboard/pagina_dashboard.dart';
 import 'package:mesclainvest/pages/home/home.dart';
-import 'package:mesclainvest/pages/profile/pagina_perfil.dart';
-import 'package:mesclainvest/pages/profile/pagina_configuracoes.dart';
+import 'package:mesclainvest/pages/profile/profile_page.dart';
+import 'package:mesclainvest/pages/profile/profile_settings_page.dart';
+import 'package:mesclainvest/pages/profile/profile_support_page.dart';
 
 
 /// --- GLOBAIS ---
@@ -56,11 +57,15 @@ final router = GoRouter(
     ),
     GoRoute(
       path: '/profile',
-      builder: (context, state) => const PaginaPerfil(),
+      builder: (context, state) => const ProfilePage(),
     ),
     GoRoute(
       path: '/settings',
-      builder: (context, state) => const PaginaConfiguracoes(),
+      builder: (context, state) => const ProfileSettingsPage(),
+    ),
+    GoRoute(
+      path: '/support',
+      builder: (context, state) => const ProfileSupportPage(),
     ),
   ],
 );
