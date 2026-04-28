@@ -3,6 +3,7 @@
 /// --- IMPORTS ---
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mesclainvest/pages/auth/forgot_password.dart';
 import 'package:mesclainvest/pages/auth/login.dart';
 import 'package:mesclainvest/pages/auth/register.dart';
 import 'package:mesclainvest/pages/dashboard/pagina_dashboard.dart';
@@ -44,6 +45,10 @@ final router = GoRouter(
     GoRoute(
       path: '/register',
       builder: (context, state) => const RegisterPage(),
+    ),
+    GoRoute(
+      path: '/forgot-password',
+      builder: (context, state) => const ForgotPasswordPage(),
     ),
     GoRoute(
       path: '/dashboard',
