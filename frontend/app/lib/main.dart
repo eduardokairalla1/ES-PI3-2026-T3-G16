@@ -3,6 +3,7 @@ library;
 
 // --- IMPORTS ---
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -32,6 +33,8 @@ Future<void> main() async {
     int.tryParse(dotenv.env['FUNCTIONS_EMULATOR_PORT'] ?? '5001') ?? 5001;
   final storageEmulatorPort =
     int.tryParse(dotenv.env['STORAGE_EMULATOR_PORT'] ?? '9199') ?? 9199;
+  final firestoreEmulatorPort =
+    int.tryParse(dotenv.env['FIRESTORE_EMULATOR_PORT'] ?? '8080') ?? 8080;
 
   // initialize firebase client
   await Firebase.initializeApp(
@@ -41,6 +44,7 @@ Future<void> main() async {
   // emulator config is enabled: configure firebase auth to use it
   if (useEmulator == true) {
     await FirebaseAuth.instance.useAuthEmulator(emulatorHost, authEmulatorPort);
+    FirebaseFirestore.instance.useFirestoreEmulator(emulatorHost, firestoreEmulatorPort);
     FirebaseFunctions.instance.useFunctionsEmulator(emulatorHost, functionsEmulatorPort);
     await FirebaseStorage.instance.useStorageEmulator(emulatorHost, storageEmulatorPort);
   }
