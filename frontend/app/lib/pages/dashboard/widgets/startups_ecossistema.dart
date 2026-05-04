@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:mesclainvest/pages/dashboard/controllers/dashboard_controller.dart';
 import 'package:mesclainvest/pages/startup/models/startup_model.dart';
 import 'package:mesclainvest/shared/styles/money_style.dart';
 
@@ -8,15 +9,13 @@ final _currencyFmt = NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$', decim
 
 class StartupsEcossistema extends StatelessWidget {
 
-  final List<StartupModel> startups;
+  final DashboardController controller;
 
-  const StartupsEcossistema({super.key, required this.startups});
+  const StartupsEcossistema({super.key, required this.controller});
 
   @override
   Widget build(BuildContext context) {
-    if (startups.isEmpty) return const SizedBox.shrink();
-
-    final preview = startups.take(4).toList();
+    final filtered = controller.filteredStartups;
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
@@ -50,7 +49,59 @@ class StartupsEcossistema extends StatelessWidget {
             ),
           ),
 
-          ...preview.map((s) => _StartupRow(startup: s)),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+            child: Row(
+              children: [
+                _FilterChip(
+                  label: 'Todas',
+                  isSelected: controller.selectedStartupFilter == null,
+                  onTap: () => controller.filterStartups(null),
+                ),
+                _FilterChip(
+                  label: 'Novas',
+                  isSelected: controller.selectedStartupFilter == 'new',
+                  onTap: () => controller.filterStartups('new'),
+                ),
+                _FilterChip(
+                  label: 'Operando',
+                  isSelected: controller.selectedStartupFilter == 'operating',
+                  onTap: () => controller.filterStartups('operating'),
+                ),
+                _FilterChip(
+                  label: 'Favoritas',
+                  isSelected: controller.selectedStartupFilter == 'Favoritas',
+                  onTap: () => controller.filterStartups('Favoritas'),
+                  icon: Icons.favorite,
+                  iconColor: Colors.red.shade400,
+                ),
+              ],
+            ),
+          ),
+
+          if (filtered.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 24),
+              child: Center(
+                child: Column(
+                  children: [
+                    Icon(Icons.business_center_outlined, size: 40, color: Colors.grey.shade300),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Nenhuma startup encontrada.',
+                      style: TextStyle(color: Colors.grey.shade500, fontSize: 13),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          else
+            ...filtered.take(4).map((s) => _StartupRow(
+                  startup: s,
+                  isFavorite: controller.isFavorite(s.id),
+                  onFavoriteTap: () => controller.toggleFavorite(s.id),
+                )),
 
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
@@ -86,8 +137,14 @@ class StartupsEcossistema extends StatelessWidget {
 class _StartupRow extends StatelessWidget {
 
   final StartupModel startup;
+  final bool isFavorite;
+  final VoidCallback onFavoriteTap;
 
-  const _StartupRow({required this.startup});
+  const _StartupRow({
+    required this.startup,
+    required this.isFavorite,
+    required this.onFavoriteTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -139,6 +196,83 @@ class _StartupRow extends StatelessWidget {
               ],
             ),
 
+            const SizedBox(width: 4),
+
+            IconButton(
+              onPressed: onFavoriteTap,
+              icon: Icon(
+                isFavorite ? Icons.favorite : Icons.favorite_border,
+                color: isFavorite ? Colors.red : Colors.grey.shade400,
+                size: 20,
+              ),
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+              splashRadius: 20,
+            ),
+
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+
+class _FilterChip extends StatelessWidget {
+
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+  final IconData? icon;
+  final Color? iconColor;
+
+  const _FilterChip({
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+    this.icon,
+    this.iconColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        margin: const EdgeInsets.symmetric(horizontal: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.black : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected ? Colors.black : Colors.grey.shade300,
+          ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.1),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  )
+                ]
+              : null,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (icon != null) ...[
+              Icon(icon, size: 13, color: isSelected ? Colors.white : (iconColor ?? Colors.grey.shade600)),
+              const SizedBox(width: 5),
+            ],
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                color: isSelected ? Colors.white : Colors.grey.shade700,
+              ),
+            ),
           ],
         ),
       ),
