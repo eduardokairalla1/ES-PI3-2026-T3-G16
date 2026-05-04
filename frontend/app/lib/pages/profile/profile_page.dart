@@ -5,6 +5,7 @@
 // --- IMPORTS ---
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import 'package:mesclainvest/app/app_state.dart';
 import 'package:mesclainvest/core/models/user_profile.dart';
 import 'package:mesclainvest/pages/profile/controllers/profile_controller.dart';
@@ -24,6 +25,12 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage> {
 
   final ProfileController _controller = ProfileController();
+
+  @override
+  void initState() {
+    super.initState();
+    _controller.loadStats();
+  }
 
   @override
   void dispose() {

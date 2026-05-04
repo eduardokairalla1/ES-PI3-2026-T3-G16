@@ -8,7 +8,7 @@
  * IMPORTS
  */
 import {HttpsError} from 'firebase-functions/v2/https';
-import {getUser} from '../../db/users/storage';
+import {getUser, getUserCount} from '../../db/users/storage';
 import {getUserInvestments} from '../../db/investments/storage';
 import {getUserFavorites} from '../../db/favorites/storage';
 import {getStartups} from '../../db/startups/storage';
@@ -56,11 +56,12 @@ export async function handleOnGetDashboard(request: CallableRequest)
         // fetch all data in parallel for performance
         logger.info(`Fetching dashboard data for user "${uid}"...`);
 
-        const [user, investments, favorites, startups] = await Promise.all([
+        const [user, investments, favorites, startups, userCount] = await Promise.all([
             getUser(uid),
             getUserInvestments(uid),
             getUserFavorites(uid),
             getStartups(),
+            getUserCount(),
         ]);
 
         // user not found
@@ -135,7 +136,7 @@ export async function handleOnGetDashboard(request: CallableRequest)
             rendimentoDiarioPorcentagem,
             rendimentoDiarioValor,
             rentabilidadeMediaMercado: rentabilidadeMedia,
-            totalInvestidoresMercado: 9900, // TODO: implement real investor count query
+            totalInvestidoresMercado: userCount,
             totalStartupsMercado: totalStartups,
         };
     }
