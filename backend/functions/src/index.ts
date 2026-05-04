@@ -15,3 +15,4 @@ import './configs';
  */
 export {onUserCreated, onGetProfile, onUpdateProfile, onToggle2FA} from './responders/index';
 export {onGetStartups, onGetStartup, onSendQuestion, onGetQuestions} from './responders/index';
+export {onGetDashboard, onToggleFavorite} from './responders/index';

@@ -21,6 +21,26 @@ import type {FavoriteDocument} from './model';
  */
 
 /**
+ * I get the Firestore document ID for a user by their Auth UID.
+ *
+ * @param uid Firebase Auth UID
+ *
+ * @returns Firestore document ID, or null if not found
+ */
+async function getUserDocId(uid: string): Promise<string | null>
+{
+    const snapshot = await db.collection('users')
+        .where('uid', '==', uid)
+        .limit(1)
+        .get();
+
+    if (snapshot.empty) return null;
+
+    return snapshot.docs[0].id;
+}
+
+
+/**
  * I get all favorite startup IDs for a user.
  *
  * @param uid Firebase Auth UID of the user
@@ -29,9 +49,12 @@ import type {FavoriteDocument} from './model';
  */
 export async function getUserFavorites(uid: string): Promise<FavoriteDocument[]>
 {
+    const userDocId = await getUserDocId(uid);
+    if (userDocId === null) return [];
+
     const snapshot = await db
         .collection('users')
-        .doc(uid)
+        .doc(userDocId)
         .collection('favorites')
         .get();
 
@@ -50,9 +73,15 @@ export async function getUserFavorites(uid: string): Promise<FavoriteDocument[]>
  */
 export async function toggleFavorite(uid: string, startupId: string): Promise<boolean>
 {
+    const userDocId = await getUserDocId(uid);
+    if (userDocId === null)
+    {
+        throw new Error(`User "${uid}" not found.`);
+    }
+
     const favCol = db
         .collection('users')
-        .doc(uid)
+        .doc(userDocId)
         .collection('favorites');
 
     // check if already favorited
