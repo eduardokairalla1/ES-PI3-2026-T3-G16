@@ -5,6 +5,7 @@ import 'package:mesclainvest/app/app_state.dart';
 import 'package:mesclainvest/pages/dashboard/models/dashboard_data.dart';
 
 class DashboardService {
+  final _functions = FirebaseFunctions.instance;
 
   /// Consulta dados consolidados do usuário.
   Future<DashboardData> fetchUserDashboardData() async {
@@ -21,4 +22,12 @@ class DashboardService {
     return DashboardData.fromMap(data, nome);
   }
 
+  /// Alterna o status de favorito para uma startup.
+  Future<bool> toggleFavorite(String startupId) async {
+    final result = await _functions
+        .httpsCallable('onToggleFavorite')
+        .call<Map<String, dynamic>>({'startupId': startupId});
+
+    return (result.data as Map)['isFavorited'] as bool;
+  }
 }

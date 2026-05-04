@@ -20,6 +20,8 @@ import {handleOnGetStartup} from '../services/startup/onGetStartup';
 import {handleOnGetStartups} from '../services/startup/onGetStartups';
 import {handleOnGetTokenHistory} from '../services/startup/onGetTokenHistory';
 import {handleOnSendQuestion} from '../services/startup/onSendQuestion';
+import {handleOnGetDashboard} from '../services/dashboard/onGetDashboard';
+import {handleOnToggleFavorite} from '../services/dashboard/onToggleFavorite';
 
 
 /**
@@ -41,3 +43,7 @@ export const onGetStartup       = onCall(handleOnGetStartup);
 export const onSendQuestion     = onCall(handleOnSendQuestion);
 export const onGetQuestions     = onCall(handleOnGetQuestions);
 export const onGetTokenHistory  = onCall(handleOnGetTokenHistory);
+
+// dashboard functions
+export const onGetDashboard    = onCall(handleOnGetDashboard);
+export const onToggleFavorite  = onCall(handleOnToggleFavorite);
