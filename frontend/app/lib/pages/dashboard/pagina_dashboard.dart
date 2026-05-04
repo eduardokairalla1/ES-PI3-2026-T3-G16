@@ -61,11 +61,8 @@ class _PaginaDashboardState extends State<PaginaDashboard> {
           const CabecalhoDashboard(),
           CartaoPatrimonio(controller: _controller),
           const BotoesAcao(),
-          AnimatedBuilder(
-            animation: _controller,
-            builder: (context, _) =>
-                StartupsEcossistema(controller: _controller),
-          ),
+          StartupsEcossistema(controller: _controller),
+          MeusInvestimentos(portfolio: _controller.portfolio),
         ],
       ),
     );
