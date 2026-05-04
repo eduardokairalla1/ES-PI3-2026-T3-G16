@@ -64,7 +64,7 @@ class _PaginaDashboardState extends State<PaginaDashboard> {
           AnimatedBuilder(
             animation: _controller,
             builder: (context, _) =>
-                StartupsEcossistema(startups: _controller.startups),
+                StartupsEcossistema(controller: _controller),
           ),
         ],
       ),
