@@ -146,3 +146,13 @@ export async function toggleUserTwoFA(uid: string): Promise<boolean>
 
     return next;
 }
+/**
+ * I get the total number of users in the system.
+ *
+ * @returns total user count
+ */
+export async function getUserCount(): Promise<number>
+{
+    const snapshot = await db.collection('users').count().get();
+    return snapshot.data().count;
+}
