@@ -91,7 +91,7 @@ class StartupsEcossistema extends StatelessWidget {
         if (controller.data != null) ...[
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: ResumoMercado(data: controller.data!),
+            child: ResumoMercado(controller: controller),
           ),
           const SizedBox(height: 16),
         ],
