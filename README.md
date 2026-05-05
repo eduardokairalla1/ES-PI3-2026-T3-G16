@@ -1,6 +1,6 @@
 # MesclaInvest
 
-Project developed for the **Integrator Project 3** course in Software Engineering at **PUC-Campinas** (2026)
+Project developed for the **Integrator Project 3** course in Software Engineering at **PUC-Campinas** (2026).
 
 ---
 
