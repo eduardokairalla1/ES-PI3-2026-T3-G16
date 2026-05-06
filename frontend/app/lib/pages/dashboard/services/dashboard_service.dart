@@ -31,6 +31,7 @@ class DashboardService {
         .call<Map<String, dynamic>>({'amount': amount});
 
     return (result.data['newBalance'] as num).toDouble();
+  }
   
   /// Busca o histórico de transações.
   Future<List<Map<String, dynamic>>> getTransactions({int limit = 20}) async {
@@ -41,7 +42,5 @@ class DashboardService {
     final List<dynamic> list = result.data['transactions'] ?? [];
     return list.map((e) => Map<String, dynamic>.from(e as Map)).toList();
   }
-}
-
 }
 

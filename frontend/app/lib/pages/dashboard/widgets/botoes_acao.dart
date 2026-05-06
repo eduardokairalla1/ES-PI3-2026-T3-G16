@@ -85,8 +85,8 @@ class BotoesAcao extends StatelessWidget {
                           keyboardType: const TextInputType.numberWithOptions(decimal: true),
                           autofocus: true,
                           decoration: InputDecoration(
-                            labelText: 'Valor (R$)',
-                            prefixText: 'R$ ',
+                            labelText: 'Valor (R\$)',
+                            prefixText: 'R\$ ',
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),

@@ -26,6 +26,16 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 
 
+/**
+ * HELPER: I get the user document ID based on the UID.
+ */
+async function getUserDocId(uid: string): Promise<string | null> {
+    const snapshot = await db.collection('users').where('uid', '==', uid).limit(1).get();
+    if (snapshot.empty) return null;
+    return snapshot.docs[0].id;
+}
+
+
 
 /**
  * I process a transaction from the "Balcão" (trading desk).
