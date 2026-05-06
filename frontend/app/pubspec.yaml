@@ -54,6 +54,9 @@ dependencies:
   go_router: ^17.1.0
   intl: ^0.20.2
 
+  # Charts
+  fl_chart: ^0.70.2
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
