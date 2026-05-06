@@ -6,6 +6,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:mesclainvest/pages/startup/models/startup_model.dart';
+import 'package:mesclainvest/shared/styles/money_style.dart';
 
 
 // --- WIDGET ---
@@ -51,11 +52,7 @@ class StartupInfoCard extends StatelessWidget {
               children: [
                 Text(
                   currencyFmt.format(startup.tokenPrice),
-                  style: const TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.black,
-                  ),
+                  style: moneyStyle(fontSize: 28, fontWeight: FontWeight.w700),
                 ),
                 const SizedBox(height: 2),
                 Text(
