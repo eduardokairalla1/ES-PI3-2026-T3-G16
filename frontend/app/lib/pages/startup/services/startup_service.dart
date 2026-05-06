@@ -43,4 +43,17 @@ class StartupService {
       'text':      text,
     });
   }
+
+  /// I create a buy order for a startup and return the order ID.
+  Future<String> buyTokens(String startupId, int quantity) async {
+    final result = await _functions
+        .httpsCallable('onCreateOrder')
+        .call<Map<String, dynamic>>({
+          'startupId': startupId,
+          'quantity':  quantity,
+          'type':      'buy',
+        });
+
+    return (result.data as Map)['orderId'] as String;
+  }
 }
