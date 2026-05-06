@@ -1,4 +1,4 @@
- * Function callable onDeposit.
+/* Function callable onDeposit.
  *
  * Alex Gabriel Soares Sousa - 24802449
  */
@@ -6,22 +6,23 @@
 /**
  * IMPORTS
  */
-import {HttpsError} from 'firebase-functions/v2/https';
+import { HttpsError } from 'firebase-functions/v2/https';
 import db from '../../configs';
-import {deposit} from '../../db/users/storage';
-import {logger} from '../../utils/logger';
+import { deposit } from '../../db/users/storage';
+import { recordTransaction } from '../../db/transactions/storage';
+import { logger } from '../../utils/logger';
 
 
 /**
  * ERRORS
  */
-import {AuthError} from '../../errors/authError';
+import { AuthError } from '../../errors/authError';
 
 
 /**
  * TYPES
  */
-import type {CallableRequest} from 'firebase-functions/v2/https';
+import type { CallableRequest } from 'firebase-functions/v2/https';
 
 
 /**
@@ -34,28 +35,40 @@ import type {CallableRequest} from 'firebase-functions/v2/https';
  *
  * @param request Body: { amount: number }
  */
-export async function handleOnDeposit(request: CallableRequest)
-{
-    try
-    {
+export async function handleOnDeposit(request: CallableRequest) {
+    try {
         // verify authentication
-        if (request.auth === null || request.auth === undefined)
-        {
+        if (request.auth === null || request.auth === undefined) {
             throw new AuthError('User must be authenticated.');
         }
 
-        const {uid} = request.auth;
-        const {amount} = request.data;
+        const { uid } = request.auth;
+        let { amount } = request.data;
 
         // validation
-        if (typeof amount !== 'number' || amount <= 0)
-        {
+        if (typeof amount !== 'number' || amount <= 0) {
             throw new HttpsError('invalid-argument', 'Amount must be a positive number.');
         }
 
+        if (amount > 100000) {
+            throw new HttpsError('out-of-range', 'Maximum deposit amount is R$ 100.000,00.');
+        }
+
+        // enforce 2 decimal places precision
+        amount = Math.round(amount * 100) / 100;
+
         logger.info(`Processing deposit of R$ ${amount} for user "${uid}"...`);
 
+
         await deposit(uid, amount);
+
+        // Record in transaction history
+        await recordTransaction(uid, {
+            amount: amount,
+            description: 'Depósito em conta',
+            status: 'completed',
+            type: 'deposit',
+        });
         
         // Fetch updated balance
         const updatedUser = await db.collection('users').where('uid', '==', uid).limit(1).get();
@@ -67,10 +80,8 @@ export async function handleOnDeposit(request: CallableRequest)
         };
 
     }
-    catch (error: unknown)
-    {
-        if (error instanceof AuthError)
-        {
+    catch (error: unknown) {
+        if (error instanceof AuthError) {
             throw new HttpsError('unauthenticated', error.message);
         }
 
