@@ -8,6 +8,7 @@
  * IMPORTS
  */
 import {HttpsError} from 'firebase-functions/v2/https';
+import {getOldestSnapshotSince} from '../../db/price_history/storage';
 import {getStartups} from '../../db/startups/storage';
 import {logger} from '../../utils/logger';
 
@@ -58,26 +59,41 @@ export async function handleOnGetStartups(request: CallableRequest)
         const startups = await getStartups(parsed.stage);
         logger.info(`Fetched ${startups.length} startups.`);
 
+        // compute weekly change percent for each startup in parallel
+        const weekAgo = new Date();
+        weekAgo.setDate(weekAgo.getDate() - 7);
+
+        const changePercents = await Promise.all(
+            startups.map(s => getOldestSnapshotSince(s.id, weekAgo)),
+        );
+
         return {
-            startups: startups.map(s => (
-                {
-                    advisors: s.advisors,
-                    capitalRaised: s.capital_raised,
-                    createdAt: s.created_at,
-                    description: s.description,
+            startups: startups.map((s, i) =>
+            {
+                const oldSnapshot = changePercents[i];
+                const changePercent = oldSnapshot !== null && oldSnapshot.price !== 0
+                    ? ((s.token_price - oldSnapshot.price) / oldSnapshot.price) * 100
+                    : null;
+
+                return {
+                    advisors:         s.advisors,
+                    capitalRaised:    s.capital_raised,
+                    changePercent,
+                    createdAt:        s.created_at,
+                    description:      s.description,
                     executiveSummary: s.executive_summary,
-                    id: s.id,
-                    logoUrl: s.logo_url,
-                    name: s.name,
-                    partners: s.partners,
-                    stage: s.stage,
-                    tagline: s.tagline,
-                    tokenPrice: s.token_price,
-                    totalTokens: s.total_tokens,
-                    updatedAt: s.updated_at,
-                    videoUrl: s.video_url,
-                }
-            )),
+                    id:               s.id,
+                    logoUrl:          s.logo_url,
+                    name:             s.name,
+                    partners:         s.partners,
+                    stage:            s.stage,
+                    tagline:          s.tagline,
+                    tokenPrice:       s.token_price,
+                    totalTokens:      s.total_tokens,
+                    updatedAt:        s.updated_at,
+                    videoUrl:         s.video_url,
+                };
+            }),
         };
     }
 
