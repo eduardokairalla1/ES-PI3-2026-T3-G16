@@ -44,4 +44,3 @@ class DashboardService {
     return list.map((e) => Map<String, dynamic>.from(e as Map)).toList();
   }
 }
-
