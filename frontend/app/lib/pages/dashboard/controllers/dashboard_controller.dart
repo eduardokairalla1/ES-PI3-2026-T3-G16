@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:mesclainvest/pages/catalog/services/catalog_service.dart';
 import 'package:mesclainvest/pages/dashboard/models/dashboard_data.dart';
 import 'package:mesclainvest/pages/dashboard/services/dashboard_service.dart';
+import 'package:mesclainvest/pages/dashboard/models/transaction_model.dart';
 import 'package:mesclainvest/pages/startup/models/startup_model.dart';
 
 class DashboardController extends ChangeNotifier {
@@ -144,6 +145,18 @@ class DashboardController extends ChangeNotifier {
       errorMessage = 'Erro ao realizar depósito: $e';
       notifyListeners();
       rethrow;
+    }
+  }
+
+  /// Busca o histórico de transações recente.
+  Future<List<TransactionModel>> getTransactions() async {
+    try {
+      final list = await _dashboardService.getTransactions();
+      return list.map((m) => TransactionModel.fromMap(m)).toList();
+    } catch (e) {
+      errorMessage = 'Erro ao buscar extrato: $e';
+      notifyListeners();
+      return [];
     }
   }
 }

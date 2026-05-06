@@ -10,89 +10,247 @@ class BotoesAcao extends StatelessWidget {
   const BotoesAcao({super.key, required this.controller});
 
 
+
   /// Abre o pop-up de depósito (Simulação bancária).
   void _mostrarDialogoDeposito(BuildContext context) {
     final TextEditingController valorController = TextEditingController();
+    bool isProcessando = false;
+    bool mostrarConfirmacao = false;
+    double? valorFinal;
 
+    showDialog(
+      context: context,
+      barrierDismissible: !isProcessando,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) {
+          return AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            title: Text(
+              mostrarConfirmacao ? 'Confirmar Depósito' : 'Depositar Saldo',
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            content: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              child: mostrarConfirmacao
+                  ? Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text('Você confirma o depósito de:'),
+                        const SizedBox(height: 12),
+                        Text(
+                          NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$').format(valorFinal),
+                          style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.green),
+                        ),
+                        const SizedBox(height: 16),
+                        const Text(
+                          'Este valor será adicionado instantaneamente à sua carteira simulada.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(fontSize: 13, color: Colors.grey),
+                        ),
+                      ],
+                    )
+                  : Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Digite o valor que deseja simular o depósito em sua conta MesclaInvest.',
+                          style: TextStyle(fontSize: 14, color: Colors.grey),
+                        ),
+                        const SizedBox(height: 20),
+                        TextField(
+                          controller: valorController,
+                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                          autofocus: true,
+                          decoration: InputDecoration(
+                            labelText: 'Valor (R$)',
+                            prefixText: 'R$ ',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(color: Colors.black, width: 2),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: isProcessando ? null : () => Navigator.pop(context),
+                child: const Text('Cancelar', style: TextStyle(color: Colors.grey)),
+              ),
+              ElevatedButton(
+                onPressed: isProcessando
+                    ? null
+                    : () async {
+                        if (!mostrarConfirmacao) {
+                          // Primeiro passo: Validar e mostrar confirmação
+                          final String rawValue = valorController.text.replaceAll('.', '').replaceAll(',', '.');
+                          final double? parsedValue = double.tryParse(rawValue);
+
+                          if (parsedValue != null && parsedValue > 0) {
+                            if (parsedValue > 100000) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('O valor máximo para depósito é R\$ 100.000,00.'),
+                                  backgroundColor: Colors.orange,
+                                ),
+                              );
+                              return;
+                            }
+                            setState(() {
+                              valorFinal = parsedValue;
+                              mostrarConfirmacao = true;
+                            });
+                          } else {
+
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Por favor, insira um valor válido.')),
+                            );
+                          }
+                        } else {
+                          // Segundo passo: Processar depósito
+                          setState(() => isProcessando = true);
+                          try {
+                            await controller.deposit(valorFinal!);
+                            if (context.mounted) {
+                              Navigator.pop(context);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Depósito de R\$ ${valorFinal!.toStringAsFixed(2)} realizado com sucesso!'),
+                                  backgroundColor: Colors.green,
+                                ),
+                              );
+                            }
+                          } catch (e) {
+                            setState(() => isProcessando = false);
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('Erro: $e'), backgroundColor: Colors.red),
+                              );
+                            }
+                          }
+                        }
+                      },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.black,
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: isProcessando
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                      )
+                    : Text(
+                        mostrarConfirmacao ? 'Confirmar' : 'Continuar',
+                        style: const TextStyle(color: Colors.white),
+                      ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+
+
+
+  /// Abre o pop-up de extrato das movimentações.
+  void _mostrarDialogoExtrato(BuildContext context) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text(
-          'Depositar Saldo',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
+        title: Row(
           children: [
+            const Icon(Icons.receipt_long_outlined, color: Colors.black),
+            const SizedBox(width: 12),
             const Text(
-              'Digite o valor que deseja simular o depósito em sua conta MesclaInvest.',
-              style: TextStyle(fontSize: 14, color: Colors.grey),
-            ),
-            const SizedBox(height: 20),
-            TextField(
-              controller: valorController,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              autofocus: true,
-              decoration: InputDecoration(
-                labelText: 'Valor (R$)',
-                prefixText: 'R$ ',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Colors.black, width: 2),
-                ),
-              ),
+              'Extrato Recente',
+              style: TextStyle(fontWeight: FontWeight.bold),
             ),
           ],
+        ),
+        content: SizedBox(
+          width: double.maxFinite,
+          height: 400,
+          child: FutureBuilder<List<TransactionModel>>(
+            future: controller.getTransactions(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator(color: Colors.black));
+              }
+
+              if (snapshot.hasError || !snapshot.hasData || snapshot.data!.isEmpty) {
+                return Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.history_toggle_off, size: 48, color: Colors.grey.shade300),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Nenhuma movimentação encontrada.',
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                  ],
+                );
+              }
+
+              final transactions = snapshot.data!;
+
+              return ListView.separated(
+                itemCount: transactions.length,
+                separatorBuilder: (context, index) => const Divider(height: 1),
+                itemBuilder: (context, index) {
+                  final t = transactions[index];
+                  final isPositive = t.type == 'deposit' || t.type == 'sell';
+                  final color = isPositive ? Colors.green : Colors.red;
+                  final prefix = isPositive ? '+' : '-';
+                  
+                  return ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: color.withOpacity(0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        isPositive ? Icons.add : Icons.remove,
+                        color: color,
+                        size: 20,
+                      ),
+                    ),
+                    title: Text(
+                      t.description,
+                      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                    ),
+                    subtitle: Text(
+                      DateFormat('dd/MM/yyyy HH:mm').format(t.createdAt),
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                    trailing: Text(
+                      '$prefix ${NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$').format(t.amount)}',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: color,
+                      ),
+                    ),
+                  );
+                },
+              );
+            },
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar', style: TextStyle(color: Colors.grey)),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              final String valorText = valorController.text;
-              final double? valor = double.tryParse(valorText.replaceAll(',', '.'));
-              
-              if (valor != null && valor > 0) {
-                try {
-                  // Fecha o teclado
-                  FocusScope.of(context).unfocus();
-                  
-                  // Chama o controller para processar o depósito
-                  await controller.deposit(valor);
-                  
-                  if (context.mounted) {
-                    Navigator.pop(context);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Depósito de R$ ${valor.toStringAsFixed(2)} realizado com sucesso!'),
-                        backgroundColor: Colors.green,
-                      ),
-                    );
-                  }
-                } catch (e) {
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Erro ao realizar depósito: $e'),
-                        backgroundColor: Colors.red,
-                      ),
-                    );
-                  }
-                }
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.black,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            ),
-            child: const Text('Confirmar Depósito', style: TextStyle(color: Colors.white)),
+            child: const Text('Fechar', style: TextStyle(color: Colors.black)),
           ),
         ],
       ),
@@ -133,13 +291,14 @@ class BotoesAcao extends StatelessWidget {
           _BotaoAcaoItem(
             icon: Icons.receipt_long_outlined,
             label: 'Extrato',
-            onTap: () {},
+            onTap: () => _mostrarDialogoExtrato(context),
           ),
         ],
       ),
     );
   }
 }
+
 
 
 /// Botão de ação individual.

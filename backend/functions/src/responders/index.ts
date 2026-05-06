@@ -13,6 +13,7 @@ import {handleOnToggle2FA} from '../services/user/onToggle2FA';
 import {handleOnUpdateProfile} from '../services/user/onUpdateProfile';
 import {handleOnUserCreated} from '../services/user/onUserCreated';
 import {handleOnDeposit} from '../services/user/onDeposit';
+import {handleOnGetTransactions} from '../services/user/onGetTransactions';
 
 import {handleOnGetQuestions} from '../services/startup/onGetQuestions';
 import {handleOnGetStartup} from '../services/startup/onGetStartup';
@@ -32,6 +33,7 @@ export const onGetProfile     = onCall(handleOnGetProfile);
 export const onUpdateProfile  = onCall(handleOnUpdateProfile);
 export const onToggle2FA      = onCall(handleOnToggle2FA);
 export const onDeposit        = onCall(handleOnDeposit);
+export const onGetTransactions = onCall(handleOnGetTransactions);
 
 
 // startup functions
