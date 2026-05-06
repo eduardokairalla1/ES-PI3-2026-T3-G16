@@ -27,12 +27,6 @@ class BotoesAcao extends StatelessWidget {
             label: 'Comprar',
           ),
 
-          // item: vender (venda de ativos)
-          _BotaoAcaoItem(
-            icon: Icons.trending_down,
-            label: 'Vender',
-          ),
-
           // item: vender (saque)
           _BotaoAcaoItem(
             icon: Icons.account_balance_outlined,
