@@ -33,5 +33,15 @@ class DashboardService {
 
     return (result.data['newBalance'] as num).toDouble();
   }
+
+  /// Busca o histórico de transações.
+  Future<List<Map<String, dynamic>>> getTransactions({int limit = 20}) async {
+    final result = await _functions
+        .httpsCallable('onGetTransactions')
+        .call<Map<String, dynamic>>({'limit': limit});
+
+    final List<dynamic> list = result.data['transactions'] ?? [];
+    return list.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+  }
 }
 

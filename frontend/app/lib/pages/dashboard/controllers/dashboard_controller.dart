@@ -6,6 +6,7 @@ import 'package:mesclainvest/pages/dashboard/models/dashboard_data.dart';
 import 'package:mesclainvest/pages/dashboard/models/portfolio_item_model.dart';
 import 'package:mesclainvest/pages/dashboard/services/dashboard_service.dart';
 import 'package:mesclainvest/pages/dashboard/services/portfolio_service.dart';
+import 'package:mesclainvest/pages/dashboard/models/transaction_model.dart';
 import 'package:mesclainvest/pages/startup/models/startup_model.dart';
 
 class DashboardController extends ChangeNotifier {
@@ -73,11 +74,11 @@ class DashboardController extends ChangeNotifier {
   /// Retorna as startups filtradas.
   List<StartupModel> get filteredStartups {
     if (selectedStartupFilter == null) return allStartups;
-    
+
     if (selectedStartupFilter == 'Favoritas') {
       return allStartups.where((s) => _favoriteIds.contains(s.id)).toList();
     }
-    
+
     return allStartups.where((s) => s.stage == selectedStartupFilter).toList();
   }
 
@@ -92,7 +93,7 @@ class DashboardController extends ChangeNotifier {
   /// Alterna o status de favorito e recarrega.
   Future<void> toggleFavorite(String startupId) async {
     if (data == null) return;
-    
+
     // Atualização otimista
     final wasFav = _favoriteIds.contains(startupId);
     if (wasFav) {
@@ -104,7 +105,7 @@ class DashboardController extends ChangeNotifier {
 
     try {
       final newStatus = await _dashboardService.toggleFavorite(startupId);
-      
+
       // Sincroniza com servidor (caso tenha divergido)
       if (newStatus) {
         _favoriteIds.add(startupId);
@@ -129,7 +130,7 @@ class DashboardController extends ChangeNotifier {
 
     try {
       final newBalance = await _dashboardService.deposit(amount);
-      
+
       // Atualiza o objeto data com o novo saldo
       data = DashboardData(
         nomeUsuario: data!.nomeUsuario,
@@ -143,7 +144,7 @@ class DashboardController extends ChangeNotifier {
         investimentos: data!.investimentos,
         favoriteIds: data!.favoriteIds,
       );
-      
+
       notifyListeners();
     } catch (e) {
       errorMessage = 'Erro ao realizar depósito: $e';
@@ -151,5 +152,16 @@ class DashboardController extends ChangeNotifier {
       rethrow;
     }
   }
-}
 
+  /// Busca o histórico de transações recente.
+  Future<List<TransactionModel>> getTransactions() async {
+    try {
+      final list = await _dashboardService.getTransactions();
+      return list.map((m) => TransactionModel.fromMap(m)).toList();
+    } catch (e) {
+      errorMessage = 'Erro ao buscar extrato: $e';
+      notifyListeners();
+      return [];
+    }
+  }
+}
