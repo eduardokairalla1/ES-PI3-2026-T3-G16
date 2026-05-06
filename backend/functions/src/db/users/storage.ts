@@ -80,8 +80,10 @@ export async function addUser(
 
     // build user document
     const user: userDocument = {
+        'balance': 0,
         'birth_date': birth_date,
         'cpf': cpf,
+
         'created_at': new Date(),
         'email': email,
         'full_name': full_name,
@@ -178,3 +180,33 @@ export async function getUserCount(): Promise<number>
     const snapshot = await db.collection('users').count().get();
     return snapshot.data().count;
 }
+
+
+import {FieldValue} from 'firebase-admin/firestore';
+
+
+/**
+ * I add balance to a user.
+ *
+ * @param uid    Firebase Auth UID
+ * @param amount amount to add
+ */
+export async function deposit(uid: string, amount: number): Promise<void>
+{
+    const snapshot = await db.collection('users')
+        .where('uid', '==', uid)
+        .limit(1)
+        .get();
+
+    if (snapshot.empty) throw new Error(`User "${uid}" not found.`);
+
+    const doc = snapshot.docs[0];
+
+    // use FieldValue.increment to ensure atomicity (prevents race conditions)
+    await doc.ref.update({
+        'balance': FieldValue.increment(amount),
+        'updated_at': new Date(),
+    });
+}
+
+

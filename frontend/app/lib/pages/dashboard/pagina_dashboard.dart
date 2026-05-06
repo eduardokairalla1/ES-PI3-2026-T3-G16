@@ -60,7 +60,7 @@ class _PaginaDashboardState extends State<PaginaDashboard> {
         children: [
           const CabecalhoDashboard(),
           CartaoPatrimonio(controller: _controller),
-          const BotoesAcao(),
+          BotoesAcao(controller: _controller),
           StartupsEcossistema(controller: _controller),
           MeusInvestimentos(portfolio: _controller.portfolio),
         ],
