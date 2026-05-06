@@ -146,6 +146,28 @@ export async function toggleUserTwoFA(uid: string): Promise<boolean>
 
     return next;
 }
+
+
+/**
+ * I get the Firestore document ID for a user by their Auth UID.
+ *
+ * @param uid Firebase Auth UID
+ *
+ * @returns Firestore document ID, or null if not found
+ */
+export async function getUserDocId(uid: string): Promise<string | null>
+{
+    const snapshot = await db.collection('users')
+        .where('uid', '==', uid)
+        .limit(1)
+        .get();
+
+    if (snapshot.empty) return null;
+
+    return snapshot.docs[0].id;
+}
+
+
 /**
  * I get the total number of users in the system.
  *
