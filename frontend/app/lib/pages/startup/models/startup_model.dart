@@ -105,6 +105,7 @@ class StartupModel {
   final List<PartnerModel> partners;
   final List<AdvisorModel> advisors;
   final String? videoUrl;
+  final double? changePercent;
 
   const StartupModel({
     required this.id,
@@ -120,6 +121,7 @@ class StartupModel {
     required this.partners,
     required this.advisors,
     this.videoUrl,
+    this.changePercent,
   });
 
   /// I return the translated stage label for display.
@@ -151,7 +153,8 @@ class StartupModel {
       advisors: rawAdvisors
           .map((a) => AdvisorModel.fromMap(Map<String, dynamic>.from(a as Map)))
           .toList(),
-      videoUrl: map['videoUrl'] as String?,
+      videoUrl:      map['videoUrl']      as String?,
+      changePercent: (map['changePercent'] as num?)?.toDouble(),
     );
   }
 
