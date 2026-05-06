@@ -56,8 +56,6 @@ class _ProfilePageState extends State<ProfilePage> {
                         const SizedBox(height: 8),
                         _verifiedBadge(),
                         const SizedBox(height: 24),
-                        _statsCard(profile),
-                        const SizedBox(height: 16),
                         _twoFACard(profile),
                         const SizedBox(height: 16),
                         _menuCard(context),
