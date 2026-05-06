@@ -1,13 +1,6 @@
-/// Eduardo Kairalla - 24024241
-
-/// Global bottom navigation bar shared across main pages.
-
-// --- IMPORTS ---
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-
-// --- WIDGET ---
 
 class BottomNav extends StatelessWidget {
 
@@ -34,60 +27,88 @@ class BottomNav extends StatelessWidget {
       ),
       child: Row(
         children: [
-          _item(context, 0, Icons.home_outlined,         Icons.home,          'Home',      '/dashboard'),
-          _item(context, 1, Icons.rocket_launch_outlined, Icons.rocket_launch,  'Startups',  '/catalog'),
-          _item(context, 2, Icons.storefront_outlined,   Icons.storefront,      'Balcão',    null),
-          _item(context, 3, Icons.person_outline,         Icons.person,          'Perfil',    '/profile'),
+          _NavItem(index: 0, current: currentIndex, iconOutlined: Icons.home_outlined,          iconFilled: Icons.home,         label: 'Home',     route: '/dashboard'),
+          _NavItem(index: 1, current: currentIndex, iconOutlined: Icons.rocket_launch_outlined, iconFilled: Icons.rocket_launch, label: 'Startups', route: '/catalog'),
+          _NavItem(index: 2, current: currentIndex, iconOutlined: Icons.storefront_outlined,    iconFilled: Icons.storefront,    label: 'Balcão',   route: '/balcao'),
+          _NavItem(index: 3, current: currentIndex, iconOutlined: Icons.person_outline,         iconFilled: Icons.person,        label: 'Perfil',   route: '/profile'),
         ],
       ),
     );
   }
+}
 
-  Widget _item(
-    BuildContext context,
-    int index,
-    IconData iconOutlined,
-    IconData iconFilled,
-    String label,
-    String? route,
-  ) {
-    final isActive = currentIndex == index;
 
+class _NavItem extends StatefulWidget {
+
+  final int index;
+  final int current;
+  final IconData iconOutlined;
+  final IconData iconFilled;
+  final String label;
+  final String route;
+
+  const _NavItem({
+    required this.index,
+    required this.current,
+    required this.iconOutlined,
+    required this.iconFilled,
+    required this.label,
+    required this.route,
+  });
+
+  @override
+  State<_NavItem> createState() => _NavItemState();
+}
+
+class _NavItemState extends State<_NavItem> {
+
+  double _scale = 1.0;
+
+  bool get _isActive => widget.index == widget.current;
+
+  void _onTapDown(TapDownDetails _) => setState(() => _scale = 0.78);
+
+  void _onTapUp(TapUpDetails _) => setState(() => _scale = 1.0);
+
+  void _onTapCancel() => setState(() => _scale = 1.0);
+
+  void _onTap(BuildContext context) {
+    if (_isActive) return;
+    context.go(widget.route);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Expanded(
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
-        onTap: () {
-          if (isActive) return;
-          if (route == null) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Em breve!'),
-                backgroundColor: Colors.black,
-                duration: Duration(seconds: 2),
+        onTapDown: _onTapDown,
+        onTapUp: _onTapUp,
+        onTapCancel: _onTapCancel,
+        onTap: () => _onTap(context),
+        child: AnimatedScale(
+          scale: _scale,
+          duration: const Duration(milliseconds: 120),
+          curve: Curves.easeOut,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                _isActive ? widget.iconFilled : widget.iconOutlined,
+                size: 24,
+                color: _isActive ? Colors.black : const Color(0xFFAAAAAA),
               ),
-            );
-            return;
-          }
-          context.go(route);
-        },
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              isActive ? iconFilled : iconOutlined,
-              size: 24,
-              color: isActive ? Colors.black : const Color(0xFFAAAAAA),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w700,
-                color: isActive ? Colors.black : const Color(0xFFAAAAAA),
+              const SizedBox(height: 4),
+              Text(
+                widget.label,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: _isActive ? Colors.black : const Color(0xFFAAAAAA),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
