@@ -5,7 +5,6 @@
 // --- IMPORTS ---
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 import 'package:mesclainvest/app/app_state.dart';
 import 'package:mesclainvest/core/models/user_profile.dart';
 import 'package:mesclainvest/pages/profile/controllers/profile_controller.dart';
