@@ -8,6 +8,7 @@
  * IMPORTS
  */
 import db from '../../configs';
+import {getUserDocId} from '../users/storage';
 
 
 /**
@@ -19,25 +20,6 @@ import type {InvestmentDocument} from './model';
 /**
  * CODE
  */
-
-/**
- * I get the Firestore document ID for a user by their Auth UID.
- *
- * @param uid Firebase Auth UID
- *
- * @returns Firestore document ID, or null if not found
- */
-async function getUserDocId(uid: string): Promise<string | null>
-{
-    const snapshot = await db.collection('users')
-        .where('uid', '==', uid)
-        .limit(1)
-        .get();
-
-    if (snapshot.empty) return null;
-
-    return snapshot.docs[0].id;
-}
 
 
 /**

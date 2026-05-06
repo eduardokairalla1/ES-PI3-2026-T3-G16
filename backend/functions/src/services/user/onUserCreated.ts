@@ -8,7 +8,7 @@
  * IMPORTS
  */
 import {HttpsError} from 'firebase-functions/v2/https';
-import {addUser, getUserByCpf} from '../../db/users/storage';
+import {addUser, getUser, getUserByCpf} from '../../db/users/storage';
 import {createWallet} from '../../db/wallets/storage';
 import {verifyAuth} from '../../utils/auth';
 import {logger} from '../../utils/logger';
@@ -60,6 +60,13 @@ export async function handleOnUserCreated(request: CallableRequest)
 
         // validate request data
         const parsed = parseRequest(CreateUserRequest, request.data);
+
+        // reject duplicate UID (prevents duplicate docs on retries)
+        const existingUid = await getUser(uid);
+        if (existingUid !== null)
+        {
+            throw new ValidationError('Usuário já cadastrado.');
+        }
 
         // reject duplicate CPF
         const existing = await getUserByCpf(parsed.cpf);
