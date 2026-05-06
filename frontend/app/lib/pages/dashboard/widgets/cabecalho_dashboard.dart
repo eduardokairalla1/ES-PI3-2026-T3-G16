@@ -1,14 +1,30 @@
-/// Cabeçalho com informações do usuário e notificações.
+/**
+ * Widget de cabeçalho do Dashboard, exibindo informações do perfil do usuário.
+ *
+ * Alex Gabriel Soares Sousa - 24802449
+ */
 
+
+/**
+ * IMPORTS
+ */
 import 'package:flutter/material.dart';
 import 'package:mesclainvest/app/app_state.dart';
 
-/// Barra superior com dados do usuário e notificações.
+
+/**
+ * CODE
+ */
+
+/// Barra superior com dados do usuário (Avatar e Nome) e botão de notificações.
 class CabecalhoDashboard extends StatelessWidget {
+  
+  // Construtor
   const CabecalhoDashboard({super.key});
 
   @override
   Widget build(BuildContext context) {
+    // Busca dados do perfil global
     final profile    = AppState.instance.profile;
     final userName   = profile?.fullName ?? 'Usuário';
     final initial    = userName.isNotEmpty ? userName[0].toUpperCase() : 'U';
@@ -32,7 +48,7 @@ class CabecalhoDashboard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            // Avatar.
+            // --- Avatar do Usuário ---
             Container(
               width: 40,
               height: 40,
@@ -42,12 +58,16 @@ class CabecalhoDashboard extends StatelessWidget {
               ),
               clipBehavior: Clip.antiAlias,
               child: photoUrl != null
-                  ? Image.network(photoUrl, fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => _initial(initial))
+                  ? Image.network(
+                      photoUrl, 
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => _initial(initial),
+                    )
                   : _initial(initial),
             ),
             const SizedBox(width: 12),
-            // Nome.
+            
+            // --- Nome do Usuário ---
             Text(
               userName,
               style: const TextStyle(
@@ -57,7 +77,8 @@ class CabecalhoDashboard extends StatelessWidget {
               ),
             ),
             const Spacer(),
-            // Notificações.
+            
+            // --- Ícone de Notificações ---
             Stack(
               children: [
                 IconButton(
@@ -68,6 +89,7 @@ class CabecalhoDashboard extends StatelessWidget {
                     size: 24,
                   ),
                 ),
+                // Badge de notificação (ponto vermelho)
                 Positioned(
                   right: 12,
                   top: 12,
@@ -88,6 +110,12 @@ class CabecalhoDashboard extends StatelessWidget {
     );
   }
 
+
+  /**
+   * MÉTODOS PRIVADOS
+   */
+
+  /// Retorna o widget com a inicial do nome caso não haja foto.
   Widget _initial(String letter) {
     return Center(
       child: Text(
