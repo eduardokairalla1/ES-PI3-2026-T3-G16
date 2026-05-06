@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:mesclainvest/pages/startup/models/startup_model.dart';
+import 'package:mesclainvest/shared/styles/money_style.dart';
 
 
 // --- HELPERS ---
@@ -195,11 +196,7 @@ class _Stat extends StatelessWidget {
         const SizedBox(height: 2),
         Text(
           value,
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w700,
-            color: Colors.black,
-          ),
+          style: moneyStyle(fontSize: 14, fontWeight: FontWeight.w700),
         ),
       ],
     );
