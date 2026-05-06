@@ -1,17 +1,38 @@
-/// Seção de ativos na carteira do usuário.
-/// Exibe valorização e quantidade de tokens por startup.
+/**
+ * Widget de listagem dos investimentos do usuário (Minha Carteira).
+ * Exibe a quantidade de tokens e valorização acumulada por cada startup.
+ *
+ * Alex Gabriel Soares Sousa - 24802449
+ */
 
+
+/**
+ * IMPORTS
+ */
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:mesclainvest/pages/dashboard/controllers/dashboard_controller.dart';
 import 'package:mesclainvest/pages/dashboard/models/dashboard_data.dart';
 
+
+/**
+ * CONSTANTES
+ */
 final _currencyFmt = NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$', decimalDigits: 2);
 
+
+/**
+ * CODE
+ */
+
+/// Seção principal que lista as startups nas quais o usuário possui tokens.
 class MeusInvestimentos extends StatelessWidget {
+  
+  // Atributos
   final DashboardController controller;
 
+  // Construtor
   const MeusInvestimentos({super.key, required this.controller});
 
   @override
@@ -21,7 +42,8 @@ class MeusInvestimentos extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // --- Cabeçalho ---
+        
+        // --- Cabeçalho da Seção ---
         Padding(
           padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
           child: Row(
@@ -36,9 +58,9 @@ class MeusInvestimentos extends StatelessWidget {
                   letterSpacing: -0.5,
                 ),
               ),
+              // Botão para ver o portfólio completo (Em desenvolvimento)
               GestureDetector(
                 onTap: () {
-                  // TODO: Implementar tela de portfólio completo futuramente
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text('Portfólio completo em breve!'),
@@ -65,7 +87,7 @@ class MeusInvestimentos extends StatelessWidget {
           ),
         ),
 
-        // --- Lista de Investimentos ---
+        // --- Lista de Investimentos ou Estado Vazio ---
         if (investimentos.isEmpty)
           Padding(
             padding: const EdgeInsets.all(32.0),
@@ -102,10 +124,16 @@ class MeusInvestimentos extends StatelessWidget {
   }
 }
 
+
+
+/// Widget interno para exibir cada card de investimento na lista.
 class InvestimentoCard extends StatelessWidget {
+  
+  // Atributos
   final InvestimentoResumo investimento;
   final bool exibirValores;
 
+  // Construtor
   const InvestimentoCard({
     super.key,
     required this.investimento,
@@ -114,10 +142,12 @@ class InvestimentoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Cálculos de valorização e saldo
     final valorTotal = investimento.tokenQuantity * investimento.currentPrice;
     final isPositive = investimento.variation >= 0;
     
     return GestureDetector(
+      // Navegação para o detalhe da startup
       onTap: () => context.push('/startup/${investimento.startupId}'),
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
@@ -136,7 +166,7 @@ class InvestimentoCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            // --- Logo ---
+            // --- Logo da Startup ---
             Container(
               width: 48,
               height: 48,
@@ -161,7 +191,7 @@ class InvestimentoCard extends StatelessWidget {
             ),
             const SizedBox(width: 12),
             
-            // --- Info Central ---
+            // --- Informações da Startup (Nome e Qtd Tokens) ---
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -187,7 +217,7 @@ class InvestimentoCard extends StatelessWidget {
               ),
             ),
             
-            // --- Valores ---
+            // --- Valores Financeiros (Saldo e Variação %) ---
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
@@ -228,6 +258,7 @@ class InvestimentoCard extends StatelessWidget {
             ),
             
             const SizedBox(width: 8),
+            // Ícone de chevron para indicar navegabilidade
             Icon(Icons.chevron_right, color: Colors.grey.shade400, size: 20),
           ],
         ),

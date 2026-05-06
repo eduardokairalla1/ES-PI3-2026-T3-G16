@@ -1,17 +1,39 @@
+/**
+ * Widgets para os botões de ação do Dashboard (Depositar, Comprar, Vender, Extrato).
+ *
+ * Alex Gabriel Soares Sousa - 24802449
+ */
+
+
+/**
+ * IMPORTS
+ */
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:mesclainvest/pages/dashboard/controllers/dashboard_controller.dart';
+import 'package:mesclainvest/pages/dashboard/models/transaction_model.dart';
 
 
-/// Atalhos para ações principais (Depósito, Compra, Venda, Extrato).
+/**
+ * CODE
+ */
+
+/// Widget principal que agrupa os botões de atalho da dashboard.
 class BotoesAcao extends StatelessWidget {
   
+  // Atributos
   final DashboardController controller;
 
-  // construtor
+  // Construtor
   const BotoesAcao({super.key, required this.controller});
 
 
+  /**
+   * MÉTODOS PRIVADOS
+   */
 
   /// Abre o pop-up de depósito (Simulação bancária).
+  /// Possui fluxo de dois passos: Entrada de Valor e Confirmação.
   void _mostrarDialogoDeposito(BuildContext context) {
     final TextEditingController valorController = TextEditingController();
     bool isProcessando = false;
@@ -87,7 +109,7 @@ class BotoesAcao extends StatelessWidget {
                     ? null
                     : () async {
                         if (!mostrarConfirmacao) {
-                          // Primeiro passo: Validar e mostrar confirmação
+                          // Passo 1: Validação e preparação da confirmação
                           final String rawValue = valorController.text.replaceAll('.', '').replaceAll(',', '.');
                           final double? parsedValue = double.tryParse(rawValue);
 
@@ -106,13 +128,12 @@ class BotoesAcao extends StatelessWidget {
                               mostrarConfirmacao = true;
                             });
                           } else {
-
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(content: Text('Por favor, insira um valor válido.')),
                             );
                           }
                         } else {
-                          // Segundo passo: Processar depósito
+                          // Passo 2: Execução do depósito via Controller
                           setState(() => isProcessando = true);
                           try {
                             await controller.deposit(valorFinal!);
@@ -159,9 +180,7 @@ class BotoesAcao extends StatelessWidget {
   }
 
 
-
-
-  /// Abre o pop-up de extrato das movimentações.
+  /// Abre o pop-up de extrato das movimentações recentes do usuário.
   void _mostrarDialogoExtrato(BuildContext context) {
     showDialog(
       context: context,
@@ -265,7 +284,7 @@ class BotoesAcao extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // item: depositar (destaque)
+          // Botão: Depositar (Destaque)
           _BotaoAcaoItem(
             icon: Icons.add,
             label: 'Depositar',
@@ -273,21 +292,21 @@ class BotoesAcao extends StatelessWidget {
             onTap: () => _mostrarDialogoDeposito(context),
           ),
 
-          // item: comprar
+          // Botão: Comprar
           _BotaoAcaoItem(
             icon: Icons.trending_up,
             label: 'Comprar',
             onTap: () {},
           ),
 
-          // item: vender (saque)
+          // Botão: Vender
           _BotaoAcaoItem(
             icon: Icons.account_balance_outlined,
             label: 'Vender',
             onTap: () {},
           ),
 
-          // item: extrato
+          // Botão: Extrato
           _BotaoAcaoItem(
             icon: Icons.receipt_long_outlined,
             label: 'Extrato',
@@ -301,16 +320,16 @@ class BotoesAcao extends StatelessWidget {
 
 
 
-/// Botão de ação individual.
+/// Widget interno para representar cada item de ação individual.
 class _BotaoAcaoItem extends StatelessWidget {
 
-  // atributos
+  // Atributos
   final IconData icon;
   final String label;
   final bool isPrimary;
   final VoidCallback onTap;
 
-  // construtor
+  // Construtor
   const _BotaoAcaoItem({
     required this.icon,
     required this.label,
@@ -326,7 +345,7 @@ class _BotaoAcaoItem extends StatelessWidget {
       child: Column(
         children: [
     
-          // container arredondado (squircle) do ícone
+          // Círculo/Quadrado arredondado do ícone
           Container(
             width: 56,
             height: 56,
@@ -350,7 +369,7 @@ class _BotaoAcaoItem extends StatelessWidget {
     
           const SizedBox(height: 8),
     
-          // rótulo do botão
+          // Rótulo de texto abaixo do ícone
           Text(
             label,
             style: TextStyle(
@@ -364,4 +383,4 @@ class _BotaoAcaoItem extends StatelessWidget {
       ),
     );
   }
-}
+}

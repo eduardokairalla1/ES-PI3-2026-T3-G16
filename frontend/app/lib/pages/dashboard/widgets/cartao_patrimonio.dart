@@ -1,25 +1,43 @@
+/**
+ * Widget do Cartão de Patrimônio do Dashboard.
+ * Exibe o saldo total, rendimento diário e saldo disponível na carteira.
+ *
+ * Alex Gabriel Soares Sousa - 24802449
+ */
+
+
+/**
+ * IMPORTS
+ */
 import 'package:flutter/material.dart';
 import 'package:mesclainvest/pages/dashboard/controllers/dashboard_controller.dart';
 import 'package:intl/intl.dart';
 
-/// Exibição de patrimônio e rendimento diário.
+
+/**
+ * CODE
+ */
+
+/// Exibição visual do patrimônio consolidado e rendimentos.
 class CartaoPatrimonio extends StatelessWidget {
   
+  // Atributos
   final DashboardController controller;
   
-  // construtor
+  // Construtor
   const CartaoPatrimonio({super.key, required this.controller});
 
   @override
   Widget build(BuildContext context) {
     
+    // Formatador de moeda brasileira
     final formatter = NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
     
-    // extração dos dados formatados e estados lidos do controller global
+    // Extração dos dados do estado do controller
     final data = controller.data;
     final bool visivel = controller.exibirValores;
     
-    // proteção para quando data ainda não existir (caso não lidemos no pai)
+    // Proteção contra dados nulos
     if (data == null) return const SizedBox(); 
     
     final String valPatrimonio = formatter.format(data.patrimonioTotal);
@@ -35,7 +53,7 @@ class CartaoPatrimonio extends StatelessWidget {
         border: Border.all(color: Colors.grey.shade300),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -45,7 +63,7 @@ class CartaoPatrimonio extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
 
-          // item: título da seção
+          // --- Título: MEU PATRIMÔNIO ---
           Text(
             'MEU PATRIMÔNIO',
             style: TextStyle(
@@ -58,7 +76,7 @@ class CartaoPatrimonio extends StatelessWidget {
 
           const SizedBox(height: 8),
 
-          // Saldo e controle de visibilidade.
+          // --- Valor do Patrimônio e Controle de Visibilidade ---
           Row(
             children: [
               AnimatedSwitcher(
@@ -74,11 +92,11 @@ class CartaoPatrimonio extends StatelessWidget {
                 ),
               ),
               const Spacer(),
+              // Botão para ocultar/mostrar valores
               GestureDetector(
-                onTap: controller.toggleVisibility, // O toggle manda para Controller
+                onTap: controller.toggleVisibility,
                 child: Tooltip(
-                  message:
-                      visivel ? 'Ocultar saldo' : 'Mostrar saldo',
+                  message: visivel ? 'Ocultar saldo' : 'Mostrar saldo',
                   child: Container(
                     padding: const EdgeInsets.all(4),
                     decoration: BoxDecoration(
@@ -86,9 +104,7 @@ class CartaoPatrimonio extends StatelessWidget {
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
-                      visivel
-                          ? Icons.visibility_outlined
-                          : Icons.visibility_off_outlined,
+                      visivel ? Icons.visibility_outlined : Icons.visibility_off_outlined,
                       size: 20,
                       color: Colors.grey.shade600,
                     ),
@@ -100,7 +116,7 @@ class CartaoPatrimonio extends StatelessWidget {
 
           const SizedBox(height: 8),
 
-          // rentabilidade diária (suave com AnimatedOpacity)
+          // --- Rentabilidade Diária ---
           AnimatedOpacity(
             duration: const Duration(milliseconds: 200),
             opacity: visivel ? 1.0 : 0.5,
@@ -117,8 +133,7 @@ class CartaoPatrimonio extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color:
-                        visivel ? (data.rendimentoDiarioValor >= 0 ? Colors.green.shade700 : Colors.red.shade700) : Colors.grey,
+                    color: visivel ? (data.rendimentoDiarioValor >= 0 ? Colors.green.shade700 : Colors.red.shade700) : Colors.grey,
                   ),
                 ),
                 const SizedBox(width: 4),
@@ -126,8 +141,7 @@ class CartaoPatrimonio extends StatelessWidget {
                   visivel ? '(${data.rendimentoDiarioPorcentagem >= 0 ? '+' : ''}$valLucroPorcentagem%) hoje' : '(****) ****',
                   style: TextStyle(
                     fontSize: 14,
-                    color:
-                        visivel ? Colors.grey.shade600 : Colors.grey,
+                    color: visivel ? Colors.grey.shade600 : Colors.grey,
                   ),
                 ),
               ],
@@ -136,7 +150,7 @@ class CartaoPatrimonio extends StatelessWidget {
 
           const Divider(height: 32, thickness: 1, color: Color(0xFFF5F5F5)),
 
-          // Novo item: Saldo disponível (Wallet)
+          // --- Saldo Disponível na Carteira (Wallet) ---
           Row(
             children: [
               Column(
@@ -163,6 +177,7 @@ class CartaoPatrimonio extends StatelessWidget {
                 ],
               ),
               const Spacer(),
+              // Badge indicando que é o saldo da carteira
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
@@ -185,4 +200,3 @@ class CartaoPatrimonio extends StatelessWidget {
     );
   }
 }
-

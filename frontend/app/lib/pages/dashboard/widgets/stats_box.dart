@@ -1,12 +1,29 @@
+/**
+ * Componente de caixa de estatísticas usado para exibir indicadores de mercado.
+ * Fornece uma estrutura visual padronizada com texto primário em destaque e rótulo secundário.
+ *
+ * Alex Gabriel Soares Sousa - 24802449
+ */
+
+
+/**
+ * IMPORTS
+ */
 import 'package:flutter/material.dart';
 
-/// Componente base para indicadores estatísticos.
+
+/**
+ * CODE
+ */
+
+/// Componente visual base para indicadores numéricos/estatísticos no Dashboard.
 class StatsBox extends StatelessWidget {
   
-  // Atributos.
-  final String primaryText;
-  final String secondaryText;
+  // Atributos
+  final String primaryText;   // Texto em destaque (ex: valor numérico)
+  final String secondaryText; // Descrição/Rótulo do indicador
 
+  // Construtor
   const StatsBox({
     super.key,
     required this.primaryText,
@@ -15,13 +32,13 @@ class StatsBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Estrutura visual e sombreamento.
     return Expanded(
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.grey.shade100),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.05),
@@ -30,11 +47,11 @@ class StatsBox extends StatelessWidget {
             ),
           ],
         ),
-        // Conteúdo e estilos.
         child: Column(
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            // --- Texto Primário (Destaque) ---
             Text(
               primaryText,
               textAlign: TextAlign.center,
@@ -46,6 +63,8 @@ class StatsBox extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 4),
+            
+            // --- Texto Secundário (Rótulo) ---
             Text(
               secondaryText,
               textAlign: TextAlign.center,
