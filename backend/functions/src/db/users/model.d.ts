@@ -10,7 +10,9 @@
  */
 export interface userDocument
 {
+    balance: number;
     birth_date: string;
+
     created_at: Date;
     cpf: string;
     email: string;

@@ -15,6 +15,8 @@ import {handleOnGetWallet} from '../services/user/onGetWallet';
 import {handleOnToggle2FA} from '../services/user/onToggle2FA';
 import {handleOnUpdateProfile} from '../services/user/onUpdateProfile';
 import {handleOnUserCreated} from '../services/user/onUserCreated';
+import {handleOnDeposit} from '../services/user/onDeposit';
+
 import {handleOnGetQuestions} from '../services/startup/onGetQuestions';
 import {handleOnGetStartup} from '../services/startup/onGetStartup';
 import {handleOnGetStartups} from '../services/startup/onGetStartups';
@@ -36,6 +38,8 @@ export const onCreateOrder    = onCall(handleOnCreateOrder);
 export const onGetPortfolio   = onCall(handleOnGetPortfolio);
 export const onUpdateProfile  = onCall(handleOnUpdateProfile);
 export const onToggle2FA      = onCall(handleOnToggle2FA);
+export const onDeposit        = onCall(handleOnDeposit);
+
 
 // startup functions
 export const onGetStartups      = onCall(handleOnGetStartups);
