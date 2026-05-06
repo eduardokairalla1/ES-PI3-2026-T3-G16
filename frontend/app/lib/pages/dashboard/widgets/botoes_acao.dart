@@ -1,20 +1,39 @@
+/**
+ * Widgets para os botões de ação do Dashboard (Depositar, Comprar, Vender, Extrato).
+ *
+ * Alex Gabriel Soares Sousa - 24802449
+ */
+
+
+/**
+ * IMPORTS
+ */
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:mesclainvest/pages/dashboard/controllers/dashboard_controller.dart';
 import 'package:mesclainvest/pages/dashboard/models/transaction_model.dart';
 
 
-/// Atalhos para ações principais (Depósito, Compra, Venda, Extrato).
+/**
+ * CODE
+ */
+
+/// Widget principal que agrupa os botões de atalho da dashboard.
 class BotoesAcao extends StatelessWidget {
 
+  // Atributos
   final DashboardController controller;
 
-  // construtor
+  // Construtor
   const BotoesAcao({super.key, required this.controller});
 
 
+  /**
+   * MÉTODOS PRIVADOS
+   */
 
   /// Abre o pop-up de depósito (Simulação bancária).
+  /// Possui fluxo de dois passos: Entrada de Valor e Confirmação.
   void _mostrarDialogoDeposito(BuildContext context) {
     final TextEditingController valorController = TextEditingController();
     bool isProcessando = false;
@@ -90,7 +109,7 @@ class BotoesAcao extends StatelessWidget {
                     ? null
                     : () async {
                         if (!mostrarConfirmacao) {
-                          // Primeiro passo: Validar e mostrar confirmação
+                          // Passo 1: Validação e preparação da confirmação
                           final String rawValue = valorController.text.replaceAll('.', '').replaceAll(',', '.');
                           final double? parsedValue = double.tryParse(rawValue);
 
@@ -114,7 +133,7 @@ class BotoesAcao extends StatelessWidget {
                             );
                           }
                         } else {
-                          // Segundo passo: Processar depósito
+                          // Passo 2: Execução do depósito via Controller
                           setState(() => isProcessando = true);
                           try {
                             await controller.deposit(valorFinal!);
@@ -217,7 +236,7 @@ class BotoesAcao extends StatelessWidget {
                     leading: Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: color.withOpacity(0.1),
+                        color: color.withValues(alpha: 0.1),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
