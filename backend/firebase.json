@@ -49,7 +49,7 @@
       "emailPassword": true,
       "googleSignIn": {
         "oAuthBrandDisplayName": "MesclaInvest",
-        "supportEmail": "support@undefined.firebaseapp.com"
+        "supportEmail": "mesclainvest@gmail.com"
       }
     }
   }
