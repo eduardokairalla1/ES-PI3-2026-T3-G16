@@ -9,17 +9,11 @@ class DashboardService {
 
   /// Consulta dados consolidados do usuário.
   Future<DashboardData> fetchUserDashboardData() async {
-    final result = await FirebaseFunctions.instance
-        .httpsCallable('onGetWallet')
-        .call();
+    final result = await _functions
+        .httpsCallable('onGetDashboard')
+        .call<Map<String, dynamic>>();
 
-    final raw = result.data;
-    final data = raw is Map
-        ? Map<String, dynamic>.from(raw)
-        : Map<String, dynamic>.from(raw as Map<dynamic, dynamic>);
-
-    final nome = AppState.instance.profile?.fullName ?? '';
-    return DashboardData.fromMap(data, nome);
+    return DashboardData.fromMap(Map<String, dynamic>.from(result.data));
   }
 
   /// Alterna o status de favorito para uma startup.

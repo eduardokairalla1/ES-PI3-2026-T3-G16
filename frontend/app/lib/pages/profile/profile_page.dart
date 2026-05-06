@@ -228,6 +228,11 @@ class _ProfilePageState extends State<ProfilePage> {
   // ── Stats card ────────────────────────────────────────────────────────────
 
   Widget _statsCard(UserProfile? profile) {
+    final loading = _controller.isLoadingStats;
+    final investimentos = loading ? '...' : '${_controller.totalInvestimentos}';
+    final aplicado = loading ? '...' : 'R\$${_controller.totalAplicado.toStringAsFixed(0)}';
+    final favoritas = loading ? '...' : '${_controller.totalFavoritas}';
+
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 20),
       decoration: BoxDecoration(
@@ -237,11 +242,11 @@ class _ProfilePageState extends State<ProfilePage> {
       ),
       child: Row(
         children: [
-          Expanded(child: _statColumn('0', 'Investimentos')),
+          Expanded(child: _statColumn(investimentos, 'Investimentos')),
           _verticalDivider(),
-          Expanded(child: _statColumn('R\$0', 'Aplicado')),
+          Expanded(child: _statColumn(aplicado, 'Aplicado')),
           _verticalDivider(),
-          Expanded(child: _statColumn('0', 'Favoritas')),
+          Expanded(child: _statColumn(favoritas, 'Favoritas')),
         ],
       ),
     );
