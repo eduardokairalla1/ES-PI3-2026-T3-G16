@@ -35,6 +35,9 @@ final router = GoRouter(
 
     // usuário está logado e tentando acessar login ou registro: redireciona para
     // o dashboard
+    final authPaths = ['/login', '/register'];
+    if (isLoggedIn && authPaths.contains(state.matchedLocation)) return '/dashboard';
+
     return null;
 
   },

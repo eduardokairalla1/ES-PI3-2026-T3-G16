@@ -8,17 +8,11 @@ class DashboardService {
 
   /// Consulta dados consolidados do usuário.
   Future<DashboardData> fetchUserDashboardData() async {
-    try {
-      final result = await _functions
-          .httpsCallable('onGetDashboard')
-          .call<Map<String, dynamic>>();
+    final result = await _functions
+        .httpsCallable('onGetDashboard')
+        .call<Map<String, dynamic>>();
 
-      return DashboardData.fromMap(Map<String, dynamic>.from(result.data));
-    } catch (e) {
-      // Retorna fallback no caso de erro de conexão.
-      // Em produção real, este erro deve ser propagado e tratado pela UI.
-      return DashboardData.mock();
-    }
+    return DashboardData.fromMap(Map<String, dynamic>.from(result.data));
   }
 
   /// Alterna o status de favorito para uma startup.

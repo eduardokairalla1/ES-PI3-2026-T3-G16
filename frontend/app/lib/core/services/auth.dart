@@ -125,7 +125,8 @@ class AuthService {
     }
     on FirebaseFunctionsException catch (e) {
       await _auth.currentUser?.delete();
-      if (e.code == 'invalid-argument') {
+      if (e.code == 'invalid-argument' &&
+          (e.message?.contains('CPF') ?? false)) {
         throw AuthException.cpfAlreadyInUse(
           originalError: e,
           stackTrace: StackTrace.current,

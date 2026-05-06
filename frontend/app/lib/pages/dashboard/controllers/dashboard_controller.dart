@@ -18,6 +18,9 @@ class DashboardController extends ChangeNotifier {
   DashboardData? data; // Dados consolidados.
   String? errorMessage;
 
+  // Estado de favoritos (gerenciado separadamente do modelo).
+  final Set<String> _favoriteIds = {};
+
   // Estado de Startups
   List<StartupModel> allStartups = [];
   String? selectedStartupFilter; // null = Todas, 'Favoritas' = Favoritas, ou stage (ex: 'new', 'operating')
@@ -36,6 +39,11 @@ class DashboardController extends ChangeNotifier {
 
       data = results[0] as DashboardData;
       allStartups = results[1] as List<StartupModel>;
+
+      // Sincroniza favoritos do backend.
+      _favoriteIds
+        ..clear()
+        ..addAll(data!.favoriteIds);
     } catch (e) {
       errorMessage = 'Erro ao carregar dados: $e';
     } finally {
@@ -62,16 +70,18 @@ class DashboardController extends ChangeNotifier {
     if (selectedStartupFilter == null) return allStartups;
     
     if (selectedStartupFilter == 'Favoritas') {
-      final favoriteIds = data?.favoriteIds ?? [];
-      return allStartups.where((s) => favoriteIds.contains(s.id)).toList();
+      return allStartups.where((s) => _favoriteIds.contains(s.id)).toList();
     }
     
     return allStartups.where((s) => s.stage == selectedStartupFilter).toList();
   }
 
+  /// IDs de startups favoritas (leitura).
+  Set<String> get favoriteIds => _favoriteIds;
+
   /// Verifica se uma startup é favorita.
   bool isFavorite(String startupId) {
-    return data?.favoriteIds.contains(startupId) ?? false;
+    return _favoriteIds.contains(startupId);
   }
 
   /// Alterna o status de favorito e recarrega.
@@ -79,11 +89,11 @@ class DashboardController extends ChangeNotifier {
     if (data == null) return;
     
     // Atualização otimista
-    final isFav = isFavorite(startupId);
-    if (isFav) {
-      data!.favoriteIds.remove(startupId);
+    final wasFav = _favoriteIds.contains(startupId);
+    if (wasFav) {
+      _favoriteIds.remove(startupId);
     } else {
-      data!.favoriteIds.add(startupId);
+      _favoriteIds.add(startupId);
     }
     notifyListeners();
 
@@ -92,17 +102,17 @@ class DashboardController extends ChangeNotifier {
       
       // Sincroniza com servidor (caso tenha divergido)
       if (newStatus) {
-        if (!data!.favoriteIds.contains(startupId)) data!.favoriteIds.add(startupId);
+        _favoriteIds.add(startupId);
       } else {
-        data!.favoriteIds.remove(startupId);
+        _favoriteIds.remove(startupId);
       }
       notifyListeners();
     } catch (_) {
       // Reverte em caso de erro
-      if (isFav) {
-        data!.favoriteIds.add(startupId);
+      if (wasFav) {
+        _favoriteIds.add(startupId);
       } else {
-        data!.favoriteIds.remove(startupId);
+        _favoriteIds.remove(startupId);
       }
       notifyListeners();
     }
