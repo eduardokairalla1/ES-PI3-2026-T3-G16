@@ -133,7 +133,9 @@ export async function handleOnGetDashboard(request: CallableRequest)
             investimentos: investimentosFormatted,
             nomeUsuario: user.full_name,
             patrimonioTotal,
+            saldoDisponivel: user.balance ?? 0,
             rendimentoDiarioPorcentagem,
+
             rendimentoDiarioValor,
             rentabilidadeMediaMercado: rentabilidadeMedia,
             totalInvestidoresMercado: userCount,

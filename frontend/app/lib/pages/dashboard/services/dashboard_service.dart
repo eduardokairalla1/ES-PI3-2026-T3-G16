@@ -23,4 +23,14 @@ class DashboardService {
 
     return (result.data as Map)['isFavorited'] as bool;
   }
+
+  /// Realiza um depósito simulado.
+  Future<double> deposit(double amount) async {
+    final result = await _functions
+        .httpsCallable('onDeposit')
+        .call<Map<String, dynamic>>({'amount': amount});
+
+    return (result.data['newBalance'] as num).toDouble();
+  }
 }
+

@@ -117,4 +117,34 @@ class DashboardController extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  /// Realiza um depósito e atualiza o estado.
+  Future<void> deposit(double amount) async {
+    if (data == null) return;
+
+    try {
+      final newBalance = await _dashboardService.deposit(amount);
+      
+      // Atualiza o objeto data com o novo saldo
+      data = DashboardData(
+        nomeUsuario: data!.nomeUsuario,
+        patrimonioTotal: data!.patrimonioTotal,
+        saldoDisponivel: newBalance,
+        rendimentoDiarioValor: data!.rendimentoDiarioValor,
+        rendimentoDiarioPorcentagem: data!.rendimentoDiarioPorcentagem,
+        totalStartupsMercado: data!.totalStartupsMercado,
+        rentabilidadeMediaMercado: data!.rentabilidadeMediaMercado,
+        totalInvestidoresMercado: data!.totalInvestidoresMercado,
+        investimentos: data!.investimentos,
+        favoriteIds: data!.favoriteIds,
+      );
+      
+      notifyListeners();
+    } catch (e) {
+      errorMessage = 'Erro ao realizar depósito: $e';
+      notifyListeners();
+      rethrow;
+    }
+  }
 }
+

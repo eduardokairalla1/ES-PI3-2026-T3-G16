@@ -31,6 +31,7 @@ class InvestimentoResumo {
 class DashboardData {
   final String nomeUsuario;
   final double patrimonioTotal;
+  final double saldoDisponivel;
   final double rendimentoDiarioValor;
   final double rendimentoDiarioPorcentagem;
   final int totalStartupsMercado;
@@ -42,6 +43,7 @@ class DashboardData {
   DashboardData({
     required this.nomeUsuario,
     required this.patrimonioTotal,
+    required this.saldoDisponivel,
     required this.rendimentoDiarioValor,
     required this.rendimentoDiarioPorcentagem,
     required this.totalStartupsMercado,
@@ -58,6 +60,7 @@ class DashboardData {
     return DashboardData(
       nomeUsuario: map['nomeUsuario'] as String? ?? '',
       patrimonioTotal: (map['patrimonioTotal'] as num?)?.toDouble() ?? 0,
+      saldoDisponivel: (map['saldoDisponivel'] as num?)?.toDouble() ?? 0,
       rendimentoDiarioValor: (map['rendimentoDiarioValor'] as num?)?.toDouble() ?? 0,
       rendimentoDiarioPorcentagem: (map['rendimentoDiarioPorcentagem'] as num?)?.toDouble() ?? 0,
       totalStartupsMercado: (map['totalStartupsMercado'] as num?)?.toInt() ?? 0,
@@ -75,6 +78,7 @@ class DashboardData {
     return DashboardData(
       nomeUsuario: 'Usuário',
       patrimonioTotal: 0,
+      saldoDisponivel: 0,
       rendimentoDiarioValor: 0,
       rendimentoDiarioPorcentagem: 0,
       totalStartupsMercado: 0,
