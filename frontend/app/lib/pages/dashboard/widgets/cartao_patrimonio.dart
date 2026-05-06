@@ -176,23 +176,6 @@ class CartaoPatrimonio extends StatelessWidget {
                   ),
                 ],
               ),
-              const Spacer(),
-              // Badge indicando que é o saldo da carteira
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.green.shade50,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  'CARTEIRA',
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.green.shade700,
-                  ),
-                ),
-              ),
             ],
           ),
         ],

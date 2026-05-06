@@ -8,8 +8,12 @@
 /**
  * IMPORTS
  */
+import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:mesclainvest/app/app_state.dart';
+
+
+import 'package:mesclainvest/pages/dashboard/controllers/dashboard_controller.dart';
 
 
 /**
@@ -19,14 +23,18 @@ import 'package:mesclainvest/app/app_state.dart';
 /// Barra superior com dados do usuário (Avatar e Nome) e botão de notificações.
 class CabecalhoDashboard extends StatelessWidget {
   
+  // Atributos
+  final DashboardController controller;
+
   // Construtor
-  const CabecalhoDashboard({super.key});
+  const CabecalhoDashboard({super.key, required this.controller});
 
   @override
   Widget build(BuildContext context) {
     // Busca dados do perfil global
     final profile    = AppState.instance.profile;
-    final userName   = profile?.fullName ?? 'Usuário';
+    // Se o perfil for null (ex: usuário deu F5 e limpou a RAM), usa o nomeUsuario do DashboardData
+    final userName   = profile?.fullName ?? controller.data?.nomeUsuario ?? 'Usuário';
     final initial    = userName.isNotEmpty ? userName[0].toUpperCase() : 'U';
     final photoUrl   = profile?.photoUrl;
 
@@ -48,22 +56,25 @@ class CabecalhoDashboard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            // --- Avatar do Usuário ---
-            Container(
-              width: 40,
-              height: 40,
-              decoration: const BoxDecoration(
-                color: Colors.black,
-                shape: BoxShape.circle,
-              ),
-              clipBehavior: Clip.antiAlias,
-              child: photoUrl != null
+            // --- Avatar do Usuário (clicável → abre perfil) ---
+            GestureDetector(
+              onTap: () => context.go('/profile'),
+              child: Container(
+                width: 40,
+                height: 40,
+                decoration: const BoxDecoration(
+                  color: Colors.black,
+                  shape: BoxShape.circle,
+                ),
+                clipBehavior: Clip.antiAlias,
+                child: photoUrl != null
                   ? Image.network(
                       photoUrl, 
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) => _initial(initial),
                     )
                   : _initial(initial),
+              ),
             ),
             const SizedBox(width: 12),
             

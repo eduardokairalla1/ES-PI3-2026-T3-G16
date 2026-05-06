@@ -126,10 +126,13 @@ class DashboardController extends ChangeNotifier {
     try {
       final newBalance = await _dashboardService.deposit(amount);
       
-      // Atualiza o objeto data com o novo saldo
+      // O valor depositado é a diferença entre o novo saldo e o saldo anterior.
+      final double depositedAmount = newBalance - data!.saldoDisponivel;
+
+      // Atualiza o objeto data com o novo saldo e soma no patrimônio
       data = DashboardData(
         nomeUsuario: data!.nomeUsuario,
-        patrimonioTotal: data!.patrimonioTotal,
+        patrimonioTotal: data!.patrimonioTotal + depositedAmount,
         saldoDisponivel: newBalance,
         rendimentoDiarioValor: data!.rendimentoDiarioValor,
         rendimentoDiarioPorcentagem: data!.rendimentoDiarioPorcentagem,

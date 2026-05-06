@@ -57,10 +57,13 @@ class DashboardData {
     final rawInvestimentos = (map['investimentos'] as List<dynamic>?) ?? [];
     final rawFavorites = (map['favoriteIds'] as List<dynamic>?) ?? [];
 
+    final patrimonioAtivos = (map['patrimonioTotal'] as num?)?.toDouble() ?? 0;
+    final saldo = (map['saldoDisponivel'] as num?)?.toDouble() ?? 0;
+
     return DashboardData(
       nomeUsuario: map['nomeUsuario'] as String? ?? '',
-      patrimonioTotal: (map['patrimonioTotal'] as num?)?.toDouble() ?? 0,
-      saldoDisponivel: (map['saldoDisponivel'] as num?)?.toDouble() ?? 0,
+      patrimonioTotal: patrimonioAtivos + saldo,
+      saldoDisponivel: saldo,
       rendimentoDiarioValor: (map['rendimentoDiarioValor'] as num?)?.toDouble() ?? 0,
       rendimentoDiarioPorcentagem: (map['rendimentoDiarioPorcentagem'] as num?)?.toDouble() ?? 0,
       totalStartupsMercado: (map['totalStartupsMercado'] as num?)?.toInt() ?? 0,

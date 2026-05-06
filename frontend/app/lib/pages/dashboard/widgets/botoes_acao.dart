@@ -9,9 +9,45 @@
  * IMPORTS
  */
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:mesclainvest/pages/dashboard/controllers/dashboard_controller.dart';
 import 'package:mesclainvest/pages/dashboard/models/transaction_model.dart';
+
+
+/**
+ * HELPERS
+ */
+
+/// Formata a entrada do usuário em tempo real como moeda brasileira (R$ X.XXX,XX).
+/// Os dígitos entram da direita para a esquerda (estilo caixa registradora).
+class _CurrencyInputFormatter extends TextInputFormatter {
+  final _fmt = NumberFormat.currency(locale: 'pt_BR', symbol: '', decimalDigits: 2);
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    // Extrai apenas os dígitos
+    final digits = newValue.text.replaceAll(RegExp(r'[^0-9]'), '');
+    if (digits.isEmpty) {
+      return const TextEditingValue(text: '');
+    }
+
+    // Trata os dígitos como centavos (divide por 100)
+    final cents = int.parse(digits);
+    if (cents > 10000000) return oldValue; // bloqueia acima de R$ 100.000,00
+
+    final value = cents / 100.0;
+    final formatted = _fmt.format(value).trim();
+
+    return TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(offset: formatted.length),
+    );
+  }
+}
 
 
 /**
@@ -82,8 +118,9 @@ class BotoesAcao extends StatelessWidget {
                         const SizedBox(height: 20),
                         TextField(
                           controller: valorController,
-                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                          keyboardType: TextInputType.number,
                           autofocus: true,
+                          inputFormatters: [_CurrencyInputFormatter()],
                           decoration: InputDecoration(
                             labelText: 'Valor (R\$)',
                             prefixText: 'R\$ ',
@@ -110,8 +147,12 @@ class BotoesAcao extends StatelessWidget {
                     : () async {
                         if (!mostrarConfirmacao) {
                           // Passo 1: Validação e preparação da confirmação
-                          final String rawValue = valorController.text.replaceAll('.', '').replaceAll(',', '.');
-                          final double? parsedValue = double.tryParse(rawValue);
+                        // Passo 1: parse o valor formatado pelo _CurrencyInputFormatter
+                          // O texto está no formato "1.234,56" — converte para double
+                          final raw = valorController.text
+                              .replaceAll('.', '')
+                              .replaceAll(',', '.');
+                          final double? parsedValue = double.tryParse(raw);
 
                           if (parsedValue != null && parsedValue > 0) {
                             if (parsedValue > 100000) {
@@ -306,11 +347,10 @@ class BotoesAcao extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Botão: Depositar (Destaque)
+          // Botão: Depositar
           _BotaoAcaoItem(
             icon: Icons.add,
             label: 'Depositar',
-            isPrimary: true,
             onTap: () => _mostrarDialogoDeposito(context),
           ),
 
@@ -343,12 +383,12 @@ class BotoesAcao extends StatelessWidget {
 
 
 /// Widget interno para representar cada item de ação individual.
-class _BotaoAcaoItem extends StatelessWidget {
+/// Todos os botões são cinza por padrão e ficam pretos ao toque/hover.
+class _BotaoAcaoItem extends StatefulWidget {
 
   // Atributos
   final IconData icon;
   final String label;
-  final bool isPrimary;
   final VoidCallback onTap;
 
   // Construtor
@@ -356,52 +396,69 @@ class _BotaoAcaoItem extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.onTap,
-    this.isPrimary = false,
   });
 
+  @override
+  State<_BotaoAcaoItem> createState() => _BotaoAcaoItemState();
+}
+
+class _BotaoAcaoItemState extends State<_BotaoAcaoItem> {
+  bool _isActive = false;
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        children: [
-    
-          // Círculo/Quadrado arredondado do ícone
-          Container(
-            width: 56,
-            height: 56,
-            decoration: BoxDecoration(
-              color: isPrimary ? Colors.black : const Color(0xFFF2F2F2),
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: isPrimary ? [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.15),
-                  blurRadius: 8,
-                  offset: const Offset(0, 4),
-                ),
-              ] : null,
+    return MouseRegion(
+      // Hover (desktop/web): fica preto ao passar o mouse
+      onEnter: (_) => setState(() => _isActive = true),
+      onExit: (_) => setState(() => _isActive = false),
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: widget.onTap,
+        onTapDown: (_) => setState(() => _isActive = true),
+        onTapUp: (_) => setState(() => _isActive = false),
+        onTapCancel: () => setState(() => _isActive = false),
+        child: Column(
+          children: [
+
+            // Círculo/Quadrado arredondado do ícone
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 150),
+              curve: Curves.easeOut,
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                color: _isActive ? Colors.black : const Color(0xFFF2F2F2),
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: _isActive ? [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.18),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ] : null,
+              ),
+              child: Icon(
+                widget.icon,
+                color: _isActive ? Colors.white : Colors.black87,
+                size: 24,
+              ),
             ),
-            child: Icon(
-              icon,
-              color: isPrimary ? Colors.white : Colors.black87,
-              size: 24,
+
+            const SizedBox(height: 8),
+
+            // Rótulo de texto abaixo do ícone
+            AnimatedDefaultTextStyle(
+              duration: const Duration(milliseconds: 150),
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: _isActive ? FontWeight.w600 : FontWeight.w500,
+                color: _isActive ? Colors.black : Colors.grey.shade600,
+              ),
+              child: Text(widget.label),
             ),
-          ),
-    
-          const SizedBox(height: 8),
-    
-          // Rótulo de texto abaixo do ícone
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: isPrimary ? FontWeight.w600 : FontWeight.w500,
-              color: isPrimary ? Colors.black : Colors.grey.shade600,
-            ),
-          ),
-    
-        ],
+
+          ],
+        ),
       ),
     );
   }
