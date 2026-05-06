@@ -17,13 +17,25 @@ class TransactionModel {
   });
 
   factory TransactionModel.fromMap(Map<String, dynamic> map) {
-    // Handle Firestore Timestamp or ISO string
+    // Parse created_at handling all possible Firebase serialization formats:
+    // - Map with '_seconds' (callable via web SDK)
+    // - int (milliseconds since epoch)
+    // - String (ISO 8601 format)
+    // - Fallback: DateTime.now()
     DateTime date;
-    if (map['created_at'] is Map && map['created_at'].containsKey('_seconds')) {
-      date = DateTime.fromMillisecondsSinceEpoch(map['created_at']['_seconds'] * 1000);
-    } else if (map['created_at'] is String) {
-      date = DateTime.parse(map['created_at']);
-    } else {
+    try {
+      final raw = map['created_at'];
+      if (raw is Map && (raw.containsKey('_seconds') || raw.containsKey('seconds'))) {
+        final seconds = (raw['_seconds'] ?? raw['seconds']) as int;
+        date = DateTime.fromMillisecondsSinceEpoch(seconds * 1000);
+      } else if (raw is int) {
+        date = DateTime.fromMillisecondsSinceEpoch(raw);
+      } else if (raw is String) {
+        date = DateTime.parse(raw);
+      } else {
+        date = DateTime.now();
+      }
+    } catch (_) {
       date = DateTime.now();
     }
 

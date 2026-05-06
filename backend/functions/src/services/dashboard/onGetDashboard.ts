@@ -115,11 +115,19 @@ export async function handleOnGetDashboard(request: CallableRequest)
         // market stats
         const totalStartups = startups.length;
 
-        // calculate average market profitability from all startups
-        // (average token price change — simplified)
+        // calculate average market profitability as a percentage of price variation
+        // (uses current token_price vs initial_price if available, else 0)
         const rentabilidadeMedia = startups.length > 0
             ? Math.round(
-                (startups.reduce((sum, s) => sum + s.token_price, 0) / startups.length) * 100,
+                startups.reduce((sum, s) =>
+                {
+                    // use initial_price if available to compute variation; fallback to 0
+                    const initial = s.initial_price ?? s.token_price;
+                    const variation = initial > 0
+                        ? ((s.token_price - initial) / initial) * 100
+                        : 0;
+                    return sum + variation;
+                }, 0) / startups.length * 100,
             ) / 100
             : 0;
 

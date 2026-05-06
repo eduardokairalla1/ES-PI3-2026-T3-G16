@@ -206,7 +206,29 @@ class BotoesAcao extends StatelessWidget {
                 return const Center(child: CircularProgressIndicator(color: Colors.black));
               }
 
-              if (snapshot.hasError || !snapshot.hasData || snapshot.data!.isEmpty) {
+              // Estado: Erro de rede ou chamada
+              if (snapshot.hasError) {
+                return Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.cloud_off_outlined, size: 48, color: Colors.red.shade200),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Erro ao carregar o extrato.',
+                      style: TextStyle(color: Colors.red, fontWeight: FontWeight.w600),
+                    ),
+                    const SizedBox(height: 4),
+                    const Text(
+                      'Verifique sua conexão e tente novamente.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.grey, fontSize: 12),
+                    ),
+                  ],
+                );
+              }
+
+              // Estado: Lista vazia (sem movimentações)
+              if (!snapshot.hasData || snapshot.data!.isEmpty) {
                 return Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
