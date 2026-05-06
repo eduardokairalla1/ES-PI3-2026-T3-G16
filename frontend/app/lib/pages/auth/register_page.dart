@@ -308,7 +308,7 @@ class _RegisterPageState extends State<RegisterPage>
         birthIso,
       );
 
-      if (mounted) context.go('/login');
+      if (mounted) context.go('/dashboard');
     }
     on AuthException catch (e) {
       setState(() => _error = e.message);
