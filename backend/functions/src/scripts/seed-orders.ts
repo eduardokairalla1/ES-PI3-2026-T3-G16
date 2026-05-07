@@ -29,7 +29,7 @@ import {calcTokenPrice}             from '../utils/pricing';
  * CODE
  */
 
-const app = initializeApp({projectId: 'demo-mesclainvest'});
+const app = initializeApp({projectId: 'mesclainvest-eda16'});
 const db  = getFirestore(app);
 
 
