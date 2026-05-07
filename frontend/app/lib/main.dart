@@ -14,6 +14,9 @@ import 'package:mesclainvest/firebase_options.dart';
 
 /// --- CODE ---
 
+// tracks whether Firebase has been configured in this process (survives hot restart)
+bool _firebaseReady = false;
+
 /// I am the application entry point.
 Future<void> main() async {
 
@@ -33,16 +36,25 @@ Future<void> main() async {
   final storageEmulatorPort =
     int.tryParse(dotenv.env['STORAGE_EMULATOR_PORT'] ?? '9199') ?? 9199;
 
-  // initialize firebase client
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  if (!_firebaseReady) {
+    _firebaseReady = true;
 
-  // emulator config is enabled: configure firebase auth to use it
-  if (useEmulator == true) {
-    await FirebaseAuth.instance.useAuthEmulator(emulatorHost, authEmulatorPort);
-    FirebaseFunctions.instance.useFunctionsEmulator(emulatorHost, functionsEmulatorPort);
-    await FirebaseStorage.instance.useStorageEmulator(emulatorHost, storageEmulatorPort);
+    // initialize Firebase — Android auto-initializes natively before Dart runs,
+    // so duplicate-app is expected and can be ignored
+    try {
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
+    } on FirebaseException catch (e) {
+      if (e.code != 'duplicate-app') rethrow;
+    }
+
+    // point all Firebase services at the local emulators
+    if (useEmulator) {
+      await FirebaseAuth.instance.useAuthEmulator(emulatorHost, authEmulatorPort);
+      FirebaseFunctions.instance.useFunctionsEmulator(emulatorHost, functionsEmulatorPort);
+      await FirebaseStorage.instance.useStorageEmulator(emulatorHost, storageEmulatorPort);
+    }
   }
 
   // start root widget
