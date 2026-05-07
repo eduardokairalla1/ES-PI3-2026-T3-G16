@@ -27,7 +27,6 @@ Users can browse registered startups, consult corporate information, and partici
 | *Alex Gabriel Soares Sousa* | *24802449* |
 | *Davi da Cruz Shieh* | *24798076* |
 | *Eduardo Kairalla* | *24024241* |
-| *Laura Cristine Soares* | *24802431* |
 | *Pedro Henrique Medeiros dos Reis* | *24801656* |
 
 ---

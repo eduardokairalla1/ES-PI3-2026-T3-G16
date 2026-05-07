@@ -17,7 +17,7 @@ export const CreateUserRequest = z.object(
     {
         birthDate: z.string().regex(
             /^\d{4}-\d{2}-\d{2}$/,
-            'Birth date must be in YYYY-MM-DD format'
+            'Birth date must be in YYYY-MM-DD format',
         ),
         cpf: z.string(),
         fullName: z.string(),
@@ -26,7 +26,17 @@ export const CreateUserRequest = z.object(
 );
 
 
+export const UpdateProfileRequest = z.object(
+    {
+        fullName: z.string().min(2).max(100).optional(),
+        phone:    z.string().min(6).max(20).optional(),
+        photoUrl: z.string().url().nullable().optional(),
+    },
+);
+
+
 /**
  * EXPORTS
  */
-export type CreateUserRequest = z.infer<typeof CreateUserRequest>;
+export type CreateUserRequest    = z.infer<typeof CreateUserRequest>;
+export type UpdateProfileRequest = z.infer<typeof UpdateProfileRequest>;

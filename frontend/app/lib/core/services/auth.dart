@@ -99,19 +99,7 @@ class AuthService {
             email: email,
             password: password
         );
-
-        // call onUserCreated with the registered user's data
-        await FirebaseFunctions.instance
-            .httpsCallable('onUserCreated')
-            .call({
-                'fullName': fullName,
-                'cpf': cpf,
-                'phone': phone,
-                'birthDate': birthDate,
-            });
     }
-
-    // error occurred in Firebase Authentication: trow a custom AuthException
     on FirebaseAuthException catch (e) {
       throw AuthException.fromFirebaseCode(
         e.code,
@@ -123,12 +111,39 @@ class AuthService {
       );
     }
 
-    // any other error: throw a generic InfrastructureException
+    // persist user metadata — if this fails, delete the just-created auth user
+    // so the account doesn't end up in a broken state
+    try {
+        await FirebaseFunctions.instance
+            .httpsCallable('onUserCreated')
+            .call({
+                'fullName': fullName,
+                'cpf': cpf,
+                'phone': phone,
+                'birthDate': birthDate,
+            });
+    }
+    on FirebaseFunctionsException catch (e) {
+      await _auth.currentUser?.delete();
+      if (e.code == 'invalid-argument' &&
+          (e.message?.contains('CPF') ?? false)) {
+        throw AuthException.cpfAlreadyInUse(
+          originalError: e,
+          stackTrace: StackTrace.current,
+        );
+      }
+      throw InfrastructureException(
+        message: e.message ?? e.toString(),
+        originalError: e,
+        stackTrace: StackTrace.current,
+      );
+    }
     catch (e) {
+      await _auth.currentUser?.delete();
       throw InfrastructureException(
         message: e.toString(),
         originalError: e,
-        stackTrace: StackTrace.current
+        stackTrace: StackTrace.current,
       );
     }
   }
@@ -144,7 +159,14 @@ class AuthService {
   /// :returns: void
   Future<void> sendPasswordResetEmail(String email) async {
     try {
-      await _auth.sendPasswordResetEmail(email: email);
+      final resetUrl = Uri.base.resolve('/reset-password').toString();
+      await _auth.sendPasswordResetEmail(
+        email: email,
+        actionCodeSettings: ActionCodeSettings(
+          url:             resetUrl,
+          handleCodeInApp: true,
+        ),
+      );
     }
 
     // error occurred in Firebase Authentication: throw a custom AuthException

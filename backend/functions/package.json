@@ -1,19 +1,19 @@
 {
   "name": "functions",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "scripts": {
     "lint": "eslint --ext .js,.ts .",
     "lint:fix": "eslint --ext .js,.ts . --fix",
     "build": "tsc",
     "build:watch": "tsc --watch",
-    "serve": "npm run build && firebase emulators:start --only functions,firestore,auth",
-    "shell": "npm run build && firebase functions:shell",
+    "serve": "npm run build && npx firebase emulators:start --only functions,firestore,auth",
+    "shell": "npm run build && npx firebase functions:shell",
     "start": "npm run shell",
-    "deploy": "firebase deploy --only functions",
-    "logs": "firebase functions:log"
+    "deploy": "npx firebase deploy --only functions",
+    "logs": "npx firebase functions:log"
   },
   "engines": {
-    "node": "24"
+    "node": "22"
   },
   "main": "lib/index.js",
   "dependencies": {

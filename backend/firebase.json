@@ -18,11 +18,14 @@
         "*.local"
       ],
       "predeploy": [
-        "npm --prefix \"$RESOURCE_DIR\" run lint",
-        "npm --prefix \"$RESOURCE_DIR\" run build"
+        "npm --prefix functions run lint",
+        "npm --prefix functions run build"
       ]
     }
   ],
+  "storage": {
+    "rules": "storage.rules"
+  },
   "emulators": {
     "auth": {
       "port": 9099
@@ -32,6 +35,9 @@
     },
     "firestore": {
       "port": 8080
+    },
+    "storage": {
+      "port": 9199
     },
     "ui": {
       "enabled": true
@@ -43,7 +49,7 @@
       "emailPassword": true,
       "googleSignIn": {
         "oAuthBrandDisplayName": "MesclaInvest",
-        "supportEmail": "support@undefined.firebaseapp.com"
+        "supportEmail": "mesclainvest@gmail.com"
       }
     }
   }
