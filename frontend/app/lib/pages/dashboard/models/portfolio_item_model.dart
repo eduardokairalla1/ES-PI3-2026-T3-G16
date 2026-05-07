@@ -1,10 +1,10 @@
 /// Modelo de um item do portfolio do usuário.
 
 class PortfolioItemModel {
-  final String startupId;
-  final String startupName;
-  final String logoUrl;
-  final String stage;
+  final String  startupId;
+  final String  startupName;
+  final String? logoUrl;
+  final String  stage;
   final String tagline;
   final double tokenPrice;
   final int    tokenQuantity;
@@ -15,7 +15,7 @@ class PortfolioItemModel {
   const PortfolioItemModel({
     required this.startupId,
     required this.startupName,
-    required this.logoUrl,
+    this.logoUrl,
     required this.stage,
     required this.tagline,
     required this.tokenPrice,
@@ -31,7 +31,7 @@ class PortfolioItemModel {
     return PortfolioItemModel(
       startupId:     map['startupId']     as String,
       startupName:   map['startupName']   as String,
-      logoUrl:       map['logoUrl']       as String,
+      logoUrl:       map['logoUrl']       as String?,
       stage:         map['stage']         as String,
       tagline:       map['tagline']       as String,
       tokenPrice:    (map['tokenPrice']    as num).toDouble(),
