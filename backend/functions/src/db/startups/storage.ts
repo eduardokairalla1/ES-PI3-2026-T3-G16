@@ -7,6 +7,7 @@
 /**
  * IMPORTS
  */
+import {FieldValue} from 'firebase-admin/firestore';
 import db from '../../configs';
 
 
@@ -93,6 +94,28 @@ export async function addQuestion(
         .add(question);
 
     return {id: ref.id, ...question};
+}
+
+
+/**
+ * I decrement the available_tokens of a startup by the given quantity.
+ * Must be called inside a batch or transaction that already validates stock.
+ *
+ * @param batch     Firestore WriteBatch to include the update in
+ * @param startupId Firestore document ID of the startup
+ * @param quantity  number of tokens to reserve
+ */
+export function batchDecrementAvailableTokens(
+    batch: FirebaseFirestore.WriteBatch,
+    startupId: string,
+    quantity: number,
+): void
+{
+    const ref = db.collection('startups').doc(startupId);
+    batch.update(ref, {
+        available_tokens: FieldValue.increment(-quantity),
+        updated_at:       new Date(),
+    });
 }
 
 
