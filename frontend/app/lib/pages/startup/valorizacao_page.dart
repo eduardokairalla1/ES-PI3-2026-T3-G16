@@ -7,9 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:mesclainvest/app/app_state.dart';
 import 'package:mesclainvest/pages/dashboard/models/price_snapshot_model.dart';
-import 'package:mesclainvest/pages/dashboard/services/token_history_service.dart';
-import 'package:mesclainvest/pages/startup/models/startup_model.dart';
-import 'package:mesclainvest/pages/startup/services/startup_service.dart';
+import 'package:mesclainvest/pages/startup/controllers/valorizacao_controller.dart';
 import 'package:mesclainvest/pages/startup/widgets/startup_header.dart';
 import 'package:mesclainvest/pages/startup/widgets/startup_info_card.dart';
 
@@ -23,62 +21,6 @@ const _periods = [
   ('6months', '6 Meses'),
   ('ytd',     'YTD'),
 ];
-
-
-// --- CONTROLLER ---
-
-class _ValorizacaoController extends ChangeNotifier {
-
-  final StartupService      _startupService = StartupService();
-  final TokenHistoryService _historyService = TokenHistoryService();
-
-  bool   isLoading      = true;
-  String selectedPeriod = 'weekly';
-  String? errorMessage;
-
-  StartupModel?       startup;
-  TokenHistoryModel?  tokenHistory;
-  bool                isLoadingChart = false;
-  String?             chartError;
-
-  Future<void> load(String startupId) async {
-    isLoading    = true;
-    errorMessage = null;
-    notifyListeners();
-
-    try {
-      startup = await _startupService.fetchStartup(startupId);
-      await _loadChart(startupId);
-    } catch (_) {
-      errorMessage = 'Não foi possível carregar os dados. Tente novamente.';
-    } finally {
-      isLoading = false;
-      notifyListeners();
-    }
-  }
-
-  Future<void> selectPeriod(String startupId, String period) async {
-    selectedPeriod = period;
-    notifyListeners();
-    await _loadChart(startupId);
-  }
-
-  Future<void> _loadChart(String startupId) async {
-    isLoadingChart = true;
-    chartError     = null;
-    notifyListeners();
-
-    try {
-      tokenHistory = await _historyService.fetchHistory(startupId, selectedPeriod);
-    } catch (_) {
-      tokenHistory = null;
-      chartError   = 'Não foi possível carregar o histórico. Tente novamente.';
-    } finally {
-      isLoadingChart = false;
-      notifyListeners();
-    }
-  }
-}
 
 
 // --- PAGE ---
@@ -95,7 +37,7 @@ class ValorizacaoPage extends StatefulWidget {
 
 class _ValorizacaoPageState extends State<ValorizacaoPage> {
 
-  final _ValorizacaoController _controller = _ValorizacaoController();
+  final ValorizacaoController _controller = ValorizacaoController();
 
   @override
   void initState() {
@@ -340,7 +282,7 @@ class _PeriodSelector extends StatelessWidget {
 
 class _ChartSection extends StatelessWidget {
 
-  final _ValorizacaoController controller;
+  final ValorizacaoController controller;
   final TokenHistoryModel?      history;
 
   const _ChartSection({required this.controller, required this.history});
