@@ -37,7 +37,7 @@ export interface StartupDocument
     description: string;
     executive_summary: string;
     id: string;
-    logo_url: string;
+    logo_url: string | null;
     name: string;
     partners: PartnerDocument[];
     stage: StartupStage;
