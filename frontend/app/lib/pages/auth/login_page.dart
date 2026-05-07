@@ -1,4 +1,6 @@
-// --- Login page ---
+/// Eduardo Kairalla - 24024241
+
+/// Login page.
 
 // --- IMPORTS ---
 import 'package:flutter/material.dart';
@@ -8,17 +10,8 @@ import 'package:mesclainvest/app/app_state.dart';
 import 'package:mesclainvest/core/exceptions/auth.dart';
 import 'package:mesclainvest/core/exceptions/infrastructure.dart';
 import 'package:mesclainvest/core/services/auth.dart';
-
-
+import 'package:mesclainvest/pages/auth/widgets/auth_constants.dart';
 // --- CONSTANTS ---
-const _kFieldBg     = Color(0xFFF8F8F8);
-const _kFieldBorder = Color(0xFFD4D4D4);
-const _kLabel       = Color(0xFF424242);
-const _kHint        = Color(0xFFA4A2A2);
-const _kSubtitle    = Color(0xFFAAAAAA);
-const _kBottom      = Color(0xFF454545);
-
-
 /// --- CODE ---
 
 /// I represent the login page.
@@ -26,16 +19,12 @@ class LoginPage extends StatefulWidget {
 
   // constructor
   const LoginPage({super.key});
-
-
   /// I create the mutable state for this widget.
   /// 
   /// :returns: the state object for this widget.
   @override
   State<LoginPage> createState() => _LoginPageState();
 }
-
-
 /// I represent the mutable state for the login page.
 class _LoginPageState extends State<LoginPage>
     with SingleTickerProviderStateMixin {
@@ -56,8 +45,6 @@ class _LoginPageState extends State<LoginPage>
   late final AnimationController _entranceCtrl;
   late final Animation<double>   _fadeAnim;
   late final Animation<Offset>   _slideAnim;
-
-
   /// I build a custom text field with a label, icon, and validation.
   ///
   /// :param controller: the text editing controller for the field
@@ -88,7 +75,7 @@ class _LoginPageState extends State<LoginPage>
           style: GoogleFonts.inter(
             fontWeight: FontWeight.w700,
             fontSize:   15,
-            color:      _kLabel,
+            color:      kAuthLabel,
           ),
         ),
         const SizedBox(height: 8),
@@ -100,10 +87,10 @@ class _LoginPageState extends State<LoginPage>
           style: GoogleFonts.inter(fontSize: 16, color: Colors.black),
           decoration: InputDecoration(
             hintText:  hint,
-            hintStyle: GoogleFonts.inter(fontSize: 16, color: _kHint),
+            hintStyle: GoogleFonts.inter(fontSize: 16, color: kAuthHint),
             filled:    true,
-            fillColor: _kFieldBg,
-            prefixIcon: Icon(icon, color: _kHint, size: 22),
+            fillColor: kAuthFieldBg,
+            prefixIcon: Icon(icon, color: kAuthHint, size: 22),
             suffixIcon: suffixIcon,
             contentPadding: const EdgeInsets.symmetric(
               vertical: 15,
@@ -111,7 +98,7 @@ class _LoginPageState extends State<LoginPage>
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(20),
-              borderSide:   const BorderSide(color: _kFieldBorder),
+              borderSide:   const BorderSide(color: kAuthFieldBorder),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(20),
@@ -131,8 +118,6 @@ class _LoginPageState extends State<LoginPage>
       ],
     );
   }
-
-
   /// I submit the login form.
   /// 
   /// returns: void
@@ -181,8 +166,6 @@ class _LoginPageState extends State<LoginPage>
       if (mounted) setState(() => _isLoading = false);
     }
   }
-
-
   /// I validate the email field.
   ///
   /// :param email: the email to validate
@@ -201,8 +184,6 @@ class _LoginPageState extends State<LoginPage>
     // validation passed: return null
     return null;
   }
-
-
   /// I validate the password field.
   ///
   /// :param password: the password to validate
@@ -216,8 +197,6 @@ class _LoginPageState extends State<LoginPage>
     // validation passed: return null
     return null;
   }
-
-
   /// I build the login page widget tree.
   ///
   /// :param context: the build context
@@ -262,7 +241,7 @@ class _LoginPageState extends State<LoginPage>
                       style: GoogleFonts.inter(
                         fontWeight: FontWeight.w700,
                         fontSize:   15,
-                        color:      _kSubtitle,
+                        color:      kAuthSubtitle,
                       ),
                     ),
                     const SizedBox(height: 28),
@@ -293,7 +272,7 @@ class _LoginPageState extends State<LoginPage>
                           _showPassword
                               ? Icons.visibility_outlined
                               : Icons.visibility_off_outlined,
-                          color: _kHint,
+                          color: kAuthHint,
                           size:  22,
                         ),
                       ),
@@ -385,7 +364,7 @@ class _LoginPageState extends State<LoginPage>
                         style: GoogleFonts.inter(
                           fontWeight: FontWeight.w700,
                           fontSize:   15,
-                          color:      _kBottom,
+                          color:      kAuthBody,
                         ),
                       ),
                     ),
@@ -400,7 +379,7 @@ class _LoginPageState extends State<LoginPage>
                           style: GoogleFonts.inter(
                             fontWeight: FontWeight.w400,
                             fontSize:   15,
-                            color:      _kBottom,
+                            color:      kAuthBody,
                           ),
                         ),
                         GestureDetector(
@@ -410,7 +389,7 @@ class _LoginPageState extends State<LoginPage>
                             style: GoogleFonts.inter(
                               fontWeight: FontWeight.w700,
                               fontSize:   20,
-                              color:      _kBottom,
+                              color:      kAuthBody,
                             ),
                           ),
                         ),
@@ -427,8 +406,6 @@ class _LoginPageState extends State<LoginPage>
       ),
     );
   }
-
-
   /// I clean up the controllers when the widget is disposed.
   ///
   /// :returns: void
@@ -439,8 +416,6 @@ class _LoginPageState extends State<LoginPage>
     _passwordCtrl.dispose();
     super.dispose();
   }
-
-
   /// I initialize the state of this widget.
   ///
   /// Returns void.

@@ -6,6 +6,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:mesclainvest/app/app.dart';
 import 'package:mesclainvest/firebase_options.dart';
@@ -29,6 +30,8 @@ Future<void> main() async {
     int.tryParse(dotenv.env['AUTH_EMULATOR_PORT'] ?? '9099') ?? 9099;
   final functionsEmulatorPort =
     int.tryParse(dotenv.env['FUNCTIONS_EMULATOR_PORT'] ?? '5001') ?? 5001;
+  final storageEmulatorPort =
+    int.tryParse(dotenv.env['STORAGE_EMULATOR_PORT'] ?? '9199') ?? 9199;
 
   // initialize firebase client
   await Firebase.initializeApp(
@@ -39,6 +42,7 @@ Future<void> main() async {
   if (useEmulator == true) {
     await FirebaseAuth.instance.useAuthEmulator(emulatorHost, authEmulatorPort);
     FirebaseFunctions.instance.useFunctionsEmulator(emulatorHost, functionsEmulatorPort);
+    await FirebaseStorage.instance.useStorageEmulator(emulatorHost, storageEmulatorPort);
   }
 
   // start root widget

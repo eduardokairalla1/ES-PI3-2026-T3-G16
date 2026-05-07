@@ -34,11 +34,31 @@ export async function getUser(uid: string): Promise<userDocument | null>
         .limit(1)
         .get();
 
-    // user not found: return null 
+    // user not found: return null
     if (user.empty) return null;
 
     // return user document
     return user.docs[0].data() as userDocument;
+}
+
+
+/**
+ * I get a user by CPF.
+ *
+ * @param cpf the user's CPF
+ *
+ * @returns the user document, or null if not found
+ */
+export async function getUserByCpf(cpf: string): Promise<userDocument | null>
+{
+    const snapshot = await db.collection('users')
+        .where('cpf', '==', cpf)
+        .limit(1)
+        .get();
+
+    if (snapshot.empty) return null;
+
+    return snapshot.docs[0].data() as userDocument;
 }
 
 
@@ -61,19 +81,68 @@ export async function addUser(
     // build user document
     const user: userDocument = {
         'birth_date': birth_date,
-        'created_at': new Date(),
         'cpf': cpf,
+        'created_at': new Date(),
         'email': email,
         'full_name': full_name,
         'phone': phone,
+        'photo_url': null,
         'status': 'active',
+        'two_fa_enabled': false,
         'uid': uid,
         'updated_at': null,
-    }
+    };
 
     // persist user to Firestore
     await db.collection('users').add(user);
 
     // return validated user
     return user;
+}
+
+
+/**
+ * I update mutable fields on a user document.
+ *
+ * @param uid     Firebase Auth UID of the user
+ * @param updates fields to update
+ */
+export async function updateUser(
+    uid: string,
+    updates: Partial<Pick<userDocument, 'full_name' | 'phone' | 'photo_url'>>,
+): Promise<void>
+{
+    const snapshot = await db.collection('users')
+        .where('uid', '==', uid)
+        .limit(1)
+        .get();
+
+    if (snapshot.empty) throw new Error(`User "${uid}" not found.`);
+
+    await snapshot.docs[0].ref.update({...updates, 'updated_at': new Date()});
+}
+
+
+/**
+ * I toggle the two_fa_enabled flag for a user and return the new state.
+ *
+ * @param uid Firebase Auth UID of the user
+ *
+ * @returns the new two_fa_enabled value
+ */
+export async function toggleUserTwoFA(uid: string): Promise<boolean>
+{
+    const snapshot = await db.collection('users')
+        .where('uid', '==', uid)
+        .limit(1)
+        .get();
+
+    if (snapshot.empty) throw new Error(`User "${uid}" not found.`);
+
+    const doc = snapshot.docs[0];
+    const next = !((doc.data() as userDocument).two_fa_enabled ?? false);
+
+    await doc.ref.update({'two_fa_enabled': next, 'updated_at': new Date()});
+
+    return next;
 }
