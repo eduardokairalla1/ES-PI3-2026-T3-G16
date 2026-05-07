@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:mesclainvest/pages/startup/models/startup_model.dart';
 import 'package:mesclainvest/shared/styles/money_style.dart';
+import 'package:mesclainvest/shared/styles/stage_colors.dart';
 
 
 // --- WIDGET ---
@@ -70,7 +71,7 @@ class StartupInfoCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
             decoration: BoxDecoration(
-              color: _stageColor(startup.stage).withValues(alpha: 0.12),
+              color: stageColor(startup.stage).withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
@@ -78,7 +79,7 @@ class StartupInfoCard extends StatelessWidget {
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w700,
-                color: _stageColor(startup.stage),
+                color: stageColor(startup.stage),
               ),
             ),
           ),
@@ -102,10 +103,4 @@ class StartupInfoCard extends StatelessWidget {
     );
   }
 
-  Color _stageColor(String stage) => switch (stage) {
-    'new'       => Colors.blue,
-    'operating' => Colors.green,
-    'expanding' => Colors.orange,
-    _           => Colors.grey,
-  };
 }
