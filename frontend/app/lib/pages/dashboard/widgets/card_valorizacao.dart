@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:mesclainvest/pages/dashboard/controllers/dashboard_controller.dart';
 import 'package:mesclainvest/pages/dashboard/models/price_snapshot_model.dart';
+import 'package:mesclainvest/shared/styles/stage_colors.dart';
 
 
 // --- CONSTANTES ---
@@ -18,13 +19,6 @@ const _periods = [
 ];
 
 enum StartupSelectorStyle { a, b, c, d }
-
-Color _stageColor(String stage) => switch (stage) {
-  'new'       => const Color(0xFF4F46E5),
-  'operating' => const Color(0xFF16A34A),
-  'expanding' => const Color(0xFF0EA5E9),
-  _           => Colors.grey,
-};
 
 
 // --- WIDGET PRINCIPAL ---
@@ -240,7 +234,7 @@ class _SelectorB extends StatelessWidget {
         scrollDirection: Axis.horizontal,
         children: controller.startups.map((s) {
           final isSelected = controller.selectedStartup?.id == s.id;
-          final color      = _stageColor(s.stage);
+          final color      = stageColor(s.stage);
 
           return GestureDetector(
             onTap: () => controller.selectStartup(s),
@@ -410,7 +404,7 @@ class _SelectorD extends StatelessWidget {
                   width: 28,
                   height: 28,
                   decoration: BoxDecoration(
-                    color: _stageColor(startup.stage).withValues(alpha: 0.12),
+                    color: stageColor(startup.stage).withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(7),
                   ),
                   child: Center(
@@ -419,7 +413,7 @@ class _SelectorD extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w800,
-                        color: _stageColor(startup.stage),
+                        color: stageColor(startup.stage),
                       ),
                     ),
                   ),
@@ -486,7 +480,7 @@ class _SelectorD extends StatelessWidget {
           ),
           ...controller.startups.map((s) {
             final isSelected = controller.selectedStartup?.id == s.id;
-            final color      = _stageColor(s.stage);
+            final color      = stageColor(s.stage);
             return ListTile(
               contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 2),
               leading: Container(
