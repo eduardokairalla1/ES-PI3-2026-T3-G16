@@ -1,4 +1,6 @@
-// --- Forgot password page ---
+/// Eduardo Kairalla - 24024241
+
+/// Forgot password page.
 
 // --- IMPORTS ---
 import 'package:flutter/material.dart';
@@ -7,14 +9,10 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:mesclainvest/core/exceptions/auth.dart';
 import 'package:mesclainvest/core/exceptions/infrastructure.dart';
 import 'package:mesclainvest/core/services/auth.dart';
+import 'package:mesclainvest/pages/auth/widgets/auth_constants.dart';
 
 
 // --- CONSTANTS ---
-const _kFieldBg     = Color(0xFFF8F8F8);
-const _kFieldBorder = Color(0xFFD4D4D4);
-const _kLabel       = Color(0xFF424242);
-const _kHint        = Color(0xFFA4A2A2);
-const _kBody        = Color(0xFF454545);
 
 
 // --- CODE ---
@@ -67,7 +65,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage>
           style: GoogleFonts.inter(
             fontWeight: FontWeight.w700,
             fontSize:   15,
-            color:      _kLabel,
+            color:      kAuthLabel,
           ),
         ),
         const SizedBox(height: 8),
@@ -78,16 +76,16 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage>
           style: GoogleFonts.inter(fontSize: 16, color: Colors.black),
           decoration: InputDecoration(
             hintText:  'seu@gmail.com.br',
-            hintStyle: GoogleFonts.inter(fontSize: 16, color: _kHint),
+            hintStyle: GoogleFonts.inter(fontSize: 16, color: kAuthHint),
             filled:    true,
-            fillColor: _kFieldBg,
-            prefixIcon: const Icon(Icons.mail_outline, color: _kHint, size: 22),
+            fillColor: kAuthFieldBg,
+            prefixIcon: const Icon(Icons.mail_outline, color: kAuthHint, size: 22),
             contentPadding: const EdgeInsets.symmetric(
               vertical: 15, horizontal: 16,
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(20),
-              borderSide:   const BorderSide(color: _kFieldBorder),
+              borderSide:   const BorderSide(color: kAuthFieldBorder),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(20),
@@ -218,7 +216,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage>
                   const Icon(
                     Icons.arrow_back,
                     size:  18,
-                    color: _kLabel,
+                    color: kAuthLabel,
                   ),
                   const SizedBox(width: 6),
                   Text(
@@ -226,7 +224,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage>
                     style: GoogleFonts.inter(
                       fontWeight: FontWeight.w700,
                       fontSize:   15,
-                      color:      _kLabel,
+                      color:      kAuthLabel,
                     ),
                   ),
                 ],
@@ -255,7 +253,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage>
               fontWeight: FontWeight.w400,
               fontSize:   15,
               height:     18 / 15,
-              color:      _kBody,
+              color:      kAuthBody,
             ),
           ),
           const SizedBox(height: 28),
@@ -385,7 +383,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage>
             fontWeight: FontWeight.w400,
             fontSize:   15,
             height:     18 / 15,
-            color:      _kBody,
+            color:      kAuthBody,
           ),
         ),
         const SizedBox(height: 40),
