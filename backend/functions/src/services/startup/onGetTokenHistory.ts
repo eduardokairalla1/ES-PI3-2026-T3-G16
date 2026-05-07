@@ -59,28 +59,6 @@ function sinceDate(period: string): Date
 }
 
 /**
- * I return the date of the user's first completed buy order for a startup,
- * or null if the user has never invested.
- */
-async function firstPurchaseDate(uid: string, startupId: string): Promise<Date | null>
-{
-    const snap = await db
-        .collection('orders')
-        .where('uid', '==', uid)
-        .where('startup_id', '==', startupId)
-        .where('type', '==', 'buy')
-        .where('status', '==', 'completed')
-        .orderBy('created_at', 'asc')
-        .limit(1)
-        .get();
-
-    if (snap.empty) return null;
-
-    const ts = snap.docs[0].data().created_at;
-    return ts?.toDate ? ts.toDate() : new Date(ts);
-}
-
-/**
  * I handle the onGetTokenHistory callable.
  *
  * Returns price snapshots anchored to the user's first purchase of this
@@ -111,9 +89,17 @@ export async function handleOnGetTokenHistory(request: CallableRequest)
             throw new NotFoundError(`Startup "${startupId}" not found.`);
         }
 
-        // find the user's first purchase — if none, return empty
-        const firstPurchase = await firstPurchaseDate(uid, startupId);
-        if (firstPurchase === null)
+        // Single query sorted by created_at — docs[0] gives firstPurchase, all docs give tokenQuantity.
+        const ordersSnap = await db
+            .collection('orders')
+            .where('uid', '==', uid)
+            .where('startup_id', '==', startupId)
+            .where('type', '==', 'buy')
+            .where('status', '==', 'completed')
+            .orderBy('created_at', 'asc')
+            .get();
+
+        if (ordersSnap.empty)
         {
             return {
                 currentPrice:   startup.token_price,
@@ -124,25 +110,21 @@ export async function handleOnGetTokenHistory(request: CallableRequest)
             };
         }
 
-        // since = latest of (period start, first purchase date)
-        const periodStart = sinceDate(period);
-        const since       = firstPurchase > periodStart ? firstPurchase : periodStart;
-
-        // sum all completed buy orders to get the user's token quantity
-        const ordersSnap = await db
-            .collection('orders')
-            .where('uid', '==', uid)
-            .where('startup_id', '==', startupId)
-            .where('type', '==', 'buy')
-            .where('status', '==', 'completed')
-            .get();
+        const firstTs       = ordersSnap.docs[0].data().created_at;
+        const firstPurchase = firstTs?.toDate ? firstTs.toDate() : new Date(firstTs);
 
         const tokenQuantity = ordersSnap.docs.reduce(
             (sum, doc) => sum + (doc.data().quantity as number),
             0,
         );
 
+        // since = latest of (period start, first purchase date)
+        const periodStart = sinceDate(period);
+        const since       = firstPurchase > periodStart ? firstPurchase : periodStart;
+
         const snapshots = await getPriceSnapshots(startupId, since);
+
+        logger.info(`Returning ${snapshots.length} snapshots, tokenQty=${tokenQuantity}`);
 
         return {
             currentPrice:   startup.token_price,
