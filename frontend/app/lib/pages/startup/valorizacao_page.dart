@@ -1,5 +1,7 @@
 /// Página de valorização de tokens de uma startup específica.
 
+import 'dart:math' show max;
+
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -443,7 +445,7 @@ class _LineChart extends StatelessWidget {
         bottomTitles: AxisTitles(sideTitles: SideTitles(
           showTitles: true,
           reservedSize: 22,
-          interval: (maxMs - minMs) / 4,
+          interval: max((maxMs - minMs) / 4, 1.0),
           getTitlesWidget: (v, _) => Padding(
             padding: const EdgeInsets.only(top: 4),
             child: Text(
