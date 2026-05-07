@@ -66,6 +66,8 @@
 **/google-services.json
 **/GoogleService-Info.plist
 **/.firebaserc.local
+**/.firebaserc
+**/firebase_options.dart
 
 # Functions compiled output
 **/functions/lib/

@@ -10,40 +10,17 @@ class BotoesAcao extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: const [
-          // item: depositar (destaque)
-          _BotaoAcaoItem(
-            icon: Icons.add,
-            label: 'Depositar',
-            isPrimary: true,
-          ),
-
-          // item: comprar
-          _BotaoAcaoItem(
-            icon: Icons.trending_up,
-            label: 'Comprar',
-          ),
-
-          // item: vender (venda de ativos)
-          _BotaoAcaoItem(
-            icon: Icons.trending_down,
-            label: 'Vender',
-          ),
-
-          // item: vender (saque)
-          _BotaoAcaoItem(
-            icon: Icons.account_balance_outlined,
-            label: 'Vender',
-          ),
-
-          // item: extrato
-          _BotaoAcaoItem(
-            icon: Icons.receipt_long_outlined,
-            label: 'Extrato',
-          ),
+          _BotaoAcaoItem(icon: Icons.add,                      label: 'Depositar', isPrimary: true),
+          SizedBox(width: 24),
+          _BotaoAcaoItem(icon: Icons.trending_up,              label: 'Comprar'),
+          SizedBox(width: 24),
+          _BotaoAcaoItem(icon: Icons.account_balance_outlined, label: 'Vender'),
+          SizedBox(width: 24),
+          _BotaoAcaoItem(icon: Icons.receipt_long_outlined,    label: 'Extrato'),
         ],
       ),
     );
@@ -74,8 +51,8 @@ class _BotaoAcaoItem extends StatelessWidget {
 
         // container arredondado (squircle) do ícone
         Container(
-          width: 56,
-          height: 56,
+          width: 60,
+          height: 60,
           decoration: BoxDecoration(
             color: isPrimary ? Colors.black : const Color(0xFFF2F2F2),
             borderRadius: BorderRadius.circular(16),
@@ -90,7 +67,7 @@ class _BotaoAcaoItem extends StatelessWidget {
           child: Icon(
             icon,
             color: isPrimary ? Colors.white : Colors.black87,
-            size: 24,
+            size: 26,
           ),
         ),
 

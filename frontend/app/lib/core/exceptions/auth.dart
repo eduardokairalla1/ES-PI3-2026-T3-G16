@@ -160,6 +160,23 @@ class AuthException implements Exception {
     );
 
 
+  /// I create an AuthException for CPF already in use.
+  ///
+  /// :param originalError: the original error that caused this exception
+  /// :param stackTrace: the stack trace of the original error
+  ///
+  /// :returns: an AuthException with CPF already in use message
+  factory AuthException.cpfAlreadyInUse(
+    {Object? originalError, Object? stackTrace}
+  ) =>
+    AuthException._(
+      message: 'Este CPF já está cadastrado.',
+      code: 'cpf_already_in_use',
+      originalError: originalError,
+      stackTrace: stackTrace,
+    );
+
+
   /// I create an AuthException from a FirebaseAuthException code.
   ///
   /// :param code: the FirebaseAuthException code.

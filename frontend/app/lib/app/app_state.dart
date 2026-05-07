@@ -12,23 +12,15 @@ import 'package:mesclainvest/core/services/auth.dart';
 /// I am a singleton — access me via [AppState.instance].
 class AppState extends ChangeNotifier {
 
-  // singleton setup
   AppState._();
   static final AppState instance = AppState._();
 
-  // state
   UserProfile? _profile;
 
-
-  /// I return the currently loaded user profile, or null if not yet loaded.
   UserProfile? get profile => _profile;
 
 
   /// I load the user profile from the backend and notify listeners.
-  ///
-  /// :param authService: the AuthService used to call the backend
-  ///
-  /// :returns: void
   Future<void> loadProfile(AuthService authService) async {
     final fetched = await authService.getProfile();
     _profile = fetched;
@@ -36,9 +28,21 @@ class AppState extends ChangeNotifier {
   }
 
 
+  /// I refresh the profile after an update, applying partial changes locally
+  /// to avoid a round-trip when the fields are already known.
+  void updateProfileLocally({String? fullName, String? phone, String? photoUrl, bool? twoFaEnabled}) {
+    if (_profile == null) return;
+    _profile = _profile!.copyWith(
+      fullName:     fullName,
+      phone:        phone,
+      photoUrl:     photoUrl,
+      twoFaEnabled: twoFaEnabled,
+    );
+    notifyListeners();
+  }
+
+
   /// I clear the user profile (call on sign-out).
-  ///
-  /// :returns: void
   void clearProfile() {
     _profile = null;
     notifyListeners();
