@@ -29,6 +29,9 @@ export interface AdvisorDocument
 export interface StartupDocument
 {
     advisors: AdvisorDocument[];
+    appreciation_factor: number;
+    available_tokens: number;
+    base_price: number;
     capital_raised: number;
     created_at: Date;
     description: string;
