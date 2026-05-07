@@ -8,7 +8,8 @@
  * IMPORTS
  */
 import {HttpsError} from 'firebase-functions/v2/https';
-import {addUser} from '../../db/users/storage';
+import {addUser, getUserByCpf} from '../../db/users/storage';
+import {createWallet} from '../../db/wallets/storage';
 import {logger} from '../../utils/logger';
 import {parseRequest} from '../../utils/validation';
 
@@ -64,8 +65,15 @@ export async function handleOnUserCreated(request: CallableRequest)
         // validate request data
         const parsed = parseRequest(CreateUserRequest, request.data);
 
+        // reject duplicate CPF
+        const existing = await getUserByCpf(parsed.cpf);
+        if (existing !== null)
+        {
+            throw new ValidationError('CPF já cadastrado.');
+        }
+
         // add user
-        logger.info(`Adding user "${uid}"...`, {data: {uid, email}});
+        logger.info(`Adding user "${uid}"...`, {data: {email, uid}});
         const addedUser = await addUser(
             parsed.birthDate,
             parsed.cpf,
@@ -76,13 +84,16 @@ export async function handleOnUserCreated(request: CallableRequest)
         );
         logger.info(`User "${uid}" added successfully.`, {data: addedUser});
 
+        await createWallet(uid);
+        logger.info(`Wallet created for user "${uid}".`);
+
         return {
-            uid: addedUser.uid,
+            birthDate: addedUser.birth_date,
+            createdAt: addedUser.created_at,
             email: addedUser.email,
             fullName: addedUser.full_name,
-            birthDate: addedUser.birth_date,
             status: addedUser.status,
-            createdAt: addedUser.created_at,
+            uid: addedUser.uid,
             updatedAt: addedUser.updated_at,
         };
     }

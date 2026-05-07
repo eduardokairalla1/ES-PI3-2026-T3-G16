@@ -7,7 +7,9 @@
     "lint:functions": "npm --prefix functions run lint",
     "lint:fix:functions": "npm --prefix functions run lint:fix",
     "watch:functions": "npm --prefix functions run build:watch",
-    "deploy": "firebase deploy"
+    "deploy": "firebase deploy",
+    "seed": "FIRESTORE_EMULATOR_HOST=localhost:8080 node functions/lib/scripts/seed-startups.js",
+    "seed:orders": "FIRESTORE_EMULATOR_HOST=localhost:8080 node functions/lib/scripts/seed-orders.js"
   },
   "dependencies": {
     "zod": "^4.3.6"
