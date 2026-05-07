@@ -190,10 +190,21 @@ class _PortfolioCard extends StatelessWidget {
 // --- SUB-WIDGETS (reusados do padrão de startup_card) ---
 
 class _Logo extends StatelessWidget {
-  final String url;
-  final String name;
+  final String? url;
+  final String  name;
 
   const _Logo({required this.url, required this.name});
+
+  Widget _initial() => Center(
+    child: Text(
+      name.isNotEmpty ? name[0].toUpperCase() : '?',
+      style: const TextStyle(
+        fontSize: 18,
+        fontWeight: FontWeight.w700,
+        color: Colors.black54,
+      ),
+    ),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -206,20 +217,13 @@ class _Logo extends StatelessWidget {
         border: Border.all(color: Colors.grey.shade200),
       ),
       child: ClipOval(
-        child: Image.network(
-          url,
-          fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => Center(
-            child: Text(
-              name.isNotEmpty ? name[0].toUpperCase() : '?',
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                color: Colors.black54,
-              ),
-            ),
-          ),
-        ),
+        child: url != null
+            ? Image.network(
+                url!,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___)  => _initial(),
+              )
+            : _initial(),
       ),
     );
   }
