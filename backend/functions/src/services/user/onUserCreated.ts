@@ -9,6 +9,7 @@
  */
 import {HttpsError} from 'firebase-functions/v2/https';
 import {addUser, getUserByCpf} from '../../db/users/storage';
+import {createWallet} from '../../db/wallets/storage';
 import {logger} from '../../utils/logger';
 import {parseRequest} from '../../utils/validation';
 
@@ -82,6 +83,9 @@ export async function handleOnUserCreated(request: CallableRequest)
             uid,
         );
         logger.info(`User "${uid}" added successfully.`, {data: addedUser});
+
+        await createWallet(uid);
+        logger.info(`Wallet created for user "${uid}".`);
 
         return {
             birthDate: addedUser.birth_date,
