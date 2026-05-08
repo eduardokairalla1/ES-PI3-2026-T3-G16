@@ -1,19 +1,18 @@
 /// Cabeçalho com informações do usuário e notificações.
 
 import 'package:flutter/material.dart';
-import 'package:mesclainvest/pages/dashboard/controllers/dashboard_controller.dart';
+import 'package:mesclainvest/app/app_state.dart';
 
 /// Barra superior com dados do usuário e notificações.
 class CabecalhoDashboard extends StatelessWidget {
-  final DashboardController controller;
-  
-  const CabecalhoDashboard({super.key, required this.controller});
-
+  const CabecalhoDashboard({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final nomeUsuario = controller.data?.nomeUsuario ?? 'Usuário';
-    final inicial = nomeUsuario.isNotEmpty ? nomeUsuario[0].toUpperCase() : 'U';
+    final profile    = AppState.instance.profile;
+    final userName   = profile?.fullName ?? 'Usuário';
+    final initial    = userName.isNotEmpty ? userName[0].toUpperCase() : 'U';
+    final photoUrl   = profile?.photoUrl;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
@@ -41,21 +40,16 @@ class CabecalhoDashboard extends StatelessWidget {
                 color: Colors.black,
                 shape: BoxShape.circle,
               ),
-              child: Center(
-                child: Text(
-                  inicial,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
+              clipBehavior: Clip.antiAlias,
+              child: photoUrl != null
+                  ? Image.network(photoUrl, fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => _initial(initial))
+                  : _initial(initial),
             ),
             const SizedBox(width: 12),
             // Nome.
             Text(
-              nomeUsuario,
+              userName,
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
@@ -66,7 +60,6 @@ class CabecalhoDashboard extends StatelessWidget {
             // Notificações.
             Stack(
               children: [
-                // Ícone.
                 IconButton(
                   onPressed: () {},
                   icon: const Icon(
@@ -75,7 +68,6 @@ class CabecalhoDashboard extends StatelessWidget {
                     size: 24,
                   ),
                 ),
-                // Alerta de notificação ativa.
                 Positioned(
                   right: 12,
                   top: 12,
@@ -91,6 +83,19 @@ class CabecalhoDashboard extends StatelessWidget {
               ],
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _initial(String letter) {
+    return Center(
+      child: Text(
+        letter,
+        style: const TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.w600,
+          color: Colors.white,
         ),
       ),
     );
