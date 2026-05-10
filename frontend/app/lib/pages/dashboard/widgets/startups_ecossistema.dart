@@ -9,6 +9,8 @@
 /**
  * IMPORTS
  */
+import 'dart:ui' show Color;
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mesclainvest/pages/catalog/widgets/startup_card.dart';

@@ -14,6 +14,7 @@ import {getFirestore} from 'firebase-admin/firestore';
 import {getAuth} from 'firebase-admin/auth';
 
 import type {InvestmentDocument} from '../src/db/investments/model';
+import type {StartupDocument} from '../src/db/startups/model';
 
 
 /**
@@ -29,12 +30,12 @@ const auth = getAuth(app);
 /**
  * HELPER: I get the user document ID based on the UID.
  */
-async function getUserDocId(uid: string): Promise<string | null> {
+async function getUserDocId(uid: string): Promise<string | null>
+{
     const snapshot = await db.collection('users').where('uid', '==', uid).limit(1).get();
     if (snapshot.empty) return null;
     return snapshot.docs[0].id;
 }
-
 
 
 /**
@@ -109,7 +110,7 @@ async function seed(): Promise<void>
     const startups = startupsSnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
-    })) as any[];
+    } as StartupDocument));
 
     // 3. Simulate transactions using the Balcão function
     // We'll take the first few startups and simulate a purchase for each
@@ -134,4 +135,3 @@ seed().catch(err =>
     console.error('Seed failed:', err);
     process.exit(1);
 });
-

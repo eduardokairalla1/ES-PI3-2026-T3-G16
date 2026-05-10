@@ -3,6 +3,8 @@
 /// Profile settings screen — edit name and avatar.
 
 // --- IMPORTS ---
+import 'dart:ui' show Color;
+
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';

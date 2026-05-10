@@ -3,6 +3,8 @@
 /// Startup catalog listing page.
 
 // --- IMPORTS ---
+import 'dart:ui' show Color;
+
 import 'package:flutter/material.dart';
 import 'package:mesclainvest/pages/catalog/controllers/catalog_controller.dart';
 import 'package:mesclainvest/pages/catalog/widgets/startup_card.dart';

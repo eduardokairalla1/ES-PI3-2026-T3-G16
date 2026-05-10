@@ -3,6 +3,8 @@
 /// Startup detail screen — tabs: About, Partners, Q&A, Video.
 
 // --- IMPORTS ---
+import 'dart:ui' show Color;
+
 import 'package:flutter/material.dart';
 import 'package:mesclainvest/app/app_state.dart';
 import 'package:mesclainvest/pages/startup/controllers/startup_controller.dart';

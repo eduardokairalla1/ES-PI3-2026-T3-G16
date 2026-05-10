@@ -3,6 +3,8 @@
 /// Content of the "About" tab on the startup detail screen.
 
 // --- IMPORTS ---
+import 'dart:ui' show Color;
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:mesclainvest/pages/startup/models/startup_model.dart';
