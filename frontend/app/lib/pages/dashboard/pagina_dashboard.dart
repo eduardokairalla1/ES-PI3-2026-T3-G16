@@ -43,10 +43,12 @@ class _PaginaDashboardState extends State<PaginaDashboard> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const CabecalhoDashboard(),
+                        CabecalhoDashboard(controller: _controller),
                         CartaoPatrimonio(controller: _controller),
-                        const BotoesAcao(),
-                        ResumoMercado(controller: _controller),
+                        BotoesAcao(controller: _controller),
+                        StartupsEcossistema(controller: _controller),
+
+                        MeusInvestimentos(controller: _controller),
                       ],
                     ),
                   ),

@@ -27,7 +27,7 @@ final router = GoRouter(
     final isLoggedIn = FirebaseAuth.instance.currentUser != null;
 
     // verifica se o usuário está tentando acessar uma rota protegida
-    final protectedPaths = ['/dashboard', '/catalog', '/profile'];
+    final protectedPaths = ['/dashboard', '/catalog', '/profile', '/startup'];
     final isProtected = protectedPaths.any((p) => state.matchedLocation.startsWith(p));
 
     // usuário não está logado e tentando acessar rota protegida: redireciona para login
@@ -35,6 +35,9 @@ final router = GoRouter(
 
     // usuário está logado e tentando acessar login ou registro: redireciona para
     // o dashboard
+    final authPaths = ['/login', '/register'];
+    if (isLoggedIn && authPaths.contains(state.matchedLocation)) return '/dashboard';
+
     return null;
 
   },

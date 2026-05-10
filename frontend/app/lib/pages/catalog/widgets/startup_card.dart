@@ -26,8 +26,15 @@ Color _stageColor(String stage) => switch (stage) {
 class StartupCard extends StatelessWidget {
 
   final StartupModel startup;
+  final bool isFavorite;
+  final VoidCallback? onFavoriteTap;
 
-  const StartupCard({super.key, required this.startup});
+  const StartupCard({
+    super.key, 
+    required this.startup,
+    this.isFavorite = false,
+    this.onFavoriteTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -86,6 +93,17 @@ class StartupCard extends StatelessWidget {
                     ],
                   ),
                 ),
+                if (onFavoriteTap != null)
+                  IconButton(
+                    onPressed: onFavoriteTap,
+                    icon: Icon(
+                      isFavorite ? Icons.favorite : Icons.favorite_border,
+                      color: isFavorite ? Colors.red : Colors.grey.shade400,
+                    ),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                    splashRadius: 24,
+                  ),
                 const SizedBox(width: 8),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),

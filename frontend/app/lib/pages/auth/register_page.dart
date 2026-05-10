@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mesclainvest/app/app_state.dart';
 import 'package:mesclainvest/core/exceptions/auth.dart';
 import 'package:mesclainvest/core/exceptions/infrastructure.dart';
 import 'package:mesclainvest/core/services/auth.dart';
@@ -308,7 +309,11 @@ class _RegisterPageState extends State<RegisterPage>
         birthIso,
       );
 
-      if (mounted) context.go('/login');
+      // Carrega o perfil no AppState para que o nome apareça corretamente no Dashboard.
+      // O register() já autentica o usuário, então getProfile() funcionará imediatamente.
+      await AppState.instance.loadProfile(_authService);
+
+      if (mounted) context.go('/dashboard');
     }
     on AuthException catch (e) {
       setState(() => _error = e.message);
