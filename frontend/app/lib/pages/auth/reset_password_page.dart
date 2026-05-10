@@ -174,7 +174,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage>
             style: GoogleFonts.inter(
               fontWeight: FontWeight.w700,
               fontSize: 24,
-              color: const Color(0xFF040404),
+              color: Colors.black,
             ),
           ),
           const SizedBox(height: 12),
@@ -223,16 +223,16 @@ class _ResetPasswordPageState extends State<ResetPasswordPage>
                     ),
                     margin: const EdgeInsets.only(bottom: 16),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFFF0F0),
+                      color: Colors.red.shade50,
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: const Color(0xFFFFCDD2)),
+                      border: Border.all(color: Colors.red.shade100),
                     ),
                     child: Text(
                       _error!,
                       textAlign: TextAlign.center,
                       style: GoogleFonts.inter(
                         fontSize: 13,
-                        color: const Color(0xFFC62828),
+                        color: Colors.red.shade800,
                       ),
                     ),
                   ),
@@ -378,7 +378,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage>
           style: GoogleFonts.inter(
             fontWeight: FontWeight.w700,
             fontSize: 24,
-            color: const Color(0xFF040404),
+            color: Colors.black,
           ),
         ),
         const SizedBox(height: 16),
@@ -447,7 +447,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage>
                 style: GoogleFonts.inter(
                   fontWeight: FontWeight.w700,
                   fontSize: 24,
-                  color: const Color(0xFF040404),
+                  color: Colors.black,
                 ),
               ),
               const SizedBox(height: 16),

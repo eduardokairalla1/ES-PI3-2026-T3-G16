@@ -293,18 +293,16 @@ class _LoginPageState extends State<LoginPage>
                               ),
                               margin: const EdgeInsets.only(bottom: 16),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFFFF0F0),
+                                color: Colors.red.shade50,
                                 borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: const Color(0xFFFFCDD2),
-                                ),
+                                border: Border.all(color: Colors.red.shade100),
                               ),
                               child: Text(
                                 _error!,
                                 textAlign: TextAlign.center,
                                 style: GoogleFonts.inter(
                                   fontSize: 13,
-                                  color: const Color(0xFFC62828),
+                                  color: Colors.red.shade800,
                                 ),
                               ),
                             ),

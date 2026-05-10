@@ -50,7 +50,7 @@ class _StartupDetailPageState extends State<StartupDetailPage> {
 
         if (_controller.errorMessage != null) {
           return Scaffold(
-            backgroundColor: const Color(0xFFF8F8F8),
+            backgroundColor: Colors.grey.shade50,
             body: Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -90,7 +90,7 @@ class _StartupDetailPageState extends State<StartupDetailPage> {
         return DefaultTabController(
           length: 4,
           child: Scaffold(
-            backgroundColor: const Color(0xFFF8F8F8),
+            backgroundColor: Colors.grey.shade50,
             body: SafeArea(
               bottom: false,
               child: Column(

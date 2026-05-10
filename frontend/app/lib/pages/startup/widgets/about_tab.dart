@@ -109,7 +109,7 @@ class AboutTab extends StatelessWidget {
     required String label,
     required String value,
     required IconData icon,
-    required Color color,
+    required dynamic color,
   }) {
     return Container(
       padding: const EdgeInsets.all(16),
