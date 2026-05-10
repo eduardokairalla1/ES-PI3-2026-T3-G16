@@ -1,4 +1,16 @@
-/// Modelo de dados consolidado para o Dashboard.
+/*
+ * Modelos de dados do Dashboard.
+ * Define os contratos consumidos pela UI a partir das Cloud Functions.
+ *
+ * Alex Gabriel Soares Sousa - 24802449
+ */
+library;
+
+/*
+ * TYPES
+ */
+
+/// Resumo de uma posição do usuário em uma startup.
 class InvestimentoResumo {
   final String startupId;
   final String startupName;
@@ -16,6 +28,7 @@ class InvestimentoResumo {
     required this.variation,
   });
 
+  /// Cria um resumo de investimento a partir do payload retornado pelo backend.
   factory InvestimentoResumo.fromMap(Map<String, dynamic> map) {
     return InvestimentoResumo(
       startupId: map['startupId'] as String? ?? '',
@@ -28,6 +41,7 @@ class InvestimentoResumo {
   }
 }
 
+/// Dados consolidados usados para renderizar a tela principal do Dashboard.
 class DashboardData {
   final String nomeUsuario;
   final double patrimonioTotal;
@@ -53,6 +67,7 @@ class DashboardData {
     required this.favoriteIds,
   });
 
+  /// Cria o agregado do Dashboard a partir do payload da callable onGetDashboard.
   factory DashboardData.fromMap(Map<String, dynamic> map) {
     final rawInvestimentos = (map['investimentos'] as List<dynamic>?) ?? [];
     final rawFavorites = (map['favoriteIds'] as List<dynamic>?) ?? [];
@@ -64,13 +79,20 @@ class DashboardData {
       nomeUsuario: map['nomeUsuario'] as String? ?? '',
       patrimonioTotal: patrimonioAtivos + saldo,
       saldoDisponivel: saldo,
-      rendimentoDiarioValor: (map['rendimentoDiarioValor'] as num?)?.toDouble() ?? 0,
-      rendimentoDiarioPorcentagem: (map['rendimentoDiarioPorcentagem'] as num?)?.toDouble() ?? 0,
+      rendimentoDiarioValor:
+          (map['rendimentoDiarioValor'] as num?)?.toDouble() ?? 0,
+      rendimentoDiarioPorcentagem:
+          (map['rendimentoDiarioPorcentagem'] as num?)?.toDouble() ?? 0,
       totalStartupsMercado: (map['totalStartupsMercado'] as num?)?.toInt() ?? 0,
-      rentabilidadeMediaMercado: (map['rentabilidadeMediaMercado'] as num?)?.toDouble() ?? 0,
-      totalInvestidoresMercado: (map['totalInvestidoresMercado'] as num?)?.toInt() ?? 0,
+      rentabilidadeMediaMercado:
+          (map['rentabilidadeMediaMercado'] as num?)?.toDouble() ?? 0,
+      totalInvestidoresMercado:
+          (map['totalInvestidoresMercado'] as num?)?.toInt() ?? 0,
       investimentos: rawInvestimentos
-          .map((i) => InvestimentoResumo.fromMap(Map<String, dynamic>.from(i as Map)))
+          .map(
+            (i) =>
+                InvestimentoResumo.fromMap(Map<String, dynamic>.from(i as Map)),
+          )
           .toList(),
       favoriteIds: rawFavorites.map((f) => f.toString()).toList(),
     );

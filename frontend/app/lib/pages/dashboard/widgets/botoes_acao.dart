@@ -1,14 +1,14 @@
-/**
+/*
  * Widgets para os botões de ação do Dashboard (Depositar, Comprar, Vender, Extrato).
  *
  * Alex Gabriel Soares Sousa - 24802449
  */
 
+library;
 
-/**
+/*
  * IMPORTS
  */
-import 'dart:ui' show Color;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -16,15 +16,18 @@ import 'package:intl/intl.dart';
 import 'package:mesclainvest/pages/dashboard/controllers/dashboard_controller.dart';
 import 'package:mesclainvest/pages/dashboard/models/transaction_model.dart';
 
-
-/**
+/*
  * HELPERS
  */
 
 /// Formata a entrada do usuário em tempo real como moeda brasileira (R$ X.XXX,XX).
 /// Os dígitos entram da direita para a esquerda (estilo caixa registradora).
 class _CurrencyInputFormatter extends TextInputFormatter {
-  final _fmt = NumberFormat.currency(locale: 'pt_BR', symbol: '', decimalDigits: 2);
+  final _fmt = NumberFormat.currency(
+    locale: 'pt_BR',
+    symbol: '',
+    decimalDigits: 2,
+  );
 
   @override
   TextEditingValue formatEditUpdate(
@@ -51,20 +54,17 @@ class _CurrencyInputFormatter extends TextInputFormatter {
   }
 }
 
-
-/**
+/*
  * CODE
  */
 
 /// Widget principal que agrupa os botões de atalho da dashboard.
 class BotoesAcao extends StatelessWidget {
-
   // Atributos
   final DashboardController controller;
 
   // Construtor
   const BotoesAcao({super.key, required this.controller});
-
 
   /**
    * MÉTODOS PRIVADOS
@@ -84,7 +84,9 @@ class BotoesAcao extends StatelessWidget {
       builder: (context) => StatefulBuilder(
         builder: (context, setState) {
           return AlertDialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
             title: Text(
               mostrarConfirmacao ? 'Confirmar Depósito' : 'Depositar Saldo',
               style: const TextStyle(fontWeight: FontWeight.bold),
@@ -98,8 +100,15 @@ class BotoesAcao extends StatelessWidget {
                         const Text('Você confirma o depósito de:'),
                         const SizedBox(height: 12),
                         Text(
-                          NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$').format(valorFinal),
-                          style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.green),
+                          NumberFormat.currency(
+                            locale: 'pt_BR',
+                            symbol: 'R\$',
+                          ).format(valorFinal),
+                          style: const TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.green,
+                          ),
                         ),
                         const SizedBox(height: 16),
                         const Text(
@@ -131,7 +140,10 @@ class BotoesAcao extends StatelessWidget {
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: Colors.black, width: 2),
+                              borderSide: const BorderSide(
+                                color: Colors.black,
+                                width: 2,
+                              ),
                             ),
                           ),
                         ),
@@ -141,7 +153,10 @@ class BotoesAcao extends StatelessWidget {
             actions: [
               TextButton(
                 onPressed: isProcessando ? null : () => Navigator.pop(context),
-                child: const Text('Cancelar', style: TextStyle(color: Colors.grey)),
+                child: const Text(
+                  'Cancelar',
+                  style: TextStyle(color: Colors.grey),
+                ),
               ),
               ElevatedButton(
                 onPressed: isProcessando
@@ -149,7 +164,7 @@ class BotoesAcao extends StatelessWidget {
                     : () async {
                         if (!mostrarConfirmacao) {
                           // Passo 1: Validação e preparação da confirmação
-                        // Passo 1: parse o valor formatado pelo _CurrencyInputFormatter
+                          // Passo 1: parse o valor formatado pelo _CurrencyInputFormatter
                           // O texto está no formato "1.234,56" — converte para double
                           final raw = valorController.text
                               .replaceAll('.', '')
@@ -160,7 +175,9 @@ class BotoesAcao extends StatelessWidget {
                             if (parsedValue > 100000) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                  content: Text('O valor máximo para depósito é R\$ 100.000,00.'),
+                                  content: Text(
+                                    'O valor máximo para depósito é R\$ 100.000,00.',
+                                  ),
                                   backgroundColor: Colors.orange,
                                 ),
                               );
@@ -172,7 +189,11 @@ class BotoesAcao extends StatelessWidget {
                             });
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Por favor, insira um valor válido.')),
+                              const SnackBar(
+                                content: Text(
+                                  'Por favor, insira um valor válido.',
+                                ),
+                              ),
                             );
                           }
                         } else {
@@ -184,7 +205,9 @@ class BotoesAcao extends StatelessWidget {
                               Navigator.pop(context);
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                  content: Text('Depósito de R\$ ${valorFinal!.toStringAsFixed(2)} realizado com sucesso!'),
+                                  content: Text(
+                                    'Depósito de R\$ ${valorFinal!.toStringAsFixed(2)} realizado com sucesso!',
+                                  ),
                                   backgroundColor: Colors.green,
                                 ),
                               );
@@ -193,7 +216,10 @@ class BotoesAcao extends StatelessWidget {
                             setState(() => isProcessando = false);
                             if (context.mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('Erro: $e'), backgroundColor: Colors.red),
+                                SnackBar(
+                                  content: Text('Erro: $e'),
+                                  backgroundColor: Colors.red,
+                                ),
                               );
                             }
                           }
@@ -201,14 +227,22 @@ class BotoesAcao extends StatelessWidget {
                       },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.black,
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 12,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
                 child: isProcessando
                     ? const SizedBox(
                         width: 20,
                         height: 20,
-                        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
                       )
                     : Text(
                         mostrarConfirmacao ? 'Confirmar' : 'Continuar',
@@ -222,8 +256,7 @@ class BotoesAcao extends StatelessWidget {
     );
   }
 
-
-  /// Abre o pop-up de extrato das movimentações.
+  /// Abre o pop-up de extrato das movimentações recentes do usuário.
   void _mostrarDialogoExtrato(BuildContext context) {
     showDialog(
       context: context,
@@ -246,7 +279,9 @@ class BotoesAcao extends StatelessWidget {
             future: controller.getTransactions(),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator(color: Colors.black));
+                return const Center(
+                  child: CircularProgressIndicator(color: Colors.black),
+                );
               }
 
               // Estado: Erro de rede ou chamada
@@ -254,11 +289,18 @@ class BotoesAcao extends StatelessWidget {
                 return Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.cloud_off_outlined, size: 48, color: Colors.red.shade200),
+                    Icon(
+                      Icons.cloud_off_outlined,
+                      size: 48,
+                      color: Colors.red.shade200,
+                    ),
                     const SizedBox(height: 16),
                     const Text(
                       'Erro ao carregar o extrato.',
-                      style: TextStyle(color: Colors.red, fontWeight: FontWeight.w600),
+                      style: TextStyle(
+                        color: Colors.red,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                     const SizedBox(height: 4),
                     const Text(
@@ -275,7 +317,11 @@ class BotoesAcao extends StatelessWidget {
                 return Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.history_toggle_off, size: 48, color: Colors.grey.shade300),
+                    Icon(
+                      Icons.history_toggle_off,
+                      size: 48,
+                      color: Colors.grey.shade300,
+                    ),
                     const SizedBox(height: 16),
                     const Text(
                       'Nenhuma movimentação encontrada.',
@@ -293,7 +339,9 @@ class BotoesAcao extends StatelessWidget {
                 itemBuilder: (context, index) {
                   final t = transactions[index];
                   final isPositive = t.type == 'deposit' || t.type == 'sell';
-                  final color = isPositive ? Colors.green.shade700 : Colors.red.shade700;
+                  final color = isPositive
+                      ? Colors.green.shade700
+                      : Colors.red.shade700;
                   final prefix = isPositive ? '+' : '-';
 
                   return ListTile(
@@ -312,7 +360,10 @@ class BotoesAcao extends StatelessWidget {
                     ),
                     title: Text(
                       t.description,
-                      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
                     ),
                     subtitle: Text(
                       DateFormat('dd/MM/yyyy HH:mm').format(t.createdAt),
@@ -341,7 +392,6 @@ class BotoesAcao extends StatelessWidget {
     );
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -356,21 +406,21 @@ class BotoesAcao extends StatelessWidget {
             onTap: () => _mostrarDialogoDeposito(context),
           ),
 
-          // item: comprar
+          // Botão: Comprar
           _BotaoAcaoItem(
             icon: Icons.trending_up,
             label: 'Comprar',
             onTap: () {},
           ),
 
-          // item: vender (saque)
+          // Botão: Vender
           _BotaoAcaoItem(
             icon: Icons.account_balance_outlined,
             label: 'Vender',
             onTap: () {},
           ),
 
-          // item: extrato
+          // Botão: Extrato
           _BotaoAcaoItem(
             icon: Icons.receipt_long_outlined,
             label: 'Extrato',
@@ -382,18 +432,15 @@ class BotoesAcao extends StatelessWidget {
   }
 }
 
-
-
 /// Widget interno para representar cada item de ação individual.
 /// Todos os botões são cinza por padrão e ficam pretos ao toque/hover.
 class _BotaoAcaoItem extends StatefulWidget {
-
-  // atributos
+  // Atributos
   final IconData icon;
   final String label;
   final VoidCallback onTap;
 
-  // construtor
+  // Construtor
   const _BotaoAcaoItem({
     required this.icon,
     required this.label,
@@ -421,7 +468,6 @@ class _BotaoAcaoItemState extends State<_BotaoAcaoItem> {
         onTapCancel: () => setState(() => _isActive = false),
         child: Column(
           children: [
-
             // Círculo/Quadrado arredondado do ícone
             AnimatedContainer(
               duration: const Duration(milliseconds: 150),
@@ -431,13 +477,15 @@ class _BotaoAcaoItemState extends State<_BotaoAcaoItem> {
               decoration: BoxDecoration(
                 color: _isActive ? Colors.black : const Color(0xFFF2F2F2),
                 borderRadius: BorderRadius.circular(16),
-                boxShadow: _isActive ? [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.18),
-                    blurRadius: 8,
-                    offset: const Offset(0, 4),
-                  ),
-                ] : null,
+                boxShadow: _isActive
+                    ? [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.18),
+                          blurRadius: 8,
+                          offset: const Offset(0, 4),
+                        ),
+                      ]
+                    : null,
               ),
               child: Icon(
                 widget.icon,
@@ -458,7 +506,6 @@ class _BotaoAcaoItemState extends State<_BotaoAcaoItem> {
               ),
               child: Text(widget.label),
             ),
-
           ],
         ),
       ),

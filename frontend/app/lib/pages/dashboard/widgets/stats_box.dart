@@ -1,26 +1,26 @@
-/**
+/*
  * Componente de caixa de estatísticas usado para exibir indicadores de mercado.
  * Fornece uma estrutura visual padronizada com texto primário em destaque e rótulo secundário.
  *
  * Alex Gabriel Soares Sousa - 24802449
  */
 
+library;
 
-/**
+/*
  * IMPORTS
  */
+
 import 'package:flutter/material.dart';
 
-
-/**
+/*
  * CODE
  */
 
 /// Componente visual base para indicadores numéricos/estatísticos no Dashboard.
 class StatsBox extends StatelessWidget {
-  
   // Atributos
-  final String primaryText;   // Texto em destaque (ex: valor numérico)
+  final String primaryText; // Texto em destaque (ex: valor numérico)
   final String secondaryText; // Descrição/Rótulo do indicador
 
   // Construtor
@@ -63,7 +63,7 @@ class StatsBox extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 4),
-            
+
             // --- Texto Secundário (Rótulo) ---
             Text(
               secondaryText,

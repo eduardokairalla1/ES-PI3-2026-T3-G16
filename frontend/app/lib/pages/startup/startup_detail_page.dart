@@ -1,21 +1,18 @@
 /// Eduardo Kairalla - 24024241
+library;
 
 /// Startup detail screen — tabs: About, Partners, Q&A, Video.
 
 // --- IMPORTS ---
-import 'dart:ui' show Color;
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:mesclainvest/app/app_state.dart';
 import 'package:mesclainvest/pages/startup/controllers/startup_controller.dart';
 import 'package:mesclainvest/pages/startup/widgets/widgets.dart';
 
-
 // --- PAGE ---
 
 class StartupDetailPage extends StatefulWidget {
-
   final String startupId;
 
   const StartupDetailPage({super.key, required this.startupId});
@@ -25,7 +22,6 @@ class StartupDetailPage extends StatefulWidget {
 }
 
 class _StartupDetailPageState extends State<StartupDetailPage> {
-
   final StartupController _controller = StartupController();
 
   @override
@@ -45,7 +41,6 @@ class _StartupDetailPageState extends State<StartupDetailPage> {
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, child) {
-
         if (_controller.isLoading) {
           return const Scaffold(
             backgroundColor: Colors.white,
@@ -60,7 +55,11 @@ class _StartupDetailPageState extends State<StartupDetailPage> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.error_outline, size: 48, color: Colors.grey.shade400),
+                  Icon(
+                    Icons.error_outline,
+                    size: 48,
+                    color: Colors.grey.shade400,
+                  ),
                   const SizedBox(height: 16),
                   Text(
                     _controller.errorMessage!,
@@ -73,7 +72,9 @@ class _StartupDetailPageState extends State<StartupDetailPage> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.black,
                       foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
                     ),
                     child: const Text('Tentar novamente'),
                   ),
@@ -83,7 +84,7 @@ class _StartupDetailPageState extends State<StartupDetailPage> {
           );
         }
 
-        final startup  = _controller.startup!;
+        final startup = _controller.startup!;
         final userName = AppState.instance.profile?.fullName ?? 'Usuário';
 
         return DefaultTabController(
@@ -94,7 +95,6 @@ class _StartupDetailPageState extends State<StartupDetailPage> {
               bottom: false,
               child: Column(
                 children: [
-
                   StartupHeader(startup: startup, userName: userName),
 
                   StartupInfoCard(startup: startup),
@@ -106,18 +106,36 @@ class _StartupDetailPageState extends State<StartupDetailPage> {
                     child: TabBar(
                       labelColor: Colors.black,
                       unselectedLabelColor: Colors.black38,
-                      labelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
-                      unselectedLabelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                      labelStyle: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                      ),
+                      unselectedLabelStyle: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
                       indicator: const UnderlineTabIndicator(
                         borderSide: BorderSide(color: Colors.black, width: 2.5),
                         insets: EdgeInsets.symmetric(horizontal: 16),
                       ),
                       indicatorSize: TabBarIndicatorSize.tab,
                       tabs: const [
-                        Tab(icon: Icon(Icons.info_outline,        size: 18), text: 'Sobre'),
-                        Tab(icon: Icon(Icons.people_outline,      size: 18), text: 'Sócios'),
-                        Tab(icon: Icon(Icons.chat_bubble_outline, size: 18), text: 'Q&A'),
-                        Tab(icon: Icon(Icons.play_circle_outline, size: 18), text: 'Vídeo'),
+                        Tab(
+                          icon: Icon(Icons.info_outline, size: 18),
+                          text: 'Sobre',
+                        ),
+                        Tab(
+                          icon: Icon(Icons.people_outline, size: 18),
+                          text: 'Sócios',
+                        ),
+                        Tab(
+                          icon: Icon(Icons.chat_bubble_outline, size: 18),
+                          text: 'Q&A',
+                        ),
+                        Tab(
+                          icon: Icon(Icons.play_circle_outline, size: 18),
+                          text: 'Vídeo',
+                        ),
                       ],
                     ),
                   ),
@@ -131,14 +149,13 @@ class _StartupDetailPageState extends State<StartupDetailPage> {
                           animation: _controller,
                           builder: (context, child) => QATab(
                             controller: _controller,
-                            startupId:  widget.startupId,
+                            startupId: widget.startupId,
                           ),
                         ),
                         VideoTab(videoUrl: startup.videoUrl),
                       ],
                     ),
                   ),
-
                 ],
               ),
             ),
@@ -149,7 +166,6 @@ class _StartupDetailPageState extends State<StartupDetailPage> {
                 startupId: widget.startupId,
               ),
             ),
-
           ),
         );
       },

@@ -1,4 +1,16 @@
-/// Modelo para uma transação do usuário.
+/*
+ * Modelo de transação do Dashboard.
+ * Normaliza o histórico financeiro retornado pelo backend para a UI.
+ *
+ * Alex Gabriel Soares Sousa - 24802449
+ */
+library;
+
+/*
+ * TYPES
+ */
+
+/// Representa uma movimentação recente da carteira simulada do usuário.
 class TransactionModel {
   final String id;
   final double amount;
@@ -16,6 +28,7 @@ class TransactionModel {
     required this.status,
   });
 
+  /// Cria uma transação a partir de diferentes formatos serializados pelo Firebase.
   factory TransactionModel.fromMap(Map<String, dynamic> map) {
     // Parse created_at handling all possible Firebase serialization formats:
     // - Map with '_seconds' (callable via web SDK)
@@ -25,7 +38,8 @@ class TransactionModel {
     DateTime date;
     try {
       final raw = map['created_at'];
-      if (raw is Map && (raw.containsKey('_seconds') || raw.containsKey('seconds'))) {
+      if (raw is Map &&
+          (raw.containsKey('_seconds') || raw.containsKey('seconds'))) {
         final seconds = (raw['_seconds'] ?? raw['seconds']) as int;
         date = DateTime.fromMillisecondsSinceEpoch(seconds * 1000);
       } else if (raw is int) {
