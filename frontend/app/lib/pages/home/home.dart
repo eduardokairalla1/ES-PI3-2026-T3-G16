@@ -2,25 +2,19 @@
 // Eduardo Kairalla - 24024241
 
 // --- IMPORTS ---
-import 'dart:ui' show Color;
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-
 // --- CONSTANTS ---
 const _kBottom = Color(0xFF454545);
-
 
 // --- CODE ---
 
 /// I represent the home page.
 class HomePage extends StatefulWidget {
-
   // constructor
   const HomePage({super.key});
-
 
   /// I create the mutable state for this widget.
   ///
@@ -29,19 +23,16 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-
 /// I represent the mutable state for the home page.
 class _HomePageState extends State<HomePage>
     with SingleTickerProviderStateMixin {
-
   // state variables
   bool _btnPressed = false;
 
   // entrance animation
   late final AnimationController _entranceCtrl;
-  late final Animation<double>   _fadeAnim;
-  late final Animation<Offset>   _slideAnim;
-
+  late final Animation<double> _fadeAnim;
+  late final Animation<Offset> _slideAnim;
 
   /// I build the home page widget tree.
   ///
@@ -50,8 +41,8 @@ class _HomePageState extends State<HomePage>
   /// :returns: the home page widget tree
   @override
   Widget build(BuildContext context) {
-    final screenW  = MediaQuery.of(context).size.width;
-    final hPad     = screenW * 0.06;
+    final screenW = MediaQuery.of(context).size.width;
+    final hPad = screenW * 0.06;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -60,7 +51,6 @@ class _HomePageState extends State<HomePage>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-
             // background image — takes all space above the bottom section
             Expanded(
               child: Image.asset(
@@ -79,15 +69,14 @@ class _HomePageState extends State<HomePage>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-
                       // --- welcome text ---
                       Text(
                         'Bem-vindo ao Mescla Invest',
                         style: GoogleFonts.inter(
                           fontWeight: FontWeight.w400,
-                          fontSize:   36,
-                          height:     44 / 36,
-                          color:      Colors.black,
+                          fontSize: 36,
+                          height: 44 / 36,
+                          color: Colors.black,
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -100,9 +89,9 @@ class _HomePageState extends State<HomePage>
                           textAlign: TextAlign.center,
                           style: GoogleFonts.inter(
                             fontWeight: FontWeight.w400,
-                            fontSize:   21,
-                            height:     25 / 21,
-                            color:      _kBottom,
+                            fontSize: 21,
+                            height: 25 / 21,
+                            color: _kBottom,
                           ),
                         ),
                       ),
@@ -110,27 +99,27 @@ class _HomePageState extends State<HomePage>
 
                       // --- login button ---
                       GestureDetector(
-                        onTapDown:  (_) => setState(() => _btnPressed = true),
-                        onTapUp:    (_) {
+                        onTapDown: (_) => setState(() => _btnPressed = true),
+                        onTapUp: (_) {
                           setState(() => _btnPressed = false);
                           context.go('/login');
                         },
                         onTapCancel: () => setState(() => _btnPressed = false),
                         child: AnimatedScale(
-                          scale:    _btnPressed ? 0.97 : 1.0,
+                          scale: _btnPressed ? 0.97 : 1.0,
                           duration: const Duration(milliseconds: 80),
                           child: Container(
-                            width:  double.infinity,
+                            width: double.infinity,
                             height: 58,
                             decoration: BoxDecoration(
-                              color:        Colors.white,
-                              border:       Border.all(color: Colors.black),
+                              color: Colors.white,
+                              border: Border.all(color: Colors.black),
                               borderRadius: BorderRadius.circular(20),
                               boxShadow: const [
                                 BoxShadow(
-                                  color:      Color(0x40000000),
+                                  color: Color(0x40000000),
                                   blurRadius: 4,
-                                  offset:     Offset(0, 4),
+                                  offset: Offset(0, 4),
                                 ),
                               ],
                             ),
@@ -139,9 +128,9 @@ class _HomePageState extends State<HomePage>
                               'ENTRAR',
                               style: GoogleFonts.inter(
                                 fontWeight: FontWeight.w300,
-                                fontSize:   20,
-                                height:     24 / 20,
-                                color:      Colors.black,
+                                fontSize: 20,
+                                height: 24 / 20,
+                                color: Colors.black,
                               ),
                             ),
                           ),
@@ -157,9 +146,9 @@ class _HomePageState extends State<HomePage>
                             'Não possui conta?',
                             style: GoogleFonts.inter(
                               fontWeight: FontWeight.w400,
-                              fontSize:   15,
-                              height:     18 / 15,
-                              color:      _kBottom,
+                              fontSize: 15,
+                              height: 18 / 15,
+                              color: _kBottom,
                             ),
                           ),
                           const SizedBox(width: 8),
@@ -169,15 +158,14 @@ class _HomePageState extends State<HomePage>
                               'Cadastrar',
                               style: GoogleFonts.inter(
                                 fontWeight: FontWeight.w700,
-                                fontSize:   20,
-                                height:     24 / 20,
-                                color:      _kBottom,
+                                fontSize: 20,
+                                height: 24 / 20,
+                                color: _kBottom,
                               ),
                             ),
                           ),
                         ],
                       ),
-
                     ],
                   ),
                 ),
@@ -189,7 +177,6 @@ class _HomePageState extends State<HomePage>
     );
   }
 
-
   /// I clean up the animation controller when the widget is disposed.
   ///
   /// :returns: void
@@ -198,7 +185,6 @@ class _HomePageState extends State<HomePage>
     _entranceCtrl.dispose();
     super.dispose();
   }
-
 
   /// I initialize the state of this widget.
   ///
@@ -214,15 +200,12 @@ class _HomePageState extends State<HomePage>
     );
 
     // define fade animation
-    _fadeAnim = CurvedAnimation(
-      parent: _entranceCtrl,
-      curve:  Curves.easeOut,
-    );
+    _fadeAnim = CurvedAnimation(parent: _entranceCtrl, curve: Curves.easeOut);
 
     // define slide animation (bottom section slides up)
     _slideAnim = Tween<Offset>(
       begin: const Offset(0, 0.06),
-      end:   Offset.zero,
+      end: Offset.zero,
     ).animate(CurvedAnimation(parent: _entranceCtrl, curve: Curves.easeOut));
 
     // start entrance animation

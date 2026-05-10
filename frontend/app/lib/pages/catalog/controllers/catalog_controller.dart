@@ -1,4 +1,5 @@
 /// Eduardo Kairalla - 24024241
+library;
 
 /// Controller for the startup catalog page.
 
@@ -7,21 +8,19 @@ import 'package:flutter/material.dart';
 import 'package:mesclainvest/pages/catalog/services/catalog_service.dart';
 import 'package:mesclainvest/pages/startup/models/startup_model.dart';
 
-
 // --- CONTROLLER ---
 
 class CatalogController extends ChangeNotifier {
-
   final CatalogService _service = CatalogService();
 
-  bool               isLoading    = true;
-  List<StartupModel> startups     = [];
-  String?            selectedStage;  // null = all
-  String?            errorMessage;
+  bool isLoading = true;
+  List<StartupModel> startups = [];
+  String? selectedStage; // null = all
+  String? errorMessage;
 
   /// I load startups for the current stage filter.
   Future<void> load() async {
-    isLoading    = true;
+    isLoading = true;
     errorMessage = null;
     notifyListeners();
 

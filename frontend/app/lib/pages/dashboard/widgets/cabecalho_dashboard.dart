@@ -1,30 +1,27 @@
-/**
+/*
  * Widget de cabeçalho do Dashboard, exibindo informações do perfil do usuário.
  *
  * Alex Gabriel Soares Sousa - 24802449
  */
 
+library;
 
-/**
+/*
  * IMPORTS
  */
-import 'dart:ui' show Clip;
 
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:mesclainvest/app/app_state.dart';
 
-
 import 'package:mesclainvest/pages/dashboard/controllers/dashboard_controller.dart';
 
-
-/**
+/*
  * CODE
  */
 
 /// Barra superior com dados do usuário (Avatar e Nome) e botão de notificações.
 class CabecalhoDashboard extends StatelessWidget {
-  
   // Atributos
   final DashboardController controller;
 
@@ -34,11 +31,12 @@ class CabecalhoDashboard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Busca dados do perfil global
-    final profile    = AppState.instance.profile;
+    final profile = AppState.instance.profile;
     // Se o perfil for null (ex: usuário deu F5 e limpou a RAM), usa o nomeUsuario do DashboardData
-    final userName   = profile?.fullName ?? controller.data?.nomeUsuario ?? 'Usuário';
-    final initial    = userName.isNotEmpty ? userName[0].toUpperCase() : 'U';
-    final photoUrl   = profile?.photoUrl;
+    final userName =
+        profile?.fullName ?? controller.data?.nomeUsuario ?? 'Usuário';
+    final initial = userName.isNotEmpty ? userName[0].toUpperCase() : 'U';
+    final photoUrl = profile?.photoUrl;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
@@ -70,16 +68,17 @@ class CabecalhoDashboard extends StatelessWidget {
                 ),
                 clipBehavior: Clip.antiAlias,
                 child: photoUrl != null
-                  ? Image.network(
-                      photoUrl, 
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => _initial(initial),
-                    )
-                  : _initial(initial),
+                    ? Image.network(
+                        photoUrl,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) =>
+                            _initial(initial),
+                      )
+                    : _initial(initial),
               ),
             ),
             const SizedBox(width: 12),
-            
+
             // --- Nome do Usuário ---
             Text(
               userName,
@@ -90,7 +89,7 @@ class CabecalhoDashboard extends StatelessWidget {
               ),
             ),
             const Spacer(),
-            
+
             // --- Ícone de Notificações ---
             Stack(
               children: [
@@ -122,7 +121,6 @@ class CabecalhoDashboard extends StatelessWidget {
       ),
     );
   }
-
 
   /**
    * MÉTODOS PRIVADOS

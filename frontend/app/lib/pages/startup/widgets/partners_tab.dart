@@ -1,4 +1,5 @@
 /// Eduardo Kairalla - 24024241
+library;
 
 /// Content of the "Partners" tab on the startup detail screen.
 
@@ -6,11 +7,9 @@
 import 'package:flutter/material.dart';
 import 'package:mesclainvest/pages/startup/models/startup_model.dart';
 
-
 // --- WIDGET ---
 
 class PartnersTab extends StatelessWidget {
-
   final StartupModel startup;
 
   const PartnersTab({super.key, required this.startup});
@@ -22,7 +21,6 @@ class PartnersTab extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-
           _sectionTitle('Sócios Fundadores'),
           const SizedBox(height: 12),
           ...startup.partners.map(_partnerCard),
@@ -35,7 +33,6 @@ class PartnersTab extends StatelessWidget {
           ],
 
           const SizedBox(height: 32),
-
         ],
       ),
     );
@@ -53,7 +50,9 @@ class PartnersTab extends StatelessWidget {
   }
 
   Widget _partnerCard(PartnerModel partner) {
-    final initial = partner.name.isNotEmpty ? partner.name[0].toUpperCase() : '?';
+    final initial = partner.name.isNotEmpty
+        ? partner.name[0].toUpperCase()
+        : '?';
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
@@ -72,7 +71,6 @@ class PartnersTab extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-
           Container(
             width: 48,
             height: 48,
@@ -98,7 +96,6 @@ class PartnersTab extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-
                 Row(
                   children: [
                     Expanded(
@@ -112,7 +109,10 @@ class PartnersTab extends StatelessWidget {
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.black,
                         borderRadius: BorderRadius.circular(20),
@@ -151,7 +151,6 @@ class PartnersTab extends StatelessWidget {
                     ),
                   ),
                 ],
-
               ],
             ),
           ),
@@ -161,7 +160,9 @@ class PartnersTab extends StatelessWidget {
   }
 
   Widget _advisorCard(AdvisorModel advisor) {
-    final initial = advisor.name.isNotEmpty ? advisor.name[0].toUpperCase() : '?';
+    final initial = advisor.name.isNotEmpty
+        ? advisor.name[0].toUpperCase()
+        : '?';
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),

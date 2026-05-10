@@ -1,9 +1,9 @@
 /// Eduardo Kairalla - 24024241
+library;
 
 /// Input formatters for CPF and phone number fields.
 
 import 'package:flutter/services.dart';
-
 
 /// I format a CPF input as the user types (###.###.###-##).
 class CpfFormatter extends TextInputFormatter {
@@ -28,7 +28,6 @@ class CpfFormatter extends TextInputFormatter {
     );
   }
 }
-
 
 /// I format a phone number input as the user types ((##) #####-####).
 class PhoneFormatter extends TextInputFormatter {
