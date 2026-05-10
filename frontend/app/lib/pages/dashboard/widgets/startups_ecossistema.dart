@@ -160,7 +160,7 @@ class _FilterChip extends StatelessWidget {
   final bool isSelected;
   final VoidCallback onTap;
   final IconData? icon;
-  final Color? iconColor;
+  final dynamic iconColor;
 
   // Construtor
   const _FilterChip({

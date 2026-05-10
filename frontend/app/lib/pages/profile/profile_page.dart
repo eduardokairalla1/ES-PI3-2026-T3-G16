@@ -43,7 +43,7 @@ class _ProfilePageState extends State<ProfilePage> {
         final profile = AppState.instance.profile;
 
         return Scaffold(
-          backgroundColor: const Color(0xFFF8F8F8),
+          backgroundColor: Colors.grey.shade50,
           body: SafeArea(
             bottom: false,
             child: Column(
@@ -201,7 +201,7 @@ class _ProfilePageState extends State<ProfilePage> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       decoration: BoxDecoration(
-        color: const Color(0xFFE3E3E3),
+        color: Colors.black12,
         borderRadius: BorderRadius.circular(30),
       ),
       child: Row(
@@ -241,7 +241,7 @@ class _ProfilePageState extends State<ProfilePage> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFD2D2D2)),
+        border: Border.all(color: Colors.black26),
       ),
       child: Row(
         children: [
@@ -356,7 +356,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     width: 52,
                     height: 28,
                     decoration: BoxDecoration(
-                      color: enabled ? Colors.black : const Color(0xFFBBBBBB),
+                      color: enabled ? Colors.black : Colors.black38,
                       borderRadius: BorderRadius.circular(50),
                     ),
                     child: AnimatedAlign(
@@ -441,7 +441,7 @@ class _ProfilePageState extends State<ProfilePage> {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: const Color(0xFFF0F0F0),
+                color: Colors.black12,
                 borderRadius: BorderRadius.circular(14),
               ),
               child: Icon(icon, size: 22, color: Colors.black87),
@@ -472,7 +472,7 @@ class _ProfilePageState extends State<ProfilePage> {
     return Divider(
       height: 1,
       thickness: 1,
-      color: const Color(0xFFD9D9D9),
+      color: Colors.black12,
       indent: 16,
       endIndent: 16,
     );

@@ -163,7 +163,7 @@ class CartaoPatrimonio extends StatelessWidget {
             ),
           ),
 
-          const Divider(height: 32, thickness: 1, color: Color(0xFFF5F5F5)),
+          const Divider(height: 32, thickness: 1, color: Colors.black12),
 
           // --- Saldo Disponível na Carteira (Wallet) ---
           Row(
