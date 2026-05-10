@@ -48,7 +48,7 @@ class _CatalogPageState extends State<CatalogPage> {
       animation: _controller,
       builder: (context, _) {
         return Scaffold(
-          backgroundColor: const Color(0xFFF8F8F8),
+          backgroundColor: Colors.grey.shade50,
           body: SafeArea(
             bottom: false,
             child: Column(

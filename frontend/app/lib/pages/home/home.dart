@@ -7,7 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 // --- CONSTANTS ---
-const _kBottom = Color(0xFF454545);
+const _kBottom = Colors.black87;
 
 // --- CODE ---
 
@@ -117,7 +117,7 @@ class _HomePageState extends State<HomePage>
                               borderRadius: BorderRadius.circular(20),
                               boxShadow: const [
                                 BoxShadow(
-                                  color: Color(0x40000000),
+                                  color: Colors.black26,
                                   blurRadius: 4,
                                   offset: Offset(0, 4),
                                 ),

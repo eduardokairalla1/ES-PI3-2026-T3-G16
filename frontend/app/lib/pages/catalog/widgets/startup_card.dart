@@ -139,7 +139,7 @@ class StartupCard extends StatelessWidget {
                   value: _currencyFmt.format(startup.capitalRaised),
                 ),
                 const Spacer(),
-                const Icon(Icons.arrow_forward_ios, size: 14, color: Color(0xFFAAAAAA)),
+                const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.black38),
               ],
             ),
 
@@ -204,7 +204,7 @@ class _Stat extends StatelessWidget {
           style: const TextStyle(
             fontSize: 11,
             fontWeight: FontWeight.w500,
-            color: Color(0xFFAAAAAA),
+            color: Colors.black38,
           ),
         ),
         const SizedBox(height: 2),
