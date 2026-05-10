@@ -1,11 +1,10 @@
-/// --- Eduardo Kairalla - 24024241 ---
-library;
+// --- Eduardo Kairalla - 24024241 ---
 
-/// --- Custom exceptions for Infrastructure ---
+// --- Custom exceptions for Infrastructure ---
 
-/// --- CODE ---
+// --- CODE ---
 
-/// I represent an infrastructure exception.
+// I represent an infrastructure exception.
 class InfrastructureException implements Exception {
   // attributes
   final String message;
