@@ -4,6 +4,8 @@
 
 // ignore_for_file: public_member_api_docs
 
+import 'dart:ui' show Color;
+
 import 'package:flutter/material.dart';
 
 const kAuthFieldBg     = Color(0xFFF8F8F8);

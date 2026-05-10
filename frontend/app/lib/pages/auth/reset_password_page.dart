@@ -3,6 +3,8 @@
 /// Page where the user sets a new password after clicking the reset link.
 
 // --- IMPORTS ---
+import 'dart:ui' show Color;
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:mesclainvest/pages/auth/widgets/auth_constants.dart';
 import 'package:flutter/material.dart';

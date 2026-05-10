@@ -3,6 +3,8 @@
 /// User profile screen.
 
 // --- IMPORTS ---
+import 'dart:ui' show Color;
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mesclainvest/app/app_state.dart';
