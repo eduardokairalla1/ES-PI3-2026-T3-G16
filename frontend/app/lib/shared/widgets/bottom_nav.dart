@@ -1,3 +1,11 @@
+/// Eduardo Kairalla - 24024241
+
+/// Global bottom navigation bar shared across main pages.
+
+// --- IMPORTS ---
+import 'dart:ui' show Color;
+
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 

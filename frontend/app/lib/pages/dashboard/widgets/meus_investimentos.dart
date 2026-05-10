@@ -212,14 +212,32 @@ class InvestimentoCard extends StatelessWidget {
                   style: moneyStyle(fontSize: 14, fontWeight: FontWeight.w700),
                 ),
                 const SizedBox(height: 2),
-                Text(
-                  '${isPositive ? '+' : ''}${investimento.variation.toStringAsFixed(2)}%',
-                  style: moneyStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: isPositive ? Colors.green.shade700 : Colors.red.shade700,
+                if (exibirValores)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: isPositive
+                          ? Colors.green.shade700.withValues(alpha: 0.1)
+                          : Colors.red.shade700.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      '${isPositive ? '+' : ''}${investimento.variation.toStringAsFixed(2)}%',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: isPositive ? Colors.green.shade700 : Colors.red.shade700,
+                      ),
+                    ),
+                  )
+                else
+                  Text(
+                    '•••••%',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey.shade500,
+                    ),
                   ),
-                ),
               ],
             ),
 

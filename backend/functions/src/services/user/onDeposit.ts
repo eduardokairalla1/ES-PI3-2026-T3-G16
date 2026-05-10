@@ -6,22 +6,22 @@
 /**
  * IMPORTS
  */
-import { HttpsError } from 'firebase-functions/v2/https';
-import { deposit, getUser } from '../../db/users/storage';
-import { recordTransaction } from '../../db/transactions/storage';
-import { logger } from '../../utils/logger';
+import {HttpsError} from 'firebase-functions/v2/https';
+import {deposit, getUser} from '../../db/users/storage';
+import {recordTransaction} from '../../db/transactions/storage';
+import {logger} from '../../utils/logger';
 
 
 /**
  * ERRORS
  */
-import { AuthError } from '../../errors/authError';
+import {AuthError} from '../../errors/authError';
 
 
 /**
  * TYPES
  */
-import type { CallableRequest } from 'firebase-functions/v2/https';
+import type {CallableRequest} from 'firebase-functions/v2/https';
 
 
 /**
@@ -34,22 +34,27 @@ import type { CallableRequest } from 'firebase-functions/v2/https';
  *
  * @param request Body: { amount: number }
  */
-export async function handleOnDeposit(request: CallableRequest) {
-    try {
+export async function handleOnDeposit(request: CallableRequest)
+{
+    try
+    {
         // verify authentication
-        if (request.auth === null || request.auth === undefined) {
+        if (request.auth === null || request.auth === undefined)
+        {
             throw new AuthError('User must be authenticated.');
         }
 
-        const { uid } = request.auth;
-        let { amount } = request.data;
+        const {uid} = request.auth;
+        let {amount} = request.data;
 
         // validation
-        if (typeof amount !== 'number' || amount <= 0) {
+        if (typeof amount !== 'number' || amount <= 0)
+        {
             throw new HttpsError('invalid-argument', 'Amount must be a positive number.');
         }
 
-        if (amount > 100000) {
+        if (amount > 100000)
+        {
             throw new HttpsError('out-of-range', 'Maximum deposit amount is R$ 100.000,00.');
         }
 
@@ -68,19 +73,21 @@ export async function handleOnDeposit(request: CallableRequest) {
             status: 'completed',
             type: 'deposit',
         });
-        
+
         // Fetch updated balance via existing storage function
         const updatedUser = await getUser(uid);
         const newBalance = updatedUser?.balance ?? 0;
 
         return {
-            newBalance,
             message: 'Deposit successful.',
+            newBalance,
         };
 
     }
-    catch (error: unknown) {
-        if (error instanceof AuthError) {
+    catch (error: unknown)
+    {
+        if (error instanceof AuthError)
+        {
             throw new HttpsError('unauthenticated', error.message);
         }
 
