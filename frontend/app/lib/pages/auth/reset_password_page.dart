@@ -1,24 +1,20 @@
 /// Eduardo Kairalla - 24024241
+library;
 
 /// Page where the user sets a new password after clicking the reset link.
 
 // --- IMPORTS ---
-import 'dart:ui' show Color;
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:mesclainvest/pages/auth/widgets/auth_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-
 // --- CONSTANTS ---
-
 
 // --- CODE ---
 
 class ResetPasswordPage extends StatefulWidget {
-
   final String oobCode;
 
   const ResetPasswordPage({super.key, required this.oobCode});
@@ -27,24 +23,22 @@ class ResetPasswordPage extends StatefulWidget {
   State<ResetPasswordPage> createState() => _ResetPasswordPageState();
 }
 
-
 class _ResetPasswordPageState extends State<ResetPasswordPage>
     with SingleTickerProviderStateMixin {
+  final _formKey = GlobalKey<FormState>();
+  final _passwordCtrl = TextEditingController();
+  final _confirmCtrl = TextEditingController();
 
-  final _formKey        = GlobalKey<FormState>();
-  final _passwordCtrl   = TextEditingController();
-  final _confirmCtrl    = TextEditingController();
-
-  bool    _isLoading    = false;
-  bool    _showPassword = false;
-  bool    _showConfirm  = false;
-  bool    _btnPressed   = false;
-  bool    _done         = false;
+  bool _isLoading = false;
+  bool _showPassword = false;
+  bool _showConfirm = false;
+  bool _btnPressed = false;
+  bool _done = false;
   String? _error;
 
   late final AnimationController _entranceCtrl;
-  late final Animation<double>   _fadeAnim;
-  late final Animation<Offset>   _slideAnim;
+  late final Animation<double> _fadeAnim;
+  late final Animation<Offset> _slideAnim;
 
   @override
   void initState() {
@@ -56,7 +50,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage>
     _fadeAnim = CurvedAnimation(parent: _entranceCtrl, curve: Curves.easeOut);
     _slideAnim = Tween<Offset>(
       begin: const Offset(0, 0.06),
-      end:   Offset.zero,
+      end: Offset.zero,
     ).animate(CurvedAnimation(parent: _entranceCtrl, curve: Curves.easeOut));
     _entranceCtrl.forward();
   }
@@ -72,7 +66,8 @@ class _ResetPasswordPageState extends State<ResetPasswordPage>
   String? _validatePassword(String? value) {
     if (value == null || value.isEmpty) return 'Informe a nova senha';
     if (value.length < 8) return 'Mínimo de 8 caracteres';
-    if (!value.contains(RegExp(r'[A-Z]'))) return 'Inclua ao menos uma letra maiúscula';
+    if (!value.contains(RegExp(r'[A-Z]')))
+      return 'Inclua ao menos uma letra maiúscula';
     if (!value.contains(RegExp(r'[0-9]'))) return 'Inclua ao menos um número';
     if (!value.contains(RegExp(r'[!@#\$%^&*()_+\-=\[\]{};:"\\|,.<>\/?`~]'))) {
       return 'Inclua ao menos um caractere especial';
@@ -89,23 +84,28 @@ class _ResetPasswordPageState extends State<ResetPasswordPage>
   Future<void> _submit() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
 
-    setState(() { _isLoading = true; _error = null; });
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
 
     try {
       await FirebaseAuth.instance.confirmPasswordReset(
-        code:        widget.oobCode,
+        code: widget.oobCode,
         newPassword: _passwordCtrl.text,
       );
       if (mounted) setState(() => _done = true);
     } on FirebaseAuthException catch (e) {
-      setState(() => _error = switch (e.code) {
-        'expired-action-code'  => 'O link expirou. Solicite um novo.',
-        'invalid-action-code'  => 'Link inválido ou já utilizado.',
-        'user-disabled'        => 'Esta conta foi desativada.',
-        'user-not-found'       => 'Usuário não encontrado.',
-        'weak-password'        => 'Senha muito fraca.',
-        _                      => 'Ocorreu um erro. Tente novamente.',
-      });
+      setState(
+        () => _error = switch (e.code) {
+          'expired-action-code' => 'O link expirou. Solicite um novo.',
+          'invalid-action-code' => 'Link inválido ou já utilizado.',
+          'user-disabled' => 'Esta conta foi desativada.',
+          'user-not-found' => 'Usuário não encontrado.',
+          'weak-password' => 'Senha muito fraca.',
+          _ => 'Ocorreu um erro. Tente novamente.',
+        },
+      );
     } catch (_) {
       setState(() => _error = 'Ocorreu um erro inesperado. Tente novamente.');
     } finally {
@@ -143,7 +143,6 @@ class _ResetPasswordPageState extends State<ResetPasswordPage>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-
           const SizedBox(height: 49),
 
           // back to login
@@ -160,8 +159,8 @@ class _ResetPasswordPageState extends State<ResetPasswordPage>
                     'Voltar ao Login',
                     style: GoogleFonts.inter(
                       fontWeight: FontWeight.w700,
-                      fontSize:   15,
-                      color:      kAuthLabel,
+                      fontSize: 15,
+                      color: kAuthLabel,
                     ),
                   ),
                 ],
@@ -174,8 +173,8 @@ class _ResetPasswordPageState extends State<ResetPasswordPage>
             'Nova Senha',
             style: GoogleFonts.inter(
               fontWeight: FontWeight.w700,
-              fontSize:   24,
-              color:      const Color(0xFF040404),
+              fontSize: 24,
+              color: const Color(0xFF040404),
             ),
           ),
           const SizedBox(height: 12),
@@ -183,45 +182,48 @@ class _ResetPasswordPageState extends State<ResetPasswordPage>
             'Escolha uma senha forte para proteger sua conta.',
             style: GoogleFonts.inter(
               fontWeight: FontWeight.w400,
-              fontSize:   15,
-              height:     18 / 15,
-              color:      kAuthBody,
+              fontSize: 15,
+              height: 18 / 15,
+              color: kAuthBody,
             ),
           ),
           const SizedBox(height: 28),
 
           // password field
           _buildPasswordField(
-            label:      'NOVA SENHA',
+            label: 'NOVA SENHA',
             controller: _passwordCtrl,
-            show:       _showPassword,
-            onToggle:   () => setState(() => _showPassword = !_showPassword),
-            validator:  _validatePassword,
+            show: _showPassword,
+            onToggle: () => setState(() => _showPassword = !_showPassword),
+            validator: _validatePassword,
           ),
           const SizedBox(height: 16),
 
           // confirm field
           _buildPasswordField(
-            label:      'CONFIRMAR SENHA',
+            label: 'CONFIRMAR SENHA',
             controller: _confirmCtrl,
-            show:       _showConfirm,
-            onToggle:   () => setState(() => _showConfirm = !_showConfirm),
-            validator:  _validateConfirm,
+            show: _showConfirm,
+            onToggle: () => setState(() => _showConfirm = !_showConfirm),
+            validator: _validateConfirm,
           ),
           const SizedBox(height: 24),
 
           // error banner
           AnimatedSize(
             duration: const Duration(milliseconds: 250),
-            curve:    Curves.easeOut,
+            curve: Curves.easeOut,
             child: _error == null
                 ? const SizedBox.shrink()
                 : Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
                     margin: const EdgeInsets.only(bottom: 16),
                     decoration: BoxDecoration(
-                      color:        const Color(0xFFFFF0F0),
+                      color: const Color(0xFFFFF0F0),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(color: const Color(0xFFFFCDD2)),
                     ),
@@ -230,7 +232,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage>
                       textAlign: TextAlign.center,
                       style: GoogleFonts.inter(
                         fontSize: 13,
-                        color:    const Color(0xFFC62828),
+                        color: const Color(0xFFC62828),
                       ),
                     ),
                   ),
@@ -238,38 +240,43 @@ class _ResetPasswordPageState extends State<ResetPasswordPage>
 
           // submit button
           GestureDetector(
-            onTapDown:   (_) => setState(() => _btnPressed = true),
-            onTapUp:     (_) { setState(() => _btnPressed = false); if (!_isLoading) _submit(); },
-            onTapCancel: ()  => setState(() => _btnPressed = false),
+            onTapDown: (_) => setState(() => _btnPressed = true),
+            onTapUp: (_) {
+              setState(() => _btnPressed = false);
+              if (!_isLoading) _submit();
+            },
+            onTapCancel: () => setState(() => _btnPressed = false),
             child: AnimatedScale(
-              scale:    _btnPressed ? 0.97 : 1.0,
+              scale: _btnPressed ? 0.97 : 1.0,
               duration: const Duration(milliseconds: 80),
               child: Container(
-                width:  double.infinity,
+                width: double.infinity,
                 height: 58,
                 decoration: BoxDecoration(
-                  color:        Colors.black,
+                  color: Colors.black,
                   borderRadius: BorderRadius.circular(20),
                 ),
                 alignment: Alignment.center,
                 child: _isLoading
                     ? const SizedBox(
-                        width:  24,
+                        width: 24,
                         height: 24,
-                        child:  CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5),
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2.5,
+                        ),
                       )
                     : Text(
                         'REDEFINIR SENHA',
                         style: GoogleFonts.inter(
                           fontWeight: FontWeight.w800,
-                          fontSize:   20,
-                          color:      Colors.white,
+                          fontSize: 20,
+                          color: Colors.white,
                         ),
                       ),
               ),
             ),
           ),
-
         ],
       ),
     );
@@ -289,46 +296,55 @@ class _ResetPasswordPageState extends State<ResetPasswordPage>
           label,
           style: GoogleFonts.inter(
             fontWeight: FontWeight.w700,
-            fontSize:   15,
-            color:      kAuthLabel,
+            fontSize: 15,
+            color: kAuthLabel,
           ),
         ),
         const SizedBox(height: 8),
         TextFormField(
-          controller:    controller,
-          obscureText:   !show,
-          validator:     validator,
+          controller: controller,
+          obscureText: !show,
+          validator: validator,
           style: GoogleFonts.inter(fontSize: 16, color: Colors.black),
           decoration: InputDecoration(
-            hintText:  '••••••••',
+            hintText: '••••••••',
             hintStyle: GoogleFonts.inter(fontSize: 16, color: kAuthHint),
-            filled:    true,
+            filled: true,
             fillColor: kAuthFieldBg,
-            prefixIcon: const Icon(Icons.lock_outline, color: kAuthHint, size: 22),
+            prefixIcon: const Icon(
+              Icons.lock_outline,
+              color: kAuthHint,
+              size: 22,
+            ),
             suffixIcon: IconButton(
               icon: Icon(
-                show ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                show
+                    ? Icons.visibility_off_outlined
+                    : Icons.visibility_outlined,
                 color: kAuthHint,
-                size:  22,
+                size: 22,
               ),
               onPressed: onToggle,
             ),
-            contentPadding: const EdgeInsets.symmetric(vertical: 15, horizontal: 16),
+            contentPadding: const EdgeInsets.symmetric(
+              vertical: 15,
+              horizontal: 16,
+            ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(20),
-              borderSide:   const BorderSide(color: kAuthFieldBorder),
+              borderSide: const BorderSide(color: kAuthFieldBorder),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(20),
-              borderSide:   const BorderSide(color: Colors.black),
+              borderSide: const BorderSide(color: Colors.black),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(20),
-              borderSide:   const BorderSide(color: Colors.red),
+              borderSide: const BorderSide(color: Colors.red),
             ),
             focusedErrorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(20),
-              borderSide:   const BorderSide(color: Colors.red),
+              borderSide: const BorderSide(color: Colors.red),
             ),
             errorStyle: GoogleFonts.inter(fontSize: 12),
           ),
@@ -343,10 +359,17 @@ class _ResetPasswordPageState extends State<ResetPasswordPage>
       children: [
         const SizedBox(height: 120),
         Container(
-          width:  72,
+          width: 72,
           height: 72,
-          decoration: const BoxDecoration(color: Colors.black, shape: BoxShape.circle),
-          child: const Icon(Icons.lock_open_outlined, color: Colors.white, size: 36),
+          decoration: const BoxDecoration(
+            color: Colors.black,
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(
+            Icons.lock_open_outlined,
+            color: Colors.white,
+            size: 36,
+          ),
         ),
         const SizedBox(height: 32),
         Text(
@@ -354,8 +377,8 @@ class _ResetPasswordPageState extends State<ResetPasswordPage>
           textAlign: TextAlign.center,
           style: GoogleFonts.inter(
             fontWeight: FontWeight.w700,
-            fontSize:   24,
-            color:      const Color(0xFF040404),
+            fontSize: 24,
+            color: const Color(0xFF040404),
           ),
         ),
         const SizedBox(height: 16),
@@ -364,19 +387,19 @@ class _ResetPasswordPageState extends State<ResetPasswordPage>
           textAlign: TextAlign.center,
           style: GoogleFonts.inter(
             fontWeight: FontWeight.w400,
-            fontSize:   15,
-            height:     18 / 15,
-            color:      kAuthBody,
+            fontSize: 15,
+            height: 18 / 15,
+            color: kAuthBody,
           ),
         ),
         const SizedBox(height: 40),
         GestureDetector(
           onTap: () => context.go('/login'),
           child: Container(
-            width:  double.infinity,
+            width: double.infinity,
             height: 58,
             decoration: BoxDecoration(
-              color:        Colors.black,
+              color: Colors.black,
               borderRadius: BorderRadius.circular(20),
             ),
             alignment: Alignment.center,
@@ -384,8 +407,8 @@ class _ResetPasswordPageState extends State<ResetPasswordPage>
               'IR PARA O LOGIN',
               style: GoogleFonts.inter(
                 fontWeight: FontWeight.w800,
-                fontSize:   20,
-                color:      Colors.white,
+                fontSize: 20,
+                color: Colors.white,
               ),
             ),
           ),
@@ -405,10 +428,17 @@ class _ResetPasswordPageState extends State<ResetPasswordPage>
             children: [
               const SizedBox(height: 120),
               Container(
-                width:  72,
+                width: 72,
                 height: 72,
-                decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
-                child: const Icon(Icons.link_off, color: Colors.white, size: 36),
+                decoration: const BoxDecoration(
+                  color: Colors.red,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.link_off,
+                  color: Colors.white,
+                  size: 36,
+                ),
               ),
               const SizedBox(height: 32),
               Text(
@@ -416,8 +446,8 @@ class _ResetPasswordPageState extends State<ResetPasswordPage>
                 textAlign: TextAlign.center,
                 style: GoogleFonts.inter(
                   fontWeight: FontWeight.w700,
-                  fontSize:   24,
-                  color:      const Color(0xFF040404),
+                  fontSize: 24,
+                  color: const Color(0xFF040404),
                 ),
               ),
               const SizedBox(height: 16),
@@ -426,19 +456,19 @@ class _ResetPasswordPageState extends State<ResetPasswordPage>
                 textAlign: TextAlign.center,
                 style: GoogleFonts.inter(
                   fontWeight: FontWeight.w400,
-                  fontSize:   15,
-                  height:     18 / 15,
-                  color:      kAuthBody,
+                  fontSize: 15,
+                  height: 18 / 15,
+                  color: kAuthBody,
                 ),
               ),
               const SizedBox(height: 40),
               GestureDetector(
                 onTap: () => context.go('/forgot-password'),
                 child: Container(
-                  width:  double.infinity,
+                  width: double.infinity,
                   height: 58,
                   decoration: BoxDecoration(
-                    color:        Colors.black,
+                    color: Colors.black,
                     borderRadius: BorderRadius.circular(20),
                   ),
                   alignment: Alignment.center,
@@ -446,8 +476,8 @@ class _ResetPasswordPageState extends State<ResetPasswordPage>
                     'SOLICITAR NOVO LINK',
                     style: GoogleFonts.inter(
                       fontWeight: FontWeight.w800,
-                      fontSize:   20,
-                      color:      Colors.white,
+                      fontSize: 20,
+                      color: Colors.white,
                     ),
                   ),
                 ),

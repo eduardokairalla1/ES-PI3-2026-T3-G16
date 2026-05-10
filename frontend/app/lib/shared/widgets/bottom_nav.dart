@@ -1,18 +1,15 @@
 /// Eduardo Kairalla - 24024241
+library;
 
 /// Global bottom navigation bar shared across main pages.
 
 // --- IMPORTS ---
-import 'dart:ui' show Color;
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-
 
 // --- WIDGET ---
 
 class BottomNav extends StatelessWidget {
-
   final int currentIndex;
 
   const BottomNav({super.key, required this.currentIndex});
@@ -36,10 +33,38 @@ class BottomNav extends StatelessWidget {
       ),
       child: Row(
         children: [
-          _item(context, 0, Icons.home_outlined,         Icons.home,          'Home',      '/dashboard'),
-          _item(context, 1, Icons.rocket_launch_outlined, Icons.rocket_launch,  'Startups',  '/catalog'),
-          _item(context, 2, Icons.storefront_outlined,   Icons.storefront,      'Balcão',    null),
-          _item(context, 3, Icons.person_outline,         Icons.person,          'Perfil',    '/profile'),
+          _item(
+            context,
+            0,
+            Icons.home_outlined,
+            Icons.home,
+            'Home',
+            '/dashboard',
+          ),
+          _item(
+            context,
+            1,
+            Icons.rocket_launch_outlined,
+            Icons.rocket_launch,
+            'Startups',
+            '/catalog',
+          ),
+          _item(
+            context,
+            2,
+            Icons.storefront_outlined,
+            Icons.storefront,
+            'Balcão',
+            null,
+          ),
+          _item(
+            context,
+            3,
+            Icons.person_outline,
+            Icons.person,
+            'Perfil',
+            '/profile',
+          ),
         ],
       ),
     );

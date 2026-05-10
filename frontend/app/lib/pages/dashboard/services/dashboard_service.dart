@@ -1,8 +1,23 @@
-/// Integração de dados do Dashboard com APIs e Firebase.
+/*
+ * Service do Dashboard.
+ * Encapsula as chamadas às Cloud Functions usadas pela tela de Dashboard.
+ *
+ * Alex Gabriel Soares Sousa - 24802449
+ */
+library;
+
+/*
+ * IMPORTS
+ */
 
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:mesclainvest/pages/dashboard/models/dashboard_data.dart';
 
+/*
+ * CODE
+ */
+
+/// Integração de dados do Dashboard com APIs e Firebase.
 class DashboardService {
   final _functions = FirebaseFunctions.instance;
 
@@ -32,7 +47,7 @@ class DashboardService {
 
     return (result.data['newBalance'] as num).toDouble();
   }
-  
+
   /// Busca o histórico de transações.
   Future<List<Map<String, dynamic>>> getTransactions({int limit = 20}) async {
     final result = await _functions
@@ -43,4 +58,3 @@ class DashboardService {
     return list.map((e) => Map<String, dynamic>.from(e as Map)).toList();
   }
 }
-

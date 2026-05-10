@@ -1,9 +1,10 @@
-/**
+/*
  * Barrel file para exportação de todos os widgets do Dashboard.
  * Facilita o import em outros arquivos.
  *
  * Alex Gabriel Soares Sousa - 24802449
  */
+library;
 
 export 'cabecalho_dashboard.dart';
 export 'cartao_patrimonio.dart';

@@ -1,19 +1,16 @@
 /// Eduardo Kairalla - 24024241
+library;
 
 /// Card with logo, token price, and stage badge.
 
 // --- IMPORTS ---
-import 'dart:ui' show Clip, Color;
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:mesclainvest/pages/startup/models/startup_model.dart';
 
-
 // --- WIDGET ---
 
 class StartupInfoCard extends StatelessWidget {
-
   final StartupModel startup;
 
   const StartupInfoCard({super.key, required this.startup});
@@ -27,7 +24,6 @@ class StartupInfoCard extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       child: Row(
         children: [
-
           Container(
             width: 63,
             height: 63,
@@ -40,7 +36,8 @@ class StartupInfoCard extends StatelessWidget {
                 ? Image.network(
                     startup.logoUrl,
                     fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => _logoPlaceholder(startup.name),
+                    errorBuilder: (context, error, stackTrace) =>
+                        _logoPlaceholder(startup.name),
                   )
                 : _logoPlaceholder(startup.name),
           ),
@@ -87,7 +84,6 @@ class StartupInfoCard extends StatelessWidget {
               ),
             ),
           ),
-
         ],
       ),
     );
@@ -108,9 +104,9 @@ class StartupInfoCard extends StatelessWidget {
   }
 
   Color _stageColor(String stage) => switch (stage) {
-    'new'       => Colors.blue,
+    'new' => Colors.blue,
     'operating' => Colors.green,
     'expanding' => Colors.orange,
-    _           => Colors.grey,
+    _ => Colors.grey,
   };
 }

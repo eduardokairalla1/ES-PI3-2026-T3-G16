@@ -1,4 +1,14 @@
-/// Gerencia o estado e lógica da UI do Dashboard.
+/*
+ * Controller do Dashboard.
+ * Centraliza estado de tela, chamadas de serviço, filtros e ações do usuário.
+ *
+ * Alex Gabriel Soares Sousa - 24802449
+ */
+library;
+
+/*
+ * IMPORTS
+ */
 
 import 'package:flutter/material.dart';
 import 'package:mesclainvest/pages/catalog/services/catalog_service.dart';
@@ -7,8 +17,12 @@ import 'package:mesclainvest/pages/dashboard/services/dashboard_service.dart';
 import 'package:mesclainvest/pages/dashboard/models/transaction_model.dart';
 import 'package:mesclainvest/pages/startup/models/startup_model.dart';
 
+/*
+ * CODE
+ */
+
+/// Gerencia o estado e a lógica de apresentação do Dashboard.
 class DashboardController extends ChangeNotifier {
-  
   // Dependências.
   final DashboardService _dashboardService = DashboardService();
   final CatalogService _catalogService = CatalogService();
@@ -24,7 +38,8 @@ class DashboardController extends ChangeNotifier {
 
   // Estado de Startups
   List<StartupModel> allStartups = [];
-  String? selectedStartupFilter; // null = Todas, 'Favoritas' = Favoritas, ou stage (ex: 'new', 'operating')
+  String?
+  selectedStartupFilter; // null = Todas, 'Favoritas' = Favoritas, ou stage (ex: 'new', 'operating')
 
   /// Carrega dados do dashboard e startups em paralelo.
   Future<void> loadDashboard() async {
@@ -49,7 +64,7 @@ class DashboardController extends ChangeNotifier {
       errorMessage = 'Erro ao carregar dados: $e';
     } finally {
       isLoading = false;
-      notifyListeners(); 
+      notifyListeners();
     }
   }
 
@@ -69,11 +84,11 @@ class DashboardController extends ChangeNotifier {
   /// Retorna as startups filtradas.
   List<StartupModel> get filteredStartups {
     if (selectedStartupFilter == null) return allStartups;
-    
+
     if (selectedStartupFilter == 'Favoritas') {
       return allStartups.where((s) => _favoriteIds.contains(s.id)).toList();
     }
-    
+
     return allStartups.where((s) => s.stage == selectedStartupFilter).toList();
   }
 
@@ -88,7 +103,7 @@ class DashboardController extends ChangeNotifier {
   /// Alterna o status de favorito e recarrega.
   Future<void> toggleFavorite(String startupId) async {
     if (data == null) return;
-    
+
     // Atualização otimista
     final wasFav = _favoriteIds.contains(startupId);
     if (wasFav) {
@@ -100,7 +115,7 @@ class DashboardController extends ChangeNotifier {
 
     try {
       final newStatus = await _dashboardService.toggleFavorite(startupId);
-      
+
       // Sincroniza com servidor (caso tenha divergido)
       if (newStatus) {
         _favoriteIds.add(startupId);
@@ -125,7 +140,7 @@ class DashboardController extends ChangeNotifier {
 
     try {
       final newBalance = await _dashboardService.deposit(amount);
-      
+
       // O valor depositado é a diferença entre o novo saldo e o saldo anterior.
       final double depositedAmount = newBalance - data!.saldoDisponivel;
 
@@ -142,7 +157,7 @@ class DashboardController extends ChangeNotifier {
         investimentos: data!.investimentos,
         favoriteIds: data!.favoriteIds,
       );
-      
+
       notifyListeners();
     } catch (e) {
       errorMessage = 'Erro ao realizar depósito: $e';
@@ -163,4 +178,3 @@ class DashboardController extends ChangeNotifier {
     }
   }
 }
-

@@ -1,12 +1,25 @@
-/// View principal do Dashboard.
+/*
+ * View principal do Dashboard.
+ * Monta as seções da carteira, ações rápidas e startups do ecossistema.
+ *
+ * Alex Gabriel Soares Sousa - 24802449
+ */
+library;
+
+/*
+ * IMPORTS
+ */
 
 import 'package:flutter/material.dart';
 import 'package:mesclainvest/pages/dashboard/widgets/widgets.dart';
 import 'package:mesclainvest/pages/dashboard/controllers/dashboard_controller.dart';
 
+/*
+ * CODE
+ */
+
 /// Tela principal que compõe o Dashboard.
 class PaginaDashboard extends StatefulWidget {
-
   const PaginaDashboard({super.key});
 
   @override
@@ -38,7 +51,9 @@ class _PaginaDashboardState extends State<PaginaDashboard> {
           body: SafeArea(
             bottom: false,
             child: _controller.isLoading
-                ? const Center(child: CircularProgressIndicator(color: Colors.black))
+                ? const Center(
+                    child: CircularProgressIndicator(color: Colors.black),
+                  )
                 : SingleChildScrollView(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,

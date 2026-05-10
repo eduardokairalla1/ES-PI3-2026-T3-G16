@@ -1,15 +1,14 @@
 /// Eduardo Kairalla - 24024241
+library;
 
 /// Service for profile-related Cloud Function calls.
 
 // --- IMPORTS ---
 import 'package:cloud_functions/cloud_functions.dart';
 
-
 // --- SERVICE ---
 
 class ProfileService {
-
   final _functions = FirebaseFunctions.instance;
 
   /// I update the authenticated user's profile fields.
@@ -20,7 +19,7 @@ class ProfileService {
   }) async {
     final data = <String, dynamic>{};
     if (fullName != null) data['fullName'] = fullName;
-    if (phone    != null) data['phone']    = phone;
+    if (phone != null) data['phone'] = phone;
     if (photoUrl != null) data['photoUrl'] = photoUrl;
 
     final result = await _functions

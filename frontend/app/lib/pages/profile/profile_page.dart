@@ -1,10 +1,9 @@
 /// Eduardo Kairalla - 24024241
+library;
 
 /// User profile screen.
 
 // --- IMPORTS ---
-import 'dart:ui' show Color;
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mesclainvest/app/app_state.dart';
@@ -12,11 +11,9 @@ import 'package:mesclainvest/core/models/user_profile.dart';
 import 'package:mesclainvest/pages/profile/controllers/profile_controller.dart';
 import 'package:mesclainvest/shared/widgets/bottom_nav.dart';
 
-
 // --- PAGE ---
 
 class ProfilePage extends StatefulWidget {
-
   const ProfilePage({super.key});
 
   @override
@@ -24,7 +21,6 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-
   final ProfileController _controller = ProfileController();
 
   @override
@@ -213,7 +209,11 @@ class _ProfilePageState extends State<ProfilePage> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.verified_outlined, size: 14, color: Colors.black.withValues(alpha: 0.4)),
+          Icon(
+            Icons.verified_outlined,
+            size: 14,
+            color: Colors.black.withValues(alpha: 0.4),
+          ),
           const SizedBox(width: 4),
           Text(
             'Perfil Verificado',
@@ -233,7 +233,9 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget _statsCard(UserProfile? profile) {
     final loading = _controller.isLoadingStats;
     final investimentos = loading ? '...' : '${_controller.totalInvestimentos}';
-    final aplicado = loading ? '...' : 'R\$${_controller.totalAplicado.toStringAsFixed(0)}';
+    final aplicado = loading
+        ? '...'
+        : 'R\$${_controller.totalAplicado.toStringAsFixed(0)}';
     final favoritas = loading ? '...' : '${_controller.totalFavoritas}';
 
     return Container(
@@ -290,8 +292,8 @@ class _ProfilePageState extends State<ProfilePage> {
   // ── 2FA card ──────────────────────────────────────────────────────────────
 
   Widget _twoFACard(UserProfile? profile) {
-    final enabled       = profile?.twoFaEnabled ?? false;
-    final isToggling    = _controller.isTogglingTwoFA;
+    final enabled = profile?.twoFaEnabled ?? false;
+    final isToggling = _controller.isTogglingTwoFA;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
@@ -344,7 +346,10 @@ class _ProfilePageState extends State<ProfilePage> {
               ? const SizedBox(
                   width: 28,
                   height: 28,
-                  child: CircularProgressIndicator(color: Colors.black, strokeWidth: 2),
+                  child: CircularProgressIndicator(
+                    color: Colors.black,
+                    strokeWidth: 2,
+                  ),
                 )
               : GestureDetector(
                   onTap: _controller.toggle2FA,
@@ -358,7 +363,9 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                     child: AnimatedAlign(
                       duration: const Duration(milliseconds: 200),
-                      alignment: enabled ? Alignment.centerRight : Alignment.centerLeft,
+                      alignment: enabled
+                          ? Alignment.centerRight
+                          : Alignment.centerLeft,
                       child: Container(
                         width: 22,
                         height: 22,
@@ -425,7 +432,7 @@ class _ProfilePageState extends State<ProfilePage> {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.vertical(
-        top:    isLast ? Radius.zero        : Radius.zero,
+        top: isLast ? Radius.zero : Radius.zero,
         bottom: isLast ? const Radius.circular(20) : Radius.zero,
       ),
       child: Padding(
@@ -452,7 +459,11 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
               ),
             ),
-            Icon(Icons.chevron_right, color: Colors.black.withValues(alpha: 0.4), size: 20),
+            Icon(
+              Icons.chevron_right,
+              color: Colors.black.withValues(alpha: 0.4),
+              size: 20,
+            ),
           ],
         ),
       ),
@@ -460,7 +471,13 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Widget _menuDivider() {
-    return Divider(height: 1, thickness: 1, color: const Color(0xFFD9D9D9), indent: 16, endIndent: 16);
+    return Divider(
+      height: 1,
+      thickness: 1,
+      color: const Color(0xFFD9D9D9),
+      indent: 16,
+      endIndent: 16,
+    );
   }
 
   // ── Sign out ──────────────────────────────────────────────────────────────
@@ -485,13 +502,20 @@ class _ProfilePageState extends State<ProfilePage> {
                 child: SizedBox(
                   width: 22,
                   height: 22,
-                  child: CircularProgressIndicator(color: Colors.black, strokeWidth: 2),
+                  child: CircularProgressIndicator(
+                    color: Colors.black,
+                    strokeWidth: 2,
+                  ),
                 ),
               )
             : Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.logout_rounded, size: 24, color: Colors.black),
+                  const Icon(
+                    Icons.logout_rounded,
+                    size: 24,
+                    color: Colors.black,
+                  ),
                   const SizedBox(width: 10),
                   const Text(
                     'Sair da Conta',

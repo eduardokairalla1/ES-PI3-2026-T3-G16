@@ -1,4 +1,5 @@
 /// Eduardo Kairalla - 24024241
+library;
 
 /// Controller for the profile screen.
 
@@ -10,11 +11,9 @@ import 'package:mesclainvest/pages/dashboard/models/dashboard_data.dart';
 import 'package:mesclainvest/pages/dashboard/services/dashboard_service.dart';
 import 'package:mesclainvest/pages/profile/services/profile_service.dart';
 
-
 // --- CONTROLLER ---
 
 class ProfileController extends ChangeNotifier {
-
   final ProfileService _service = ProfileService();
   final AuthService _authService = AuthService();
   final DashboardService _dashboardService = DashboardService();
@@ -61,7 +60,6 @@ class ProfileController extends ChangeNotifier {
       notifyListeners();
     }
   }
-
 
   /// I sign the user out and clear app state.
   Future<void> signOut() async {

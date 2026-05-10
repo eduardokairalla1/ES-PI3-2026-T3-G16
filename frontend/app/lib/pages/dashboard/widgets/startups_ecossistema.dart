@@ -1,15 +1,15 @@
-/**
+/*
  * Widget de exibição das startups do ecossistema no Dashboard.
  * Inclui filtros dinâmicos por estágio (Novas, Operando, Favoritas) e listagem de cards.
  *
  * Alex Gabriel Soares Sousa - 24802449
  */
 
+library;
 
-/**
+/*
  * IMPORTS
  */
-import 'dart:ui' show Color;
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -17,14 +17,12 @@ import 'package:mesclainvest/pages/catalog/widgets/startup_card.dart';
 import 'package:mesclainvest/pages/dashboard/controllers/dashboard_controller.dart';
 import 'package:mesclainvest/pages/dashboard/widgets/resumo_mercado.dart';
 
-
-/**
+/*
  * CODE
  */
 
 /// Seção principal que exibe o catálogo resumido de startups e filtros de navegação.
 class StartupsEcossistema extends StatelessWidget {
-  
   // Atributos
   final DashboardController controller;
 
@@ -36,7 +34,6 @@ class StartupsEcossistema extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        
         // --- Cabeçalho da Seção ---
         Padding(
           padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
@@ -105,7 +102,7 @@ class StartupsEcossistema extends StatelessWidget {
             ],
           ),
         ),
-        
+
         const SizedBox(height: 16),
 
         // --- Widgets de Resumo do Mercado (Injetado condicionalmente) ---
@@ -124,7 +121,11 @@ class StartupsEcossistema extends StatelessWidget {
             child: Center(
               child: Column(
                 children: [
-                  Icon(Icons.business_center_outlined, size: 48, color: Colors.grey.shade300),
+                  Icon(
+                    Icons.business_center_outlined,
+                    size: 48,
+                    color: Colors.grey.shade300,
+                  ),
                   const SizedBox(height: 16),
                   Text(
                     'Nenhuma startup encontrada.',
@@ -136,23 +137,24 @@ class StartupsEcossistema extends StatelessWidget {
           )
         else
           // Exibe apenas as 3 primeiras startups no dashboard (resumo)
-          ...controller.filteredStartups.take(3).map((startup) => StartupCard(
-                startup: startup,
-                isFavorite: controller.isFavorite(startup.id),
-                onFavoriteTap: () => controller.toggleFavorite(startup.id),
-              )),
-              
+          ...controller.filteredStartups
+              .take(3)
+              .map(
+                (startup) => StartupCard(
+                  startup: startup,
+                  isFavorite: controller.isFavorite(startup.id),
+                  onFavoriteTap: () => controller.toggleFavorite(startup.id),
+                ),
+              ),
+
         const SizedBox(height: 16),
       ],
     );
   }
 }
 
-
-
 /// Widget interno para representar cada chip de filtro individual.
 class _FilterChip extends StatelessWidget {
-  
   // Atributos
   final String label;
   final bool isSelected;
@@ -189,7 +191,7 @@ class _FilterChip extends StatelessWidget {
                     color: Colors.black.withValues(alpha: 0.1),
                     blurRadius: 8,
                     offset: const Offset(0, 4),
-                  )
+                  ),
                 ]
               : null,
         ),
@@ -198,9 +200,11 @@ class _FilterChip extends StatelessWidget {
           children: [
             if (icon != null) ...[
               Icon(
-                icon, 
-                size: 14, 
-                color: isSelected ? Colors.white : (iconColor ?? Colors.grey.shade600),
+                icon,
+                size: 14,
+                color: isSelected
+                    ? Colors.white
+                    : (iconColor ?? Colors.grey.shade600),
               ),
               const SizedBox(width: 6),
             ],

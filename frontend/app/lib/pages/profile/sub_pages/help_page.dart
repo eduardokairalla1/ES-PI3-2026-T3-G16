@@ -1,18 +1,15 @@
 /// Eduardo Kairalla - 24024241
+library;
 
 /// Help & Support screen.
 
 // --- IMPORTS ---
-import 'dart:ui' show Color;
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-
 
 // --- PAGE ---
 
 class HelpPage extends StatelessWidget {
-
   const HelpPage({super.key});
 
   @override
@@ -23,7 +20,8 @@ class HelpPage extends StatelessWidget {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: GestureDetector(
-          onTap: () => context.canPop() ? context.pop() : context.go('/profile'),
+          onTap: () =>
+              context.canPop() ? context.pop() : context.go('/profile'),
           child: const Icon(Icons.arrow_back, color: Colors.black),
         ),
         centerTitle: true,
@@ -45,28 +43,32 @@ class HelpPage extends StatelessWidget {
         children: [
           _faqCard(
             question: 'O que é o MesclaInvest?',
-            answer:   'O MesclaInvest é uma plataforma simulada de investimento em startups, '
-                      'desenvolvida como projeto integrador da PUC-Campinas.',
+            answer:
+                'O MesclaInvest é uma plataforma simulada de investimento em startups, '
+                'desenvolvida como projeto integrador da PUC-Campinas.',
           ),
           const SizedBox(height: 12),
           _faqCard(
             question: 'Como funcionam os tokens?',
-            answer:   'Cada startup emite uma quantidade de tokens. Ao investir, você adquire '
-                      'tokens proporcionais ao valor aplicado. O valor dos tokens varia com o '
-                      'desempenho da startup.',
+            answer:
+                'Cada startup emite uma quantidade de tokens. Ao investir, você adquire '
+                'tokens proporcionais ao valor aplicado. O valor dos tokens varia com o '
+                'desempenho da startup.',
           ),
           const SizedBox(height: 12),
           _faqCard(
             question: 'O que é a autenticação 2FA?',
-            answer:   'A autenticação em dois fatores adiciona uma camada extra de segurança '
-                      'à sua conta. Quando ativada, além da senha, você precisará confirmar '
-                      'o acesso por um segundo método.',
+            answer:
+                'A autenticação em dois fatores adiciona uma camada extra de segurança '
+                'à sua conta. Quando ativada, além da senha, você precisará confirmar '
+                'o acesso por um segundo método.',
           ),
           const SizedBox(height: 12),
           _faqCard(
             question: 'Como entro em contato com o suporte?',
-            answer:   'Para este projeto, o suporte é prestado pelos desenvolvedores via '
-                      'e-mail: suporte@mesclainvest.com.br',
+            answer:
+                'Para este projeto, o suporte é prestado pelos desenvolvedores via '
+                'e-mail: suporte@mesclainvest.com.br',
           ),
           const SizedBox(height: 24),
           Container(
@@ -85,7 +87,10 @@ class HelpPage extends StatelessWidget {
                     color: Colors.grey.shade100,
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Icon(Icons.email_outlined, color: Colors.black54),
+                  child: const Icon(
+                    Icons.email_outlined,
+                    color: Colors.black54,
+                  ),
                 ),
                 const SizedBox(width: 12),
                 const Expanded(
@@ -94,7 +99,10 @@ class HelpPage extends StatelessWidget {
                     children: [
                       Text(
                         'Fale conosco',
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                       Text(
                         'suporte@mesclainvest.com.br',

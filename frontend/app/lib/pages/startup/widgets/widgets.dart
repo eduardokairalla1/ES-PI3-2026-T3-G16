@@ -1,4 +1,5 @@
 /// Eduardo Kairalla - 24024241
+library;
 
 /// Barrel export for startup detail widgets.
 

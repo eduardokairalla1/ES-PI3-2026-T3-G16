@@ -1,38 +1,38 @@
 /// Eduardo Kairalla - 24024241
+library;
 
 /// Card widget for a startup in the catalog listing.
 
 // --- IMPORTS ---
-import 'dart:ui' show Color;
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:mesclainvest/pages/startup/models/startup_model.dart';
 
-
 // --- HELPERS ---
 
-final _currencyFmt = NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$', decimalDigits: 0);
+final _currencyFmt = NumberFormat.currency(
+  locale: 'pt_BR',
+  symbol: 'R\$',
+  decimalDigits: 0,
+);
 
 Color _stageColor(String stage) => switch (stage) {
-  'new'       => const Color(0xFF1565C0),
+  'new' => const Color(0xFF1565C0),
   'operating' => const Color(0xFF2E7D32),
   'expanding' => const Color(0xFF6A1B9A),
-  _           => Colors.black,
+  _ => Colors.black,
 };
-
 
 // --- WIDGET ---
 
 class StartupCard extends StatelessWidget {
-
   final StartupModel startup;
   final bool isFavorite;
   final VoidCallback? onFavoriteTap;
 
   const StartupCard({
-    super.key, 
+    super.key,
     required this.startup,
     this.isFavorite = false,
     this.onFavoriteTap,
@@ -62,7 +62,6 @@ class StartupCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-
             // --- logo + name + stage ---
             Row(
               children: [
@@ -108,7 +107,10 @@ class StartupCard extends StatelessWidget {
                   ),
                 const SizedBox(width: 8),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: stageColor.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(20),
@@ -135,7 +137,9 @@ class StartupCard extends StatelessWidget {
                 _Stat(
                   label: 'Preço do token',
                   value: NumberFormat.currency(
-                    locale: 'pt_BR', symbol: 'R\$', decimalDigits: 2,
+                    locale: 'pt_BR',
+                    symbol: 'R\$',
+                    decimalDigits: 2,
                   ).format(startup.tokenPrice),
                 ),
                 const SizedBox(width: 24),
@@ -144,17 +148,19 @@ class StartupCard extends StatelessWidget {
                   value: _currencyFmt.format(startup.capitalRaised),
                 ),
                 const Spacer(),
-                const Icon(Icons.arrow_forward_ios, size: 14, color: Color(0xFFAAAAAA)),
+                const Icon(
+                  Icons.arrow_forward_ios,
+                  size: 14,
+                  color: Color(0xFFAAAAAA),
+                ),
               ],
             ),
-
           ],
         ),
       ),
     );
   }
 }
-
 
 class _Logo extends StatelessWidget {
   final String url;
@@ -176,7 +182,7 @@ class _Logo extends StatelessWidget {
         child: Image.network(
           url,
           fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => Center(
+          errorBuilder: (_, _, _) => Center(
             child: Text(
               name.isNotEmpty ? name[0].toUpperCase() : '?',
               style: const TextStyle(
@@ -191,7 +197,6 @@ class _Logo extends StatelessWidget {
     );
   }
 }
-
 
 class _Stat extends StatelessWidget {
   final String label;
