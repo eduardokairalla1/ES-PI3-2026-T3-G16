@@ -8,6 +8,8 @@
 /**
  * IMPORTS
  */
+import 'dart:ui' show Color;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -291,7 +293,7 @@ class BotoesAcao extends StatelessWidget {
                 itemBuilder: (context, index) {
                   final t = transactions[index];
                   final isPositive = t.type == 'deposit' || t.type == 'sell';
-                  final color = isPositive ? Colors.green : Colors.red;
+                  final color = isPositive ? Colors.green.shade700 : Colors.red.shade700;
                   final prefix = isPositive ? '+' : '-';
 
                   return ListTile(

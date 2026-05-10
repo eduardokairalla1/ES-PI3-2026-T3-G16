@@ -8,6 +8,8 @@
 /**
  * IMPORTS
  */
+import 'dart:ui' show Clip;
+
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:mesclainvest/app/app_state.dart';
