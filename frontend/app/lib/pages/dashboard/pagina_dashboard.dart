@@ -5,7 +5,6 @@ import 'package:mesclainvest/pages/dashboard/widgets/widgets.dart';
 import 'package:mesclainvest/shared/widgets/delayed_shimmer.dart';
 
 class PaginaDashboard extends StatefulWidget {
-
   const PaginaDashboard({super.key});
 
   @override

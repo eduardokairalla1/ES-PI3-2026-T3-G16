@@ -1,10 +1,9 @@
 /// Eduardo Kairalla - 24024241
+library;
 
 /// Register page.
 
 // --- IMPORTS ---
-import 'dart:ui' show Color;
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
@@ -16,15 +15,12 @@ import 'package:mesclainvest/core/services/auth.dart';
 import 'package:mesclainvest/pages/auth/widgets/auth_constants.dart';
 import 'package:mesclainvest/pages/auth/widgets/input_formatters.dart';
 
-
 // --- CODE ---
 
 /// I represent the register page.
 class RegisterPage extends StatefulWidget {
-
   // constructor
   const RegisterPage({super.key});
-
 
   /// I create the mutable state for this widget.
   ///
@@ -33,34 +29,32 @@ class RegisterPage extends StatefulWidget {
   State<RegisterPage> createState() => _RegisterPageState();
 }
 
-
 /// I represent the mutable state for the register page.
 class _RegisterPageState extends State<RegisterPage>
     with SingleTickerProviderStateMixin {
-
   // define controllers for text fields
-  final _authService       = AuthService();
-  final _formKey           = GlobalKey<FormState>();
-  final _fullNameCtrl      = TextEditingController();
-  final _emailCtrl         = TextEditingController();
-  final _cpfCtrl           = TextEditingController();
-  final _phoneCtrl         = TextEditingController();
-  final _passwordCtrl      = TextEditingController();
+  final _authService = AuthService();
+  final _formKey = GlobalKey<FormState>();
+  final _fullNameCtrl = TextEditingController();
+  final _emailCtrl = TextEditingController();
+  final _cpfCtrl = TextEditingController();
+  final _phoneCtrl = TextEditingController();
+  final _passwordCtrl = TextEditingController();
   final _passwordFocusNode = FocusNode();
 
   // define state variables
-  bool      _isLoading      = false;
-  bool      _showPassword   = false;
-  bool      _btnPressed     = false;
-  String?   _error;
+  bool _isLoading = false;
+  bool _showPassword = false;
+  bool _btnPressed = false;
+  String? _error;
   DateTime? _birthDate;
-  String?   _birthDateError;
+  String? _birthDateError;
 
   // password requirements
   bool get _hasMinLength => _passwordCtrl.text.length >= 8;
   bool get _hasUppercase => _passwordCtrl.text.contains(RegExp(r'[A-Z]'));
-  bool get _hasNumber    => _passwordCtrl.text.contains(RegExp(r'[0-9]'));
-  bool get _hasSpecial   => _passwordCtrl.text.contains(
+  bool get _hasNumber => _passwordCtrl.text.contains(RegExp(r'[0-9]'));
+  bool get _hasSpecial => _passwordCtrl.text.contains(
     RegExp(r'[!@#\$%^&*()_+\-=\[\]{};:"\\|,.<>\/?`~]'),
   );
   bool get _passwordValid =>
@@ -70,20 +64,18 @@ class _RegisterPageState extends State<RegisterPage>
 
   // entrance animation
   late final AnimationController _entranceCtrl;
-  late final Animation<double>   _fadeAnim;
-  late final Animation<Offset>   _slideAnim;
-
+  late final Animation<double> _fadeAnim;
+  late final Animation<Offset> _slideAnim;
 
   /// I build the birth date field with a custom input and error display.
   ///
   /// :returns: the widget for the birth date field
   Widget _buildDateField() {
-
     final text = _birthDate == null
         ? null
         : '${_birthDate!.day.toString().padLeft(2, '0')}/'
-          '${_birthDate!.month.toString().padLeft(2, '0')}/'
-          '${_birthDate!.year}';
+              '${_birthDate!.month.toString().padLeft(2, '0')}/'
+              '${_birthDate!.year}';
 
     final hasError = _birthDateError != null;
 
@@ -94,8 +86,8 @@ class _RegisterPageState extends State<RegisterPage>
           'DATA DE NASCIMENTO',
           style: GoogleFonts.inter(
             fontWeight: FontWeight.w700,
-            fontSize:   15,
-            color:      kAuthLabel,
+            fontSize: 15,
+            color: kAuthLabel,
           ),
         ),
         const SizedBox(height: 8),
@@ -104,7 +96,7 @@ class _RegisterPageState extends State<RegisterPage>
           child: Container(
             height: 50,
             decoration: BoxDecoration(
-              color:        kAuthFieldBg,
+              color: kAuthFieldBg,
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
                 color: hasError ? Colors.red : kAuthFieldBorder,
@@ -120,14 +112,14 @@ class _RegisterPageState extends State<RegisterPage>
                     text ?? 'DD/MM/AAAA',
                     style: GoogleFonts.inter(
                       fontSize: 16,
-                      color:    text != null ? Colors.black : kAuthHint,
+                      color: text != null ? Colors.black : kAuthHint,
                     ),
                   ),
                 ),
                 const Icon(
                   Icons.calendar_today_outlined,
                   color: kAuthHint,
-                  size:  18,
+                  size: 18,
                 ),
               ],
             ),
@@ -145,7 +137,6 @@ class _RegisterPageState extends State<RegisterPage>
       ],
     );
   }
-
 
   /// I build a custom text field with a label, icon, and validation.
   Widget _buildField({
@@ -172,16 +163,16 @@ class _RegisterPageState extends State<RegisterPage>
         ),
         const SizedBox(height: 8),
         TextFormField(
-          controller:       controller,
-          keyboardType:     keyboardType,
-          inputFormatters:  inputFormatters,
-          obscureText:      obscureText,
-          validator:        validator,
+          controller: controller,
+          keyboardType: keyboardType,
+          inputFormatters: inputFormatters,
+          obscureText: obscureText,
+          validator: validator,
           style: GoogleFonts.inter(fontSize: 16, color: Colors.black),
           decoration: InputDecoration(
-            hintText:  hint,
+            hintText: hint,
             hintStyle: GoogleFonts.inter(fontSize: 16, color: kAuthHint),
-            filled:    true,
+            filled: true,
             fillColor: kAuthFieldBg,
             prefixIcon: Icon(icon, color: kAuthHint, size: 22),
             suffixIcon: suffixIcon,
@@ -191,19 +182,19 @@ class _RegisterPageState extends State<RegisterPage>
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(20),
-              borderSide:   const BorderSide(color: kAuthFieldBorder),
+              borderSide: const BorderSide(color: kAuthFieldBorder),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(20),
-              borderSide:   const BorderSide(color: Colors.black),
+              borderSide: const BorderSide(color: Colors.black),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(20),
-              borderSide:   const BorderSide(color: Colors.red),
+              borderSide: const BorderSide(color: Colors.red),
             ),
             focusedErrorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(20),
-              borderSide:   const BorderSide(color: Colors.red),
+              borderSide: const BorderSide(color: Colors.red),
             ),
             errorStyle: GoogleFonts.inter(fontSize: 12),
           ),
@@ -211,7 +202,6 @@ class _RegisterPageState extends State<RegisterPage>
       ],
     );
   }
-
 
   /// I build a password requirement item with an icon and text.
   Widget _buildReq(String text, bool met) {
@@ -221,18 +211,15 @@ class _RegisterPageState extends State<RegisterPage>
         children: [
           AnimatedContainer(
             duration: const Duration(milliseconds: 300),
-            curve:    Curves.easeOut,
-            width:  18,
+            curve: Curves.easeOut,
+            width: 18,
             height: 18,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: met ? const Color(0xFF4CAF50) : Colors.transparent,
               border: met
                   ? null
-                  : Border.all(
-                      color: const Color(0xFFBDBDBD),
-                      width: 1.5,
-                    ),
+                  : Border.all(color: const Color(0xFFBDBDBD), width: 1.5),
             ),
             child: met
                 ? const Icon(Icons.check, size: 11, color: Colors.white)
@@ -242,8 +229,8 @@ class _RegisterPageState extends State<RegisterPage>
           AnimatedDefaultTextStyle(
             duration: const Duration(milliseconds: 300),
             style: GoogleFonts.inter(
-              fontSize:   12,
-              color:      met ? const Color(0xFF388E3C) : const Color(0xFF9E9E9E),
+              fontSize: 12,
+              color: met ? const Color(0xFF388E3C) : const Color(0xFF9E9E9E),
               fontWeight: met ? FontWeight.w600 : FontWeight.w400,
             ),
             child: Text(text),
@@ -252,7 +239,6 @@ class _RegisterPageState extends State<RegisterPage>
       ),
     );
   }
-
 
   String? _calcBirthDateError() {
     if (_birthDate == null) return 'Informe sua data de nascimento';
@@ -266,13 +252,11 @@ class _RegisterPageState extends State<RegisterPage>
     return null;
   }
 
-
   void _onFocusChanged() {
     if (mounted) {
       setState(() => _passwordHasFocus = _passwordFocusNode.hasFocus);
     }
   }
-
 
   Future<void> _pickDate() async {
     final now = DateTime.now();
@@ -291,16 +275,17 @@ class _RegisterPageState extends State<RegisterPage>
     }
   }
 
-
   Future<void> _submit() async {
-    setState(() { _isLoading = true; _error = null; });
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
 
     try {
       final d = _birthDate!;
-      final birthIso = (
-        '${d.year}-${d.month.toString().padLeft(2, '0')}-'
-        '${d.day.toString().padLeft(2, '0')}'
-      );
+      final birthIso =
+          ('${d.year}-${d.month.toString().padLeft(2, '0')}-'
+          '${d.day.toString().padLeft(2, '0')}');
 
       await _authService.register(
         _emailCtrl.text.trim(),
@@ -316,27 +301,24 @@ class _RegisterPageState extends State<RegisterPage>
       await AppState.instance.loadProfile(_authService);
 
       if (mounted) context.go('/dashboard');
-    }
-    on AuthException catch (e) {
+    } on AuthException catch (e) {
       setState(() => _error = e.message);
-    }
-    on InfrastructureException {
+    } on InfrastructureException {
       setState(
-        () => _error = ('Ocorreu um erro inesperado. '
-                        'Tente novamente em alguns minutos.')
+        () => _error =
+            ('Ocorreu um erro inesperado. '
+            'Tente novamente em alguns minutos.'),
       );
-    }
-    catch (_) {
+    } catch (_) {
       setState(
-        () => _error = ('Ocorreu um erro inesperado. '
-                        'Tente novamente em alguns minutos.')
+        () => _error =
+            ('Ocorreu um erro inesperado. '
+            'Tente novamente em alguns minutos.'),
       );
-    }
-    finally {
+    } finally {
       if (mounted) setState(() => _isLoading = false);
     }
   }
-
 
   String? _validateCpf(String? cpf) {
     if (cpf == null || cpf.isEmpty) return 'Informe o CPF';
@@ -345,20 +327,23 @@ class _RegisterPageState extends State<RegisterPage>
     if (RegExp(r'^(\d)\1{10}$').hasMatch(d)) return 'CPF inválido';
 
     var sum = 0;
-    for (var i = 0; i < 9; i++) { sum += int.parse(d[i]) * (10 - i); }
+    for (var i = 0; i < 9; i++) {
+      sum += int.parse(d[i]) * (10 - i);
+    }
     var rem = (sum * 10) % 11;
     if (rem >= 10) rem = 0;
     if (rem != int.parse(d[9])) return 'CPF inválido';
 
     sum = 0;
-    for (var i = 0; i < 10; i++) { sum += int.parse(d[i]) * (11 - i); }
+    for (var i = 0; i < 10; i++) {
+      sum += int.parse(d[i]) * (11 - i);
+    }
     rem = (sum * 10) % 11;
     if (rem >= 10) rem = 0;
     if (rem != int.parse(d[10])) return 'CPF inválido';
 
     return null;
   }
-
 
   String? _validateEmail(String? email) {
     if (email == null || email.trim().isEmpty) return 'Informe o e-mail';
@@ -368,13 +353,11 @@ class _RegisterPageState extends State<RegisterPage>
     return null;
   }
 
-
   String? _validateName(String? name) {
     if (name == null || name.trim().isEmpty) return 'Informe seu nome completo';
     if (name.trim().split(' ').length < 2) return 'Informe nome e sobrenome';
     return null;
   }
-
 
   String? _validatePassword(String? password) {
     if (password == null || password.isEmpty) return 'Informe a senha';
@@ -382,14 +365,12 @@ class _RegisterPageState extends State<RegisterPage>
     return null;
   }
 
-
   String? _validatePhone(String? phone) {
     if (phone == null || phone.isEmpty) return 'Informe o telefone';
     final d = phone.replaceAll(RegExp(r'\D'), '');
     if (d.length < 10 || d.length > 11) return 'Telefone inválido';
     return null;
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -407,7 +388,6 @@ class _RegisterPageState extends State<RegisterPage>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-
                     const SizedBox(height: 49),
 
                     Text(
@@ -416,8 +396,8 @@ class _RegisterPageState extends State<RegisterPage>
                       style: GoogleFonts.inter(
                         fontWeight: FontWeight.w700,
                         fontSize: 48,
-                        height:    1.1,
-                        color:     Colors.black,
+                        height: 1.1,
+                        color: Colors.black,
                       ),
                     ),
                     const SizedBox(height: 20),
@@ -427,40 +407,40 @@ class _RegisterPageState extends State<RegisterPage>
                       textAlign: TextAlign.center,
                       style: GoogleFonts.inter(
                         fontWeight: FontWeight.w700,
-                        fontSize:   15,
-                        color:      kAuthSubtitle,
+                        fontSize: 15,
+                        color: kAuthSubtitle,
                       ),
                     ),
                     const SizedBox(height: 28),
 
                     _buildField(
-                      controller:     _fullNameCtrl,
-                      label:          'NOME COMPLETO',
-                      hint:           'Seu nome completo',
-                      icon:           Icons.person_outline,
-                      keyboardType:   TextInputType.name,
-                      validator:      _validateName,
+                      controller: _fullNameCtrl,
+                      label: 'NOME COMPLETO',
+                      hint: 'Seu nome completo',
+                      icon: Icons.person_outline,
+                      keyboardType: TextInputType.name,
+                      validator: _validateName,
                     ),
                     const SizedBox(height: 24),
 
                     _buildField(
-                      controller:   _emailCtrl,
-                      label:        'E-MAIL',
-                      hint:         'seu@gmail.com.br',
-                      icon:         Icons.mail_outline,
+                      controller: _emailCtrl,
+                      label: 'E-MAIL',
+                      hint: 'seu@gmail.com.br',
+                      icon: Icons.mail_outline,
                       keyboardType: TextInputType.emailAddress,
-                      validator:    _validateEmail,
+                      validator: _validateEmail,
                     ),
                     const SizedBox(height: 24),
 
                     _buildField(
-                      controller:      _cpfCtrl,
-                      label:           'CPF',
-                      hint:            '000.000.000-00',
-                      icon:            Icons.badge_outlined,
-                      keyboardType:    TextInputType.number,
+                      controller: _cpfCtrl,
+                      label: 'CPF',
+                      hint: '000.000.000-00',
+                      icon: Icons.badge_outlined,
+                      keyboardType: TextInputType.number,
                       inputFormatters: [CpfFormatter()],
-                      validator:       _validateCpf,
+                      validator: _validateCpf,
                     ),
                     const SizedBox(height: 24),
 
@@ -468,13 +448,13 @@ class _RegisterPageState extends State<RegisterPage>
                     const SizedBox(height: 24),
 
                     _buildField(
-                      controller:      _phoneCtrl,
-                      label:           'TELEFONE CELULAR',
-                      hint:            '(11) 99999-9999',
-                      icon:            Icons.phone_outlined,
-                      keyboardType:    TextInputType.phone,
+                      controller: _phoneCtrl,
+                      label: 'TELEFONE CELULAR',
+                      hint: '(11) 99999-9999',
+                      icon: Icons.phone_outlined,
+                      keyboardType: TextInputType.phone,
                       inputFormatters: [PhoneFormatter()],
-                      validator:       _validatePhone,
+                      validator: _validatePhone,
                     ),
                     const SizedBox(height: 24),
 
@@ -486,33 +466,33 @@ class _RegisterPageState extends State<RegisterPage>
                           'SENHA',
                           style: GoogleFonts.inter(
                             fontWeight: FontWeight.w700,
-                            fontSize:   15,
-                            color:      kAuthLabel,
+                            fontSize: 15,
+                            color: kAuthLabel,
                           ),
                         ),
                         const SizedBox(height: 8),
                         TextFormField(
-                          controller:  _passwordCtrl,
-                          focusNode:   _passwordFocusNode,
+                          controller: _passwordCtrl,
+                          focusNode: _passwordFocusNode,
                           obscureText: !_showPassword,
-                          validator:   _validatePassword,
-                          onChanged:   (_) => setState(() {}),
+                          validator: _validatePassword,
+                          onChanged: (_) => setState(() {}),
                           style: GoogleFonts.inter(
                             fontSize: 16,
-                            color:    Colors.black,
+                            color: Colors.black,
                           ),
                           decoration: InputDecoration(
-                            hintText:  'Mín. 8 caracteres',
+                            hintText: 'Mín. 8 caracteres',
                             hintStyle: GoogleFonts.inter(
                               fontSize: 16,
-                              color:    kAuthHint,
+                              color: kAuthHint,
                             ),
-                            filled:    true,
+                            filled: true,
                             fillColor: kAuthFieldBg,
                             prefixIcon: Icon(
                               Icons.lock_outline,
                               color: kAuthHint,
-                              size:  22,
+                              size: 22,
                             ),
                             suffixIcon: GestureDetector(
                               onTap: () => setState(
@@ -523,27 +503,30 @@ class _RegisterPageState extends State<RegisterPage>
                                     ? Icons.visibility_outlined
                                     : Icons.visibility_off_outlined,
                                 color: kAuthHint,
-                                size:  22,
+                                size: 22,
                               ),
                             ),
                             contentPadding: const EdgeInsets.symmetric(
-                              vertical: 15, horizontal: 16,
+                              vertical: 15,
+                              horizontal: 16,
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(20),
-                              borderSide:   const BorderSide(color: kAuthFieldBorder),
+                              borderSide: const BorderSide(
+                                color: kAuthFieldBorder,
+                              ),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(20),
-                              borderSide:   const BorderSide(color: Colors.black),
+                              borderSide: const BorderSide(color: Colors.black),
                             ),
                             errorBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(20),
-                              borderSide:   const BorderSide(color: Colors.red),
+                              borderSide: const BorderSide(color: Colors.red),
                             ),
                             focusedErrorBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(20),
-                              borderSide:   const BorderSide(color: Colors.red),
+                              borderSide: const BorderSide(color: Colors.red),
                             ),
                             errorStyle: GoogleFonts.inter(fontSize: 12),
                           ),
@@ -551,17 +534,30 @@ class _RegisterPageState extends State<RegisterPage>
 
                         AnimatedSize(
                           duration: const Duration(milliseconds: 300),
-                          curve:    Curves.easeOut,
+                          curve: Curves.easeOut,
                           child: _showChecker
                               ? Padding(
-                                  padding: const EdgeInsets.only(top: 12, left: 4),
+                                  padding: const EdgeInsets.only(
+                                    top: 12,
+                                    left: 4,
+                                  ),
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
-                                      _buildReq('Mínimo 8 caracteres', _hasMinLength),
-                                      _buildReq('Uma letra maiúscula (A–Z)', _hasUppercase),
+                                      _buildReq(
+                                        'Mínimo 8 caracteres',
+                                        _hasMinLength,
+                                      ),
+                                      _buildReq(
+                                        'Uma letra maiúscula (A–Z)',
+                                        _hasUppercase,
+                                      ),
                                       _buildReq('Um número (0–9)', _hasNumber),
-                                      _buildReq('Um caractere especial (!@#\$...)', _hasSpecial),
+                                      _buildReq(
+                                        'Um caractere especial (!@#\$...)',
+                                        _hasSpecial,
+                                      ),
                                     ],
                                   ),
                                 )
@@ -585,9 +581,11 @@ class _RegisterPageState extends State<RegisterPage>
                               ),
                               margin: const EdgeInsets.only(bottom: 16),
                               decoration: BoxDecoration(
-                                color:        const Color(0xFFFFF0F0),
+                                color: const Color(0xFFFFF0F0),
                                 borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: const Color(0xFFFFCDD2)),
+                                border: Border.all(
+                                  color: const Color(0xFFFFCDD2),
+                                ),
                               ),
                               child: Text(
                                 _error!,
@@ -607,28 +605,29 @@ class _RegisterPageState extends State<RegisterPage>
                         setState(() => _btnPressed = false);
                         if (_isLoading) return;
                         final bdError = _calcBirthDateError();
-                        final formOk  = _formKey.currentState?.validate() ?? false;
+                        final formOk =
+                            _formKey.currentState?.validate() ?? false;
                         setState(() => _birthDateError = bdError);
                         if (formOk && bdError == null) _submit();
                       },
                       onTapCancel: () => setState(() => _btnPressed = false),
                       child: AnimatedScale(
-                        scale:    _btnPressed ? 0.97 : 1.0,
+                        scale: _btnPressed ? 0.97 : 1.0,
                         duration: const Duration(milliseconds: 80),
                         child: Container(
-                          width:  double.infinity,
+                          width: double.infinity,
                           height: 58,
                           decoration: BoxDecoration(
-                            color:        Colors.black,
+                            color: Colors.black,
                             borderRadius: BorderRadius.circular(20),
                           ),
                           alignment: Alignment.center,
                           child: _isLoading
                               ? const SizedBox(
-                                  width:  24,
+                                  width: 24,
                                   height: 24,
                                   child: CircularProgressIndicator(
-                                    color:       Colors.white,
+                                    color: Colors.white,
                                     strokeWidth: 2.5,
                                   ),
                                 )
@@ -636,8 +635,8 @@ class _RegisterPageState extends State<RegisterPage>
                                   'CADASTRAR',
                                   style: GoogleFonts.inter(
                                     fontWeight: FontWeight.w800,
-                                    fontSize:   20,
-                                    color:      Colors.white,
+                                    fontSize: 20,
+                                    color: Colors.white,
                                   ),
                                 ),
                         ),
@@ -652,8 +651,8 @@ class _RegisterPageState extends State<RegisterPage>
                           'Já possui conta? ',
                           style: GoogleFonts.inter(
                             fontWeight: FontWeight.w400,
-                            fontSize:   15,
-                            color:      kAuthBody,
+                            fontSize: 15,
+                            color: kAuthBody,
                           ),
                         ),
                         GestureDetector(
@@ -662,15 +661,14 @@ class _RegisterPageState extends State<RegisterPage>
                             'Fazer Login',
                             style: GoogleFonts.inter(
                               fontWeight: FontWeight.w700,
-                              fontSize:   20,
-                              color:      kAuthBody,
+                              fontSize: 20,
+                              color: kAuthBody,
                             ),
                           ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 36),
-
                   ],
                 ),
               ),
@@ -680,7 +678,6 @@ class _RegisterPageState extends State<RegisterPage>
       ),
     );
   }
-
 
   @override
   void dispose() {
@@ -694,7 +691,6 @@ class _RegisterPageState extends State<RegisterPage>
     super.dispose();
   }
 
-
   @override
   void initState() {
     super.initState();
@@ -702,10 +698,10 @@ class _RegisterPageState extends State<RegisterPage>
       vsync: this,
       duration: const Duration(milliseconds: 550),
     );
-    _fadeAnim  = CurvedAnimation(parent: _entranceCtrl, curve: Curves.easeOut);
+    _fadeAnim = CurvedAnimation(parent: _entranceCtrl, curve: Curves.easeOut);
     _slideAnim = Tween<Offset>(
       begin: const Offset(0, 0.06),
-      end:   Offset.zero,
+      end: Offset.zero,
     ).animate(CurvedAnimation(parent: _entranceCtrl, curve: Curves.easeOut));
     _entranceCtrl.forward();
     _passwordFocusNode.addListener(_onFocusChanged);

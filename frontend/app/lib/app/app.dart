@@ -1,4 +1,5 @@
 /// --- Main application widget ---
+library;
 
 /// --- IMPORTS ---
 import 'package:flutter/material.dart';
@@ -6,15 +7,12 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:mesclainvest/app/routes.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-
 /// --- CODE ---
 
 /// I represent the root application widget.
 class MesclaInvestApp extends StatelessWidget {
-
   // constructor
   const MesclaInvestApp({super.key});
-
 
   /// I describe the UI structure and return the visual representation
   /// of this widget.

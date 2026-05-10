@@ -1,29 +1,26 @@
-/**
+/*
  * Widget do Cartão de Patrimônio do Dashboard.
  * Exibe o saldo total, rendimento diário e saldo disponível na carteira.
  *
  * Alex Gabriel Soares Sousa - 24802449
  */
 
+library;
 
-/**
+/*
  * IMPORTS
  */
-import 'dart:ui' show Color;
 
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:mesclainvest/pages/dashboard/controllers/dashboard_controller.dart';
-import 'package:mesclainvest/shared/styles/money_style.dart';
+import 'package:intl/intl.dart';
 
-
-/**
+/*
  * CODE
  */
 
 /// Exibição visual do patrimônio consolidado e rendimentos.
 class CartaoPatrimonio extends StatelessWidget {
-
   // Atributos
   final DashboardController controller;
 
@@ -32,7 +29,6 @@ class CartaoPatrimonio extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     // Formatador de moeda brasileira
     final formatter = NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
 
@@ -44,13 +40,13 @@ class CartaoPatrimonio extends StatelessWidget {
     if (data == null) return const SizedBox();
 
     final String valPatrimonio = formatter.format(data.patrimonioTotal);
-    final String valLucroSemanal = formatter.format(data.rendimentoDiarioValor);
-    final String valLucroPorcentagem = data.rendimentoDiarioPorcentagem.toStringAsFixed(2);
-    final bool isPositive = data.rendimentoDiarioValor >= 0;
+    final String valLucroDiario = formatter.format(data.rendimentoDiarioValor);
+    final String valLucroPorcentagem = data.rendimentoDiarioPorcentagem
+        .toStringAsFixed(2);
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -66,10 +62,9 @@ class CartaoPatrimonio extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-
           // --- Título: MEU PATRIMÔNIO ---
           Text(
-            'Valor total estimado',
+            'MEU PATRIMÔNIO',
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.bold,
@@ -86,9 +81,13 @@ class CartaoPatrimonio extends StatelessWidget {
               AnimatedSwitcher(
                 duration: const Duration(milliseconds: 200),
                 child: Text(
-                  visivel ? valPatrimonio : '*' * valPatrimonio.length,
+                  visivel ? valPatrimonio : 'R\$ *********',
                   key: ValueKey<bool>(visivel),
-                  style: moneyStyle(fontSize: 26, fontWeight: FontWeight.w800),
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
                 ),
               ),
               const Spacer(),
@@ -104,7 +103,9 @@ class CartaoPatrimonio extends StatelessWidget {
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
-                      visivel ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                      visivel
+                          ? Icons.visibility_outlined
+                          : Icons.visibility_off_outlined,
                       size: 20,
                       color: Colors.grey.shade600,
                     ),
@@ -122,21 +123,39 @@ class CartaoPatrimonio extends StatelessWidget {
             opacity: visivel ? 1.0 : 0.5,
             child: Row(
               children: [
+                Icon(
+                  data.rendimentoDiarioValor >= 0
+                      ? Icons.trending_up
+                      : Icons.trending_down,
+                  color: visivel
+                      ? (data.rendimentoDiarioValor >= 0
+                            ? Colors.green
+                            : Colors.red)
+                      : Colors.grey.shade300,
+                  size: 16,
+                ),
+                const SizedBox(width: 4),
                 Text(
-                  visivel ? '${isPositive ? '+' : '-'} $valLucroSemanal' : '*' * (valLucroSemanal.length + 1),
-                  style: moneyStyle(
+                  visivel
+                      ? '${data.rendimentoDiarioValor >= 0 ? '+' : ''}$valLucroDiario'
+                      : '*******',
+                  style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    letterSpacing: -0.2,
-                    color: visivel ? (isPositive ? Colors.green.shade700 : Colors.red.shade700) : Colors.grey,
+                    color: visivel
+                        ? (data.rendimentoDiarioValor >= 0
+                              ? Colors.green.shade700
+                              : Colors.red.shade700)
+                        : Colors.grey,
                   ),
                 ),
                 const SizedBox(width: 4),
                 Text(
-                  visivel ? '(${isPositive ? '+' : ''}$valLucroPorcentagem%)   Hoje' : '*' * ('($valLucroPorcentagem%)   Hoje'.length + 1),
-                  style: moneyStyle(
+                  visivel
+                      ? '(${data.rendimentoDiarioPorcentagem >= 0 ? '+' : ''}$valLucroPorcentagem%) hoje'
+                      : '(****) ****',
+                  style: TextStyle(
                     fontSize: 14,
-                    fontWeight: FontWeight.w500,
                     color: visivel ? Colors.grey.shade600 : Colors.grey,
                   ),
                 ),
@@ -163,7 +182,9 @@ class CartaoPatrimonio extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    visivel ? formatter.format(data.saldoDisponivel) : 'R\$ ****',
+                    visivel
+                        ? formatter.format(data.saldoDisponivel)
+                        : 'R\$ ****',
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,

@@ -1,6 +1,7 @@
 /// --- Startup models ---
 ///
 /// Eduardo Kairalla - 24024241
+library;
 
 // --- HELPERS ---
 
@@ -12,7 +13,6 @@ DateTime? _parseTimestamp(dynamic value) {
   }
   return null;
 }
-
 
 // --- MODELS ---
 
@@ -33,15 +33,14 @@ class PartnerModel {
 
   factory PartnerModel.fromMap(Map<String, dynamic> map) {
     return PartnerModel(
-      name:      map['name']       as String? ?? '',
-      role:      map['role']       as String? ?? '',
+      name: map['name'] as String? ?? '',
+      role: map['role'] as String? ?? '',
       equityPct: (map['equity_pct'] as num?)?.toDouble() ?? 0,
-      bio:       map['bio']        as String?,
+      bio: map['bio'] as String?,
       avatarUrl: map['avatar_url'] as String?,
     );
   }
 }
-
 
 class AdvisorModel {
   final String name;
@@ -56,7 +55,6 @@ class AdvisorModel {
     );
   }
 }
-
 
 class QuestionModel {
   final String id;
@@ -79,17 +77,16 @@ class QuestionModel {
 
   factory QuestionModel.fromMap(Map<String, dynamic> map) {
     return QuestionModel(
-      id:         map['id']         as String? ?? '',
-      text:       map['text']       as String? ?? '',
+      id: map['id'] as String? ?? '',
+      text: map['text'] as String? ?? '',
       authorName: map['authorName'] as String? ?? '',
-      answer:     map['answer']     as String?,
+      answer: map['answer'] as String?,
       answeredAt: _parseTimestamp(map['answeredAt']),
-      isPrivate:  map['isPrivate']  as bool? ?? false,
-      createdAt:  _parseTimestamp(map['createdAt']) ?? DateTime.now(),
+      isPrivate: map['isPrivate'] as bool? ?? false,
+      createdAt: _parseTimestamp(map['createdAt']) ?? DateTime.now(),
     );
   }
 }
-
 
 class StartupModel {
   final String id;
@@ -126,10 +123,10 @@ class StartupModel {
 
   /// I return the translated stage label for display.
   String get stageLabel => switch (stage) {
-    'new'       => 'Nova',
+    'new' => 'Nova',
     'operating' => 'Em operação',
     'expanding' => 'Em expansão',
-    _           => stage,
+    _ => stage,
   };
 
   factory StartupModel.fromMap(Map<String, dynamic> map) {
@@ -137,16 +134,16 @@ class StartupModel {
     final rawAdvisors = (map['advisors'] as List<dynamic>?) ?? [];
 
     return StartupModel(
-      id:               map['id']               as String? ?? '',
-      name:             map['name']             as String? ?? '',
-      tagline:          map['tagline']          as String? ?? '',
-      description:      map['description']      as String? ?? '',
+      id: map['id'] as String? ?? '',
+      name: map['name'] as String? ?? '',
+      tagline: map['tagline'] as String? ?? '',
+      description: map['description'] as String? ?? '',
       executiveSummary: map['executiveSummary'] as String? ?? '',
-      stage:            map['stage']            as String? ?? 'new',
-      logoUrl:          map['logoUrl']          as String? ?? '',
-      tokenPrice:       (map['tokenPrice']   as num?)?.toDouble() ?? 0,
-      capitalRaised:    (map['capitalRaised'] as num?)?.toDouble() ?? 0,
-      totalTokens:      (map['totalTokens']  as num?)?.toInt()    ?? 0,
+      stage: map['stage'] as String? ?? 'new',
+      logoUrl: map['logoUrl'] as String? ?? '',
+      tokenPrice: (map['tokenPrice'] as num?)?.toDouble() ?? 0,
+      capitalRaised: (map['capitalRaised'] as num?)?.toDouble() ?? 0,
+      totalTokens: (map['totalTokens'] as num?)?.toInt() ?? 0,
       partners: rawPartners
           .map((p) => PartnerModel.fromMap(Map<String, dynamic>.from(p as Map)))
           .toList(),
@@ -161,10 +158,11 @@ class StartupModel {
   /// I return mock data for development without Firebase.
   factory StartupModel.mock() {
     return const StartupModel(
-      id:   'mock-theracare',
+      id: 'mock-theracare',
       name: 'TheraCare',
-      tagline:     'Saúde mental acessível para todos',
-      description: 'Plataforma de telemedicina que conecta pacientes a psicólogos credenciados.',
+      tagline: 'Saúde mental acessível para todos',
+      description:
+          'Plataforma de telemedicina que conecta pacientes a psicólogos credenciados.',
       executiveSummary:
           'O Brasil possui apenas 3,2 psicólogos por 10.000 habitantes, muito abaixo da média '
           'recomendada pela OMS. A TheraCare resolve esse gargalo oferecendo teleconsultas de '
@@ -173,28 +171,32 @@ class StartupModel {
           'para os profissionais. Em 3 meses de operação no modo beta fechado, validamos 47 '
           'sessões com NPS de 92. Buscamos R\$ 200.000 em capital semente para escalar a '
           'aquisição de usuários e contratar 2 desenvolvedores.',
-      stage:         'new',
-      logoUrl:       'https://placehold.co/200x200/4F46E5/FFFFFF?text=TC',
-      tokenPrice:    0.10,
+      stage: 'new',
+      logoUrl: 'https://placehold.co/200x200/4F46E5/FFFFFF?text=TC',
+      tokenPrice: 0.10,
       capitalRaised: 18000,
-      totalTokens:   1000000,
-      videoUrl:      null,
+      totalTokens: 1000000,
+      videoUrl: null,
       partners: [
         PartnerModel(
-          name:      'Ana Paula Ferreira',
-          role:      'CEO & Co-fundadora',
+          name: 'Ana Paula Ferreira',
+          role: 'CEO & Co-fundadora',
           equityPct: 60,
-          bio:       'Psicóloga formada pela PUC-Campinas, especialista em TCC.',
+          bio: 'Psicóloga formada pela PUC-Campinas, especialista em TCC.',
         ),
         PartnerModel(
-          name:      'Lucas Mendes',
-          role:      'CTO & Co-fundador',
+          name: 'Lucas Mendes',
+          role: 'CTO & Co-fundador',
           equityPct: 40,
-          bio:       'Engenheiro de Software pela Unicamp, 4 anos de experiência mobile.',
+          bio:
+              'Engenheiro de Software pela Unicamp, 4 anos de experiência mobile.',
         ),
       ],
       advisors: [
-        AdvisorModel(name: 'Prof. Dr. Ricardo Alves', role: 'Mentor de Negócios'),
+        AdvisorModel(
+          name: 'Prof. Dr. Ricardo Alves',
+          role: 'Mentor de Negócios',
+        ),
       ],
     );
   }
