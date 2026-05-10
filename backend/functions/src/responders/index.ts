@@ -28,20 +28,20 @@ import {handleOnToggleFavorite} from '../services/dashboard/onToggleFavorite';
  */
 
 // user functions
-export const onUserCreated    = onCall(handleOnUserCreated);
-export const onGetProfile     = onCall(handleOnGetProfile);
-export const onUpdateProfile  = onCall(handleOnUpdateProfile);
-export const onToggle2FA      = onCall(handleOnToggle2FA);
-export const onDeposit        = onCall(handleOnDeposit);
-export const onGetTransactions = onCall(handleOnGetTransactions);
+export const onUserCreated    = onCall({cors: true}, handleOnUserCreated);
+export const onGetProfile     = onCall({cors: true}, handleOnGetProfile);
+export const onUpdateProfile  = onCall({cors: true}, handleOnUpdateProfile);
+export const onToggle2FA      = onCall({cors: true}, handleOnToggle2FA);
+export const onDeposit        = onCall({cors: true}, handleOnDeposit);
+export const onGetTransactions = onCall({cors: true}, handleOnGetTransactions);
 
 
 // startup functions
-export const onGetStartups   = onCall(handleOnGetStartups);
-export const onGetStartup    = onCall(handleOnGetStartup);
-export const onSendQuestion  = onCall(handleOnSendQuestion);
-export const onGetQuestions  = onCall(handleOnGetQuestions);
+export const onGetStartups   = onCall({cors: true}, handleOnGetStartups);
+export const onGetStartup    = onCall({cors: true}, handleOnGetStartup);
+export const onSendQuestion  = onCall({cors: true}, handleOnSendQuestion);
+export const onGetQuestions  = onCall({cors: true}, handleOnGetQuestions);
 
 // dashboard functions
-export const onGetDashboard    = onCall(handleOnGetDashboard);
-export const onToggleFavorite  = onCall(handleOnToggleFavorite);
+export const onGetDashboard    = onCall({cors: true}, handleOnGetDashboard);
+export const onToggleFavorite  = onCall({cors: true}, handleOnToggleFavorite);
