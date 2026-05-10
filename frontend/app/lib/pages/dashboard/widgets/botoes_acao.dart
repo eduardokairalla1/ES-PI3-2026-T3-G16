@@ -475,7 +475,7 @@ class _BotaoAcaoItemState extends State<_BotaoAcaoItem> {
               width: 56,
               height: 56,
               decoration: BoxDecoration(
-                color: _isActive ? Colors.black : const Color(0xFFF2F2F2),
+                color: _isActive ? Colors.black : Colors.black12,
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: _isActive
                     ? [

@@ -216,10 +216,8 @@ class _RegisterPageState extends State<RegisterPage>
             height: 18,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: met ? const Color(0xFF4CAF50) : Colors.transparent,
-              border: met
-                  ? null
-                  : Border.all(color: const Color(0xFFBDBDBD), width: 1.5),
+              color: met ? Colors.green : Colors.transparent,
+              border: met ? null : Border.all(color: Colors.grey, width: 1.5),
             ),
             child: met
                 ? const Icon(Icons.check, size: 11, color: Colors.white)
@@ -230,7 +228,7 @@ class _RegisterPageState extends State<RegisterPage>
             duration: const Duration(milliseconds: 300),
             style: GoogleFonts.inter(
               fontSize: 12,
-              color: met ? const Color(0xFF388E3C) : const Color(0xFF9E9E9E),
+              color: met ? Colors.green : Colors.grey,
               fontWeight: met ? FontWeight.w600 : FontWeight.w400,
             ),
             child: Text(text),
@@ -581,18 +579,16 @@ class _RegisterPageState extends State<RegisterPage>
                               ),
                               margin: const EdgeInsets.only(bottom: 16),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFFFF0F0),
+                                color: Colors.red.shade50,
                                 borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: const Color(0xFFFFCDD2),
-                                ),
+                                border: Border.all(color: Colors.red.shade100),
                               ),
                               child: Text(
                                 _error!,
                                 textAlign: TextAlign.center,
                                 style: GoogleFonts.inter(
                                   fontSize: 13,
-                                  color: const Color(0xFFC62828),
+                                  color: Colors.red.shade800,
                                 ),
                               ),
                             ),

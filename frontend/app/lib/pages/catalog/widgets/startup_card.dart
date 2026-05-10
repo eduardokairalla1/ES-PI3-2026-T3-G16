@@ -17,10 +17,10 @@ final _currencyFmt = NumberFormat.currency(
   decimalDigits: 0,
 );
 
-Color _stageColor(String stage) => switch (stage) {
-  'new' => const Color(0xFF1565C0),
-  'operating' => const Color(0xFF2E7D32),
-  'expanding' => const Color(0xFF6A1B9A),
+_stageColor(String stage) => switch (stage) {
+  'new' => Colors.blue.shade800,
+  'operating' => Colors.green.shade800,
+  'expanding' => Colors.purple.shade800,
   _ => Colors.black,
 };
 
@@ -151,7 +151,7 @@ class StartupCard extends StatelessWidget {
                 const Icon(
                   Icons.arrow_forward_ios,
                   size: 14,
-                  color: Color(0xFFAAAAAA),
+                  color: Colors.black38,
                 ),
               ],
             ),
@@ -214,7 +214,7 @@ class _Stat extends StatelessWidget {
           style: const TextStyle(
             fontSize: 11,
             fontWeight: FontWeight.w500,
-            color: Color(0xFFAAAAAA),
+            color: Colors.black38,
           ),
         ),
         const SizedBox(height: 2),

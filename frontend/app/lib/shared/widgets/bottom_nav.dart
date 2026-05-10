@@ -103,7 +103,7 @@ class BottomNav extends StatelessWidget {
             Icon(
               isActive ? iconFilled : iconOutlined,
               size: 24,
-              color: isActive ? Colors.black : const Color(0xFFAAAAAA),
+              color: isActive ? Colors.black : Colors.black38,
             ),
             const SizedBox(height: 4),
             Text(
@@ -111,7 +111,7 @@ class BottomNav extends StatelessWidget {
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w700,
-                color: isActive ? Colors.black : const Color(0xFFAAAAAA),
+                color: isActive ? Colors.black : Colors.black38,
               ),
             ),
           ],

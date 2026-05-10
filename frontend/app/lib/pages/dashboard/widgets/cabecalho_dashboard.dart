@@ -66,15 +66,16 @@ class CabecalhoDashboard extends StatelessWidget {
                   color: Colors.black,
                   shape: BoxShape.circle,
                 ),
-                clipBehavior: Clip.antiAlias,
-                child: photoUrl != null
-                    ? Image.network(
-                        photoUrl,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) =>
-                            _initial(initial),
-                      )
-                    : _initial(initial),
+                child: ClipOval(
+                  child: photoUrl != null
+                      ? Image.network(
+                          photoUrl,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) =>
+                              _initial(initial),
+                        )
+                      : _initial(initial),
+                ),
               ),
             ),
             const SizedBox(width: 12),

@@ -31,15 +31,17 @@ class StartupInfoCard extends StatelessWidget {
               color: Colors.grey.shade200,
               borderRadius: BorderRadius.circular(12),
             ),
-            clipBehavior: Clip.antiAlias,
-            child: startup.logoUrl.isNotEmpty
-                ? Image.network(
-                    startup.logoUrl,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) =>
-                        _logoPlaceholder(startup.name),
-                  )
-                : _logoPlaceholder(startup.name),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: startup.logoUrl.isNotEmpty
+                  ? Image.network(
+                      startup.logoUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) =>
+                          _logoPlaceholder(startup.name),
+                    )
+                  : _logoPlaceholder(startup.name),
+            ),
           ),
 
           const SizedBox(width: 16),
@@ -103,7 +105,7 @@ class StartupInfoCard extends StatelessWidget {
     );
   }
 
-  Color _stageColor(String stage) => switch (stage) {
+  _stageColor(String stage) => switch (stage) {
     'new' => Colors.blue,
     'operating' => Colors.green,
     'expanding' => Colors.orange,
