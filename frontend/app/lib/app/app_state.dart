@@ -1,5 +1,4 @@
-/// --- App state ---
-library;
+// --- App state ---
 
 // --- IMPORTS ---
 import 'package:flutter/foundation.dart';

@@ -1,9 +1,8 @@
-/// --- UserProfile model ---
-library;
+// --- UserProfile model ---
 
 // --- CODE ---
 
-/// I represent the authenticated user's profile data fetched from the backend.
+// I represent the authenticated user's profile data fetched from the backend.
 class UserProfile {
   final String uid;
   final String email;

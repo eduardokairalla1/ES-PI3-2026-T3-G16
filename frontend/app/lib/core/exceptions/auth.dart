@@ -1,11 +1,10 @@
-/// --- Eduardo Kairalla - 24024241 ---
-library;
+// --- Eduardo Kairalla - 24024241 ---
 
-/// --- Custom Exceptions for Authentication ---
+// --- Custom Exceptions for Authentication ---
 
-/// --- CODE ---
+// --- CODE ---
 
-/// I represent an authentication exception
+// I represent an authentication exception
 class AuthException implements Exception {
   // attributes
   final String message;

@@ -1,7 +1,6 @@
-/// Eduardo Kairalla - 24024241
-library;
+// Eduardo Kairalla - 24024241
 
-/// Startup catalog listing page.
+// Startup catalog listing page.
 
 // --- IMPORTS ---
 import 'package:flutter/material.dart';

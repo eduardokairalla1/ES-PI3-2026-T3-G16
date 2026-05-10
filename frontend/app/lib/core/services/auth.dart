@@ -1,7 +1,6 @@
-/// Eduardo Kairalla - 24024241
-library;
+// Eduardo Kairalla - 24024241
 
-/// --- Auth service ---
+// --- Auth service ---
 
 // --- IMPORTS ---
 import 'package:cloud_functions/cloud_functions.dart';

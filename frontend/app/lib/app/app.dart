@@ -1,7 +1,6 @@
-/// --- Main application widget ---
-library;
+// --- Main application widget ---
 
-/// --- IMPORTS ---
+// --- IMPORTS ---
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:mesclainvest/app/routes.dart';
