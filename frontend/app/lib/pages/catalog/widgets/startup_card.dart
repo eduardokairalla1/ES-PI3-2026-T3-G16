@@ -1,7 +1,6 @@
-/// Eduardo Kairalla - 24024241
-library;
+// Eduardo Kairalla - 24024241
 
-/// Card widget for a startup in the catalog listing.
+// Card widget for a startup in the catalog listing.
 
 // --- IMPORTS ---
 import 'package:flutter/material.dart';
@@ -17,11 +16,11 @@ final _currencyFmt = NumberFormat.currency(
   decimalDigits: 0,
 );
 
-_stageColor(String stage) => switch (stage) {
-  'new' => Colors.blue.shade800,
-  'operating' => Colors.green.shade800,
-  'expanding' => Colors.purple.shade800,
-  _ => Colors.black,
+MaterialColor _stageColor(String stage) => switch (stage) {
+  'new' => Colors.blue,
+  'operating' => Colors.green,
+  'expanding' => Colors.purple,
+  _ => Colors.grey,
 };
 
 // --- WIDGET ---
@@ -112,7 +111,7 @@ class StartupCard extends StatelessWidget {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: stageColor.withValues(alpha: 0.08),
+                    color: stageColor.shade50,
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
@@ -120,7 +119,7 @@ class StartupCard extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
-                      color: stageColor,
+                      color: stageColor.shade800,
                     ),
                   ),
                 ),

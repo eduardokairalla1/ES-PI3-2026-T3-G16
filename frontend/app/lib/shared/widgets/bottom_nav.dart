@@ -1,7 +1,6 @@
-/// Eduardo Kairalla - 24024241
-library;
+// Eduardo Kairalla - 24024241
 
-/// Global bottom navigation bar shared across main pages.
+// Global bottom navigation bar shared across main pages.
 
 // --- IMPORTS ---
 import 'package:flutter/material.dart';

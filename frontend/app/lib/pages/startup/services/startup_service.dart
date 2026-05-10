@@ -1,7 +1,6 @@
-/// --- Startup service ---
-///
-/// Eduardo Kairalla - 24024241
-library;
+// --- Startup service ---
+//
+// Eduardo Kairalla - 24024241
 
 // --- IMPORTS ---
 import 'package:cloud_functions/cloud_functions.dart';

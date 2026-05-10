@@ -1,7 +1,6 @@
-/// Eduardo Kairalla - 24024241
-library;
+// Eduardo Kairalla - 24024241
 
-/// Forgot password page.
+// Forgot password page.
 
 // --- IMPORTS ---
 import 'package:flutter/material.dart';

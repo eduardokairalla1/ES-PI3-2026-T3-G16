@@ -1,5 +1,4 @@
-/// --- Project entry point ---
-library;
+// --- Project entry point ---
 
 // --- IMPORTS ---
 import 'package:flutter_dotenv/flutter_dotenv.dart';

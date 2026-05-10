@@ -1,7 +1,6 @@
-/// Eduardo Kairalla - 24024241
-library;
+// Eduardo Kairalla - 24024241
 
-/// User profile screen.
+// User profile screen.
 
 // --- IMPORTS ---
 import 'package:flutter/material.dart';

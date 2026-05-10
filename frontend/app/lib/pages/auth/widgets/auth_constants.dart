@@ -1,7 +1,6 @@
-/// Eduardo Kairalla - 24024241
-library;
+// Eduardo Kairalla - 24024241
 
-/// Shared color constants for auth pages.
+// Shared color constants for auth pages.
 
 // ignore_for_file: public_member_api_docs
 

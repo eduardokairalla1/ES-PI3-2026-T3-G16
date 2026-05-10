@@ -1,7 +1,6 @@
-/// Eduardo Kairalla - 24024241
-library;
+// Eduardo Kairalla - 24024241
 
-/// Card with logo, token price, and stage badge.
+// Card with logo, token price, and stage badge.
 
 // --- IMPORTS ---
 import 'package:flutter/material.dart';
@@ -74,7 +73,7 @@ class StartupInfoCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
             decoration: BoxDecoration(
-              color: _stageColor(startup.stage).withValues(alpha: 0.12),
+              color: _stageColor(startup.stage).shade100,
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
@@ -82,7 +81,7 @@ class StartupInfoCard extends StatelessWidget {
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w700,
-                color: _stageColor(startup.stage),
+                color: _stageColor(startup.stage).shade700,
               ),
             ),
           ),
@@ -105,7 +104,7 @@ class StartupInfoCard extends StatelessWidget {
     );
   }
 
-  _stageColor(String stage) => switch (stage) {
+  MaterialColor _stageColor(String stage) => switch (stage) {
     'new' => Colors.blue,
     'operating' => Colors.green,
     'expanding' => Colors.orange,

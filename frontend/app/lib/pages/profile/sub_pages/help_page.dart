@@ -1,7 +1,6 @@
-/// Eduardo Kairalla - 24024241
-library;
+// Eduardo Kairalla - 24024241
 
-/// Help & Support screen.
+// Help & Support screen.
 
 // --- IMPORTS ---
 import 'package:flutter/material.dart';

@@ -1,7 +1,6 @@
-/// --- Startup models ---
-///
-/// Eduardo Kairalla - 24024241
-library;
+// --- Startup models ---
+//
+// Eduardo Kairalla - 24024241
 
 // --- HELPERS ---
 

@@ -1,7 +1,6 @@
-/// --- App routes ---
-library;
+// --- App routes ---
 
-/// --- IMPORTS ---
+// --- IMPORTS ---
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mesclainvest/pages/auth/forgot_password_page.dart';
@@ -37,8 +36,9 @@ final router = GoRouter(
     // usuário está logado e tentando acessar login ou registro: redireciona para
     // o dashboard
     final authPaths = ['/login', '/register'];
-    if (isLoggedIn && authPaths.contains(state.matchedLocation))
+    if (isLoggedIn && authPaths.contains(state.matchedLocation)) {
       return '/dashboard';
+    }
 
     return null;
   },

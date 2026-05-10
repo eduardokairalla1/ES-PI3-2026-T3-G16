@@ -1,7 +1,6 @@
-/// --- Startup detail controller ---
-///
-/// Eduardo Kairalla - 24024241
-library;
+// --- Startup detail controller ---
+//
+// Eduardo Kairalla - 24024241
 
 // --- IMPORTS ---
 import 'package:flutter/material.dart';

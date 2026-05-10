@@ -1,7 +1,6 @@
-/// Eduardo Kairalla - 24024241
-library;
+// Eduardo Kairalla - 24024241
 
-/// Page where the user sets a new password after clicking the reset link.
+// Page where the user sets a new password after clicking the reset link.
 
 // --- IMPORTS ---
 import 'package:firebase_auth/firebase_auth.dart';
@@ -66,8 +65,9 @@ class _ResetPasswordPageState extends State<ResetPasswordPage>
   String? _validatePassword(String? value) {
     if (value == null || value.isEmpty) return 'Informe a nova senha';
     if (value.length < 8) return 'Mínimo de 8 caracteres';
-    if (!value.contains(RegExp(r'[A-Z]')))
+    if (!value.contains(RegExp(r'[A-Z]'))) {
       return 'Inclua ao menos uma letra maiúscula';
+    }
     if (!value.contains(RegExp(r'[0-9]'))) return 'Inclua ao menos um número';
     if (!value.contains(RegExp(r'[!@#\$%^&*()_+\-=\[\]{};:"\\|,.<>\/?`~]'))) {
       return 'Inclua ao menos um caractere especial';

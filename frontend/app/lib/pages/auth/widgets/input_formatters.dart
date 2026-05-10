@@ -1,7 +1,6 @@
-/// Eduardo Kairalla - 24024241
-library;
+// Eduardo Kairalla - 24024241
 
-/// Input formatters for CPF and phone number fields.
+// Input formatters for CPF and phone number fields.
 
 import 'package:flutter/services.dart';
 

@@ -1,7 +1,6 @@
-/// Eduardo Kairalla - 24024241
-library;
+// Eduardo Kairalla - 24024241
 
-/// Content of the "About" tab on the startup detail screen.
+// Content of the "About" tab on the startup detail screen.
 
 // --- IMPORTS ---
 import 'package:flutter/material.dart';

@@ -1,7 +1,6 @@
-/// Eduardo Kairalla - 24024241
-library;
+// Eduardo Kairalla - 24024241
 
-/// Profile settings screen — edit name and avatar.
+// Profile settings screen — edit name and avatar.
 
 // --- IMPORTS ---
 import 'package:firebase_storage/firebase_storage.dart';

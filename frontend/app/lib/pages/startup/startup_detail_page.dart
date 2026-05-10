@@ -1,7 +1,6 @@
-/// Eduardo Kairalla - 24024241
-library;
+// Eduardo Kairalla - 24024241
 
-/// Startup detail screen — tabs: About, Partners, Q&A, Video.
+// Startup detail screen — tabs: About, Partners, Q&A, Video.
 
 // --- IMPORTS ---
 import 'package:flutter/material.dart';
