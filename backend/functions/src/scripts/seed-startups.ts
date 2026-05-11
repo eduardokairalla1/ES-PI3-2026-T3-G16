@@ -23,7 +23,9 @@ import type {PriceSnapshotDocument} from '../db/price_history/model';
  */
 
 // initialize Firebase Admin pointing at the local emulator
-const app = initializeApp({projectId: 'mesclainvest-eda16'});
+const app = initializeApp({
+    projectId: process.env.GCLOUD_PROJECT ?? 'mesclainvest-eda16',
+});
 const db = getFirestore(app);
 
 
