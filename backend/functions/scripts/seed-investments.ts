@@ -52,7 +52,7 @@ async function getUserDocId(uid: string): Promise<string | null>
  */
 async function processBalcaoTransaction(
     userDocId: string,
-    startup: {id: string, name: string, logo_url: string},
+    startup: {id: string, name: string, logo_url: string | null},
     quantity: number,
     price: number,
 ): Promise<void>
@@ -65,7 +65,7 @@ async function processBalcaoTransaction(
         'avg_purchase_price': price,
         'created_at': new Date(),
         'startup_id': startup.id,
-        'startup_logo_url': startup.logo_url,
+        'startup_logo_url': startup.logo_url ?? '',
         'startup_name': startup.name,
         'token_quantity': quantity,
         'updated_at': null,

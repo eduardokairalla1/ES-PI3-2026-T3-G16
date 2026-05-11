@@ -23,8 +23,16 @@ import type {StartupDocument} from '../src/db/startups/model';
 const app = initializeApp({projectId: 'mesclainvest-eda16'});
 const db = getFirestore(app);
 
+type StartupSeed = Omit<
+    StartupDocument,
+    'id' | 'appreciation_factor' | 'available_tokens' | 'base_price'
+> & Partial<Pick<
+    StartupDocument,
+    'appreciation_factor' | 'available_tokens' | 'base_price'
+>>;
+
 // startups to seed
-const startups: Omit<StartupDocument, 'id'>[] = [
+const startupSeeds: StartupSeed[] = [
     {
         'advisors': [
             {name: 'Prof. Dr. Ricardo Alves', role: 'Mentor de Negócios'},
@@ -333,6 +341,27 @@ const startups: Omit<StartupDocument, 'id'>[] = [
         'video_url': null,
     },
 ];
+
+function completeStartup(seed: StartupSeed): Omit<StartupDocument, 'id'>
+{
+    const appreciationFactor = seed.appreciation_factor ?? 0.35;
+    const soldTokensFromCapital = Math.min(
+        seed.total_tokens,
+        Math.max(0, Math.round(seed.capital_raised / Math.max(seed.token_price, 0.01))),
+    );
+    const availableTokens = seed.available_tokens ?? seed.total_tokens - soldTokensFromCapital;
+    const soldRatio = (seed.total_tokens - availableTokens) / seed.total_tokens;
+    const basePrice = seed.base_price ?? seed.token_price / (1 + appreciationFactor * soldRatio);
+
+    return {
+        ...seed,
+        appreciation_factor: appreciationFactor,
+        available_tokens: availableTokens,
+        base_price: Number(basePrice.toFixed(6)),
+    };
+}
+
+const startups: Omit<StartupDocument, 'id'>[] = startupSeeds.map(completeStartup);
 
 async function seed(): Promise<void>
 {
