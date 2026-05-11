@@ -17,3 +17,4 @@ export {onUserCreated, onGetProfile, onUpdateProfile, onToggle2FA} from './respo
 export {onDeposit, onGetTransactions} from './responders/index';
 export {onGetStartups, onGetStartup, onSendQuestion, onGetQuestions} from './responders/index';
 export {onGetDashboard, onToggleFavorite} from './responders/index';
+export {onGetWallet, onGetTokenHistory} from './responders/index';

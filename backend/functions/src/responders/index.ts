@@ -9,13 +9,13 @@
  */
 import {onCall} from 'firebase-functions/v2/https';
 import {handleOnGetProfile} from '../services/user/onGetProfile';
+import {handleOnGetWallet} from '../services/user/onGetWallet';
+import {handleOnUserCreated} from '../services/user/onUserCreated';
 import {handleOnToggle2FA} from '../services/user/onToggle2FA';
 import {handleOnUpdateProfile} from '../services/user/onUpdateProfile';
-import {handleOnUserCreated} from '../services/user/onUserCreated';
 import {handleOnDeposit} from '../services/user/onDeposit';
 import {handleOnGetTransactions} from '../services/user/onGetTransactions';
-
-import {handleOnGetQuestions} from '../services/startup/onGetQuestions';
+import {handleOnGetTokenHistory} from '../services/startup/onGetTokenHistory';
 import {handleOnGetStartup} from '../services/startup/onGetStartup';
 import {handleOnGetStartups} from '../services/startup/onGetStartups';
 import {handleOnSendQuestion} from '../services/startup/onSendQuestion';
@@ -34,6 +34,7 @@ export const onUpdateProfile  = onCall({cors: true}, handleOnUpdateProfile);
 export const onToggle2FA      = onCall({cors: true}, handleOnToggle2FA);
 export const onDeposit        = onCall({cors: true}, handleOnDeposit);
 export const onGetTransactions = onCall({cors: true}, handleOnGetTransactions);
+export const onGetWallet = onCall({cors: true}, handleOnGetWallet);
 
 
 // startup functions
@@ -41,6 +42,7 @@ export const onGetStartups   = onCall({cors: true}, handleOnGetStartups);
 export const onGetStartup    = onCall({cors: true}, handleOnGetStartup);
 export const onSendQuestion  = onCall({cors: true}, handleOnSendQuestion);
 export const onGetQuestions  = onCall({cors: true}, handleOnGetQuestions);
+export const onGetTokenHistory = onCall({cors: true}, handleOnGetTokenHistory);
 
 // dashboard functions
 export const onGetDashboard    = onCall({cors: true}, handleOnGetDashboard);
