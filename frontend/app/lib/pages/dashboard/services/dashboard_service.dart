@@ -1,6 +1,6 @@
 /*
  * Service do Dashboard.
- * Encapsula as chamadas às Cloud Functions usadas pela tela de Dashboard.
+ * Encapsula as chamadas as Cloud Functions usadas pela tela de Dashboard.
  *
  * Alex Gabriel Soares Sousa - 24802449
  */
@@ -14,13 +14,13 @@ import 'package:mesclainvest/pages/dashboard/models/dashboard_data.dart';
  * CODE
  */
 
-/// Integração de dados do Dashboard com APIs e Firebase.
+/// Integracao de dados do Dashboard com APIs e Firebase.
 class DashboardService {
   final _functions = FirebaseFunctions.instance;
 
-  /// Consulta dados consolidados do usuário.
+  /// Consulta dados consolidados do usuario.
   Future<DashboardData> fetchUserDashboardData() async {
-final result = await _functions
+    final result = await _functions
         .httpsCallable('onGetDashboard')
         .call<Map<String, dynamic>>();
 
@@ -36,7 +36,7 @@ final result = await _functions
     return (result.data as Map)['isFavorited'] as bool;
   }
 
-  /// Realiza um depósito simulado.
+  /// Realiza um deposito simulado.
   Future<double> deposit(double amount) async {
     final result = await _functions
         .httpsCallable('onDeposit')
@@ -45,7 +45,7 @@ final result = await _functions
     return (result.data['newBalance'] as num).toDouble();
   }
 
-  /// Busca o histórico de transações.
+  /// Busca o historico de transacoes.
   Future<List<Map<String, dynamic>>> getTransactions({int limit = 20}) async {
     final result = await _functions
         .httpsCallable('onGetTransactions')

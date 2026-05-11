@@ -36,11 +36,11 @@ import {parseRequest} from '../../utils/validation';
  */
 
 const PERIOD_TO_DAYS: Record<string, number> = {
-    daily:    1,
-    weekly:   7,
-    monthly:  30,
+    daily: 1,
+    weekly: 7,
+    monthly: 30,
     '6months': 180,
-    ytd:      -1, // handled separately
+    ytd: -1,
 };
 
 function sinceDate(period: string): Date
@@ -49,35 +49,13 @@ function sinceDate(period: string): Date
 
     if (period === 'ytd')
     {
-        return new Date(now.getFullYear(), 0, 1); // Jan 1st of current year
+        return new Date(now.getFullYear(), 0, 1);
     }
 
     const days = PERIOD_TO_DAYS[period] ?? 30;
     const since = new Date(now);
     since.setDate(since.getDate() - days);
     return since;
-}
-
-/**
- * I return the date of the user's first completed buy order for a startup,
- * or null if the user has never invested.
- */
-async function firstPurchaseDate(uid: string, startupId: string): Promise<Date | null>
-{
-    const snap = await db
-        .collection('orders')
-        .where('uid', '==', uid)
-        .where('startup_id', '==', startupId)
-        .where('type', '==', 'buy')
-        .where('status', '==', 'completed')
-        .orderBy('created_at', 'asc')
-        .limit(1)
-        .get();
-
-    if (snap.empty) return null;
-
-    const ts = snap.docs[0].data().created_at;
-    return ts?.toDate ? ts.toDate() : new Date(ts);
 }
 
 /**
@@ -100,10 +78,10 @@ export async function handleOnGetTokenHistory(request: CallableRequest)
             throw new AuthError('User must be authenticated.');
         }
 
-        const {uid}               = request.auth;
+        const {uid} = request.auth;
         const {startupId, period} = parseRequest(GetTokenHistoryRequest, request.data);
 
-        logger.info(`Fetching token history for "${startupId}" — uid: ${uid}, period: ${period}`);
+        logger.info(`Fetching token history for "${startupId}" - uid: ${uid}, period: ${period}`);
 
         const startup = await getStartup(startupId);
         if (startup === null)
@@ -111,46 +89,47 @@ export async function handleOnGetTokenHistory(request: CallableRequest)
             throw new NotFoundError(`Startup "${startupId}" not found.`);
         }
 
-        // find the user's first purchase — if none, return empty
-        const firstPurchase = await firstPurchaseDate(uid, startupId);
-        if (firstPurchase === null)
-        {
-            return {
-                currentPrice:   startup.token_price,
-                purchasePrice:  null,
-                tokenQuantity:  0,
-                totalValue:     0,
-                snapshots:      [],
-            };
-        }
-
-        // since = latest of (period start, first purchase date)
-        const periodStart = sinceDate(period);
-        const since       = firstPurchase > periodStart ? firstPurchase : periodStart;
-
-        // sum all completed buy orders to get the user's token quantity
         const ordersSnap = await db
             .collection('orders')
             .where('uid', '==', uid)
             .where('startup_id', '==', startupId)
             .where('type', '==', 'buy')
             .where('status', '==', 'completed')
+            .orderBy('created_at', 'asc')
             .get();
+
+        if (ordersSnap.empty)
+        {
+            return {
+                currentPrice: startup.token_price,
+                purchasePrice: null,
+                tokenQuantity: 0,
+                totalValue: 0,
+                snapshots: [],
+            };
+        }
+
+        const firstTs = ordersSnap.docs[0].data().created_at;
+        const firstPurchase = firstTs?.toDate ? firstTs.toDate() : new Date(firstTs);
 
         const tokenQuantity = ordersSnap.docs.reduce(
             (sum, doc) => sum + (doc.data().quantity as number),
             0,
         );
 
+        const periodStart = sinceDate(period);
+        const since = firstPurchase > periodStart ? firstPurchase : periodStart;
         const snapshots = await getPriceSnapshots(startupId, since);
 
+        logger.info(`Returning ${snapshots.length} snapshots, tokenQty=${tokenQuantity}`);
+
         return {
-            currentPrice:   startup.token_price,
-            purchasePrice:  snapshots.length > 0 ? snapshots[0].price : startup.token_price,
+            currentPrice: startup.token_price,
+            purchasePrice: snapshots.length > 0 ? snapshots[0].price : startup.token_price,
             tokenQuantity,
-            totalValue:     tokenQuantity * startup.token_price,
-            snapshots:      snapshots.map(s => ({
-                price:      s.price,
+            totalValue: tokenQuantity * startup.token_price,
+            snapshots: snapshots.map(s => ({
+                price: s.price,
                 recordedAt: s.recorded_at,
             })),
         };

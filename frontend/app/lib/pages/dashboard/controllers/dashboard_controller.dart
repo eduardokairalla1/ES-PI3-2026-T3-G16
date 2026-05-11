@@ -1,6 +1,6 @@
 /*
  * Controller do Dashboard.
- * Centraliza estado de tela, chamadas de serviço, filtros e ações do usuário.
+ * Centraliza estado de tela, chamadas de servico, filtros e acoes do usuario.
  *
  * Alex Gabriel Soares Sousa - 24802449
  */
@@ -24,7 +24,7 @@ import 'package:mesclainvest/pages/startup/models/startup_model.dart';
  * CODE
  */
 
-/// Gerencia o estado e a lógica de apresentação do Dashboard.
+/// Gerencia o estado e a logica de apresentacao do Dashboard.
 class DashboardController extends ChangeNotifier {
   // Dependencies.
   final DashboardService _dashboardService = DashboardService();
@@ -44,7 +44,7 @@ class DashboardController extends ChangeNotifier {
   // Startup & portfolio state.
   List<StartupModel> startups = [];
   StartupModel? selectedStartup;
-  String? selectedStartupFilter; // null = all, 'Favoritas' = favorites, or stage
+  String? selectedStartupFilter;
 
   List<PortfolioItemModel> portfolio = [];
 
@@ -70,26 +70,23 @@ class DashboardController extends ChangeNotifier {
       startups = results[1] as List<StartupModel>;
       portfolio = results[2] as List<PortfolioItemModel>;
 
-      // Initialize favorites.
       _favoriteIds
         ..clear()
         ..addAll(data!.favoriteIds);
 
-      // Select first startup for chart.
       if (startups.isNotEmpty) {
         selectedStartup = startups.first;
         await _loadChart();
       }
     } catch (e) {
       errorMessage =
-          'Não foi possível carregar os dados.\nVerifique sua conexão e tente novamente.';
+          'Nao foi possivel carregar os dados.\nVerifique sua conexao e tente novamente.';
     } finally {
       isLoading = false;
       notifyListeners();
     }
   }
 
-  // Chart handling
   Future<void> selectStartup(StartupModel startup) async {
     selectedStartup = startup;
     notifyListeners();
@@ -116,7 +113,7 @@ class DashboardController extends ChangeNotifier {
     } catch (_) {
       tokenHistory = null;
       chartErrorMessage =
-          'Não foi possível carregar o histórico. Tente novamente.';
+          'Nao foi possivel carregar o historico. Tente novamente.';
     } finally {
       isLoadingChart = false;
       notifyListeners();
@@ -168,7 +165,6 @@ class DashboardController extends ChangeNotifier {
       }
       notifyListeners();
     } catch (_) {
-      // revert
       if (wasFav) {
         _favoriteIds.add(startupId);
       } else {
@@ -198,7 +194,7 @@ class DashboardController extends ChangeNotifier {
       );
       notifyListeners();
     } catch (e) {
-      errorMessage = 'Erro ao realizar depósito: $e';
+      errorMessage = 'Erro ao realizar deposito: $e';
       notifyListeners();
       rethrow;
     }

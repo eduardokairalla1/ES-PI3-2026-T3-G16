@@ -29,12 +29,15 @@ export interface AdvisorDocument
 export interface StartupDocument
 {
     advisors: AdvisorDocument[];
+    appreciation_factor: number;
+    available_tokens: number;
+    base_price: number;
     capital_raised: number;
     created_at: Date;
     description: string;
     executive_summary: string;
     id: string;
-    logo_url: string;
+    logo_url: string | null;
     name: string;
     partners: PartnerDocument[];
     stage: StartupStage;

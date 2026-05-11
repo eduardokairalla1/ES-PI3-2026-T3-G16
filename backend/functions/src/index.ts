@@ -13,8 +13,21 @@ import './configs';
 /**
  * --- EXPORTS ---
  */
-export {onUserCreated, onGetProfile, onUpdateProfile, onToggle2FA} from './responders/index';
-export {onDeposit, onGetTransactions} from './responders/index';
-export {onGetStartups, onGetStartup, onSendQuestion, onGetQuestions} from './responders/index';
-export {onGetDashboard, onToggleFavorite} from './responders/index';
-export {onGetWallet, onGetTokenHistory} from './responders/index';
+export {
+    onUserCreated,
+    onGetProfile,
+    onUpdateProfile,
+    onToggle2FA,
+    onDeposit,
+    onGetTransactions,
+    onGetWallet,
+    onCreateOrder,
+    onGetPortfolio,
+    onGetStartups,
+    onGetStartup,
+    onSendQuestion,
+    onGetQuestions,
+    onGetTokenHistory,
+    onGetDashboard,
+    onToggleFavorite,
+} from './responders/index';

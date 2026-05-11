@@ -6,18 +6,12 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:mesclainvest/pages/dashboard/models/portfolio_item_model.dart';
 import 'package:mesclainvest/shared/styles/money_style.dart';
+import 'package:mesclainvest/shared/styles/stage_colors.dart';
 
 
 // --- HELPERS ---
 
 final _currencyFmt = NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$', decimalDigits: 2);
-
-Color _stageColor(String stage) => switch (stage) {
-  'new'       => const Color(0xFF1565C0),
-  'operating' => const Color(0xFF2E7D32),
-  'expanding' => const Color(0xFF6A1B9A),
-  _           => Colors.black,
-};
 
 
 // --- SEÇÃO ---
@@ -67,7 +61,7 @@ class _PortfolioCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final stageColor = _stageColor(item.stage);
+    final color = stageColor(item.stage);
 
     return GestureDetector(
       onTap: () => context.push('/startup/${item.startupId}/valorizacao'),
@@ -123,7 +117,7 @@ class _PortfolioCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: stageColor.withValues(alpha: 0.08),
+                    color: color.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
@@ -131,7 +125,7 @@ class _PortfolioCard extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
-                      color: stageColor,
+                      color: color,
                     ),
                   ),
                 ),
@@ -196,10 +190,21 @@ class _PortfolioCard extends StatelessWidget {
 // --- SUB-WIDGETS (reusados do padrão de startup_card) ---
 
 class _Logo extends StatelessWidget {
-  final String url;
-  final String name;
+  final String? url;
+  final String  name;
 
   const _Logo({required this.url, required this.name});
+
+  Widget _initial() => Center(
+    child: Text(
+      name.isNotEmpty ? name[0].toUpperCase() : '?',
+      style: const TextStyle(
+        fontSize: 18,
+        fontWeight: FontWeight.w700,
+        color: Colors.black54,
+      ),
+    ),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -212,20 +217,13 @@ class _Logo extends StatelessWidget {
         border: Border.all(color: Colors.grey.shade200),
       ),
       child: ClipOval(
-        child: Image.network(
-          url,
-          fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => Center(
-            child: Text(
-              name.isNotEmpty ? name[0].toUpperCase() : '?',
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                color: Colors.black54,
-              ),
-            ),
-          ),
-        ),
+        child: url != null
+            ? Image.network(
+                url!,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___)  => _initial(),
+              )
+            : _initial(),
       ),
     );
   }

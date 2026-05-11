@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:mesclainvest/pages/startup/models/startup_model.dart';
 import 'package:mesclainvest/shared/styles/money_style.dart';
+import 'package:mesclainvest/shared/styles/stage_colors.dart';
 
 // --- HELPERS ---
 
@@ -16,13 +17,6 @@ final _currencyFmt = NumberFormat.currency(
   symbol: 'R\$',
   decimalDigits: 0,
 );
-
-MaterialColor _stageColor(String stage) => switch (stage) {
-  'new' => Colors.blue,
-  'operating' => Colors.green,
-  'expanding' => Colors.purple,
-  _ => Colors.grey,
-};
 
 // --- WIDGET ---
 
@@ -40,7 +34,7 @@ class StartupCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final stageColor = _stageColor(startup.stage);
+    final color = stageColor(startup.stage);
 
     return GestureDetector(
       onTap: () => context.push('/startup/${startup.id}'),
@@ -112,7 +106,7 @@ class StartupCard extends StatelessWidget {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: stageColor.shade50,
+                    color: color.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
@@ -120,7 +114,7 @@ class StartupCard extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
-                      color: stageColor.shade800,
+                      color: color,
                     ),
                   ),
                 ),
