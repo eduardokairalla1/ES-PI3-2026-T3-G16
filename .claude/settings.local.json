@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(sed -i *)",
+      "Bash(sed -i '/^=======$/,/^>>>>>>> pr-64-davi$/d' \"C:\\\\Users\\\\24802449\\\\Documents\\\\Github\\\\ES-PI3-2026-T3-G16\\\\frontend\\\\app\\\\lib\\\\pages\\\\dashboard\\\\widgets\\\\cartao_patrimonio.dart\")",
+      "Bash(git add *)"
+    ]
+  }
+}

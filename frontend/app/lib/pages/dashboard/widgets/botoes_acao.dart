@@ -4,8 +4,6 @@
  * Alex Gabriel Soares Sousa - 24802449
  */
 
-library;
-
 /*
  * IMPORTS
  */
@@ -395,36 +393,33 @@ class BotoesAcao extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Botão: Depositar
           _BotaoAcaoItem(
             icon: Icons.add,
             label: 'Depositar',
             onTap: () => _mostrarDialogoDeposito(context),
+            isPrimary: true,
           ),
-
-          // Botão: Comprar
           _BotaoAcaoItem(
             icon: Icons.trending_up,
             label: 'Comprar',
             onTap: () {},
+            isPrimary: false,
           ),
-
-          // Botão: Vender
           _BotaoAcaoItem(
             icon: Icons.account_balance_outlined,
             label: 'Vender',
             onTap: () {},
+            isPrimary: false,
           ),
-
-          // Botão: Extrato
           _BotaoAcaoItem(
             icon: Icons.receipt_long_outlined,
             label: 'Extrato',
             onTap: () => _mostrarDialogoExtrato(context),
+            isPrimary: false,
           ),
         ],
       ),
@@ -433,18 +428,17 @@ class BotoesAcao extends StatelessWidget {
 }
 
 /// Widget interno para representar cada item de ação individual.
-/// Todos os botões são cinza por padrão e ficam pretos ao toque/hover.
 class _BotaoAcaoItem extends StatefulWidget {
-  // Atributos
   final IconData icon;
   final String label;
   final VoidCallback onTap;
+  final bool isPrimary;
 
-  // Construtor
   const _BotaoAcaoItem({
     required this.icon,
     required this.label,
     required this.onTap,
+    required this.isPrimary,
   });
 
   @override
@@ -452,62 +446,55 @@ class _BotaoAcaoItem extends StatefulWidget {
 }
 
 class _BotaoAcaoItemState extends State<_BotaoAcaoItem> {
-  bool _isActive = false;
+  bool _isPressed = false;
 
   @override
   Widget build(BuildContext context) {
-    return MouseRegion(
-      // Hover (desktop/web): fica preto ao passar o mouse
-      onEnter: (_) => setState(() => _isActive = true),
-      onExit: (_) => setState(() => _isActive = false),
-      cursor: SystemMouseCursors.click,
-      child: GestureDetector(
-        onTap: widget.onTap,
-        onTapDown: (_) => setState(() => _isActive = true),
-        onTapUp: (_) => setState(() => _isActive = false),
-        onTapCancel: () => setState(() => _isActive = false),
-        child: Column(
-          children: [
-            // Círculo/Quadrado arredondado do ícone
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 150),
-              curve: Curves.easeOut,
-              width: 56,
-              height: 56,
-              decoration: BoxDecoration(
-                color: _isActive ? Colors.black : Colors.black12,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: _isActive
-                    ? [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.18),
-                          blurRadius: 8,
-                          offset: const Offset(0, 4),
-                        ),
-                      ]
-                    : null,
-              ),
-              child: Icon(
-                widget.icon,
-                color: _isActive ? Colors.white : Colors.black87,
-                size: 24,
-              ),
+    return GestureDetector(
+      onTap: widget.onTap,
+      onTapDown: (_) => setState(() => _isPressed = true),
+      onTapUp: (_) => setState(() => _isPressed = false),
+      onTapCancel: () => setState(() => _isPressed = false),
+      child: Column(
+        children: [
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 150),
+            curve: Curves.easeOut,
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              color: widget.isPrimary
+                  ? (_isPressed ? Colors.grey[800] : Colors.black)
+                  : (_isPressed ? Colors.grey[300] : const Color(0xFFF2F2F2)),
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: widget.isPrimary && !_isPressed
+                  ? [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.18),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                      ),
+                    ]
+                  : null,
             ),
-
-            const SizedBox(height: 8),
-
-            // Rótulo de texto abaixo do ícone
-            AnimatedDefaultTextStyle(
-              duration: const Duration(milliseconds: 150),
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: _isActive ? FontWeight.w600 : FontWeight.w500,
-                color: _isActive ? Colors.black : Colors.grey.shade600,
-              ),
-              child: Text(widget.label),
+            child: Icon(
+              widget.icon,
+              color: widget.isPrimary
+                  ? (_isPressed ? Colors.grey[300] : Colors.white)
+                  : Colors.black87,
+              size: 24,
             ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            widget.label,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: Colors.grey.shade600,
+            ),
+          ),
+        ],
       ),
     );
   }

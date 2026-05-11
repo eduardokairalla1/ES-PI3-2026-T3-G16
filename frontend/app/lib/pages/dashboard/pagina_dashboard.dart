@@ -1,24 +1,10 @@
-/*
- * View principal do Dashboard.
- * Monta as seções da carteira, ações rápidas e startups do ecossistema.
- *
- * Alex Gabriel Soares Sousa - 24802449
- */
-library;
-
-/*
- * IMPORTS
- */
-
 import 'package:flutter/material.dart';
-import 'package:mesclainvest/pages/dashboard/widgets/widgets.dart';
 import 'package:mesclainvest/pages/dashboard/controllers/dashboard_controller.dart';
+import 'package:mesclainvest/pages/dashboard/widgets/dashboard_skeleton.dart';
+import 'package:mesclainvest/pages/dashboard/widgets/widgets.dart';
+import 'package:mesclainvest/shared/widgets/delayed_shimmer.dart';
+import 'package:mesclainvest/shared/widgets/bottom_nav.dart';
 
-/*
- * CODE
- */
-
-/// Tela principal que compõe o Dashboard.
 class PaginaDashboard extends StatefulWidget {
   const PaginaDashboard({super.key});
 
@@ -27,6 +13,7 @@ class PaginaDashboard extends StatefulWidget {
 }
 
 class _PaginaDashboardState extends State<PaginaDashboard> {
+
   final DashboardController _controller = DashboardController();
 
   @override
@@ -45,34 +32,75 @@ class _PaginaDashboardState extends State<PaginaDashboard> {
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: _controller,
-      builder: (context, child) {
+      builder: (context, _) {
         return Scaffold(
           backgroundColor: Colors.white,
           body: SafeArea(
             bottom: false,
-            child: _controller.isLoading
-                ? const Center(
-                    child: CircularProgressIndicator(color: Colors.black),
-                  )
-                : SingleChildScrollView(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        CabecalhoDashboard(controller: _controller),
-                        CartaoPatrimonio(controller: _controller),
-                        BotoesAcao(controller: _controller),
-                        StartupsEcossistema(controller: _controller),
-
-                        MeusInvestimentos(controller: _controller),
-                      ],
-                    ),
-                  ),
+            child: DelayedShimmer(
+              isLoading: _controller.isLoading,
+              skeleton: const DashboardSkeleton(),
+              child: _controller.errorMessage != null
+                  ? _buildError()
+                  : _buildContent(),
+            ),
           ),
           bottomNavigationBar: const SafeArea(
             child: BottomNav(currentIndex: 0),
           ),
         );
       },
+    );
+  }
+
+  Widget _buildContent() {
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          CabecalhoDashboard(controller: _controller),
+          CartaoPatrimonio(controller: _controller),
+          BotoesAcao(controller: _controller),
+          StartupsEcossistema(controller: _controller),
+          MeusInvestimentos(controller: _controller),
+          const SizedBox(height: 16),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildError() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.wifi_off_outlined, size: 48, color: Colors.black26),
+            const SizedBox(height: 16),
+            Text(
+              _controller.errorMessage!,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 15, color: Colors.black54),
+            ),
+            const SizedBox(height: 24),
+            GestureDetector(
+              onTap: _controller.loadDashboard,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                decoration: BoxDecoration(
+                  color: Colors.black,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Text(
+                  'Tentar novamente',
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

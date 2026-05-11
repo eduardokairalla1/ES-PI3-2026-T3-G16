@@ -4,11 +4,12 @@
  *
  * Alex Gabriel Soares Sousa - 24802449
  */
-library;
 
 /*
  * TYPES
  */
+
+import 'package:intl/intl.dart';
 
 /// Resumo de uma posição do usuário em uma startup.
 class InvestimentoResumo {
