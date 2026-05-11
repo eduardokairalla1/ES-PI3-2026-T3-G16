@@ -13,8 +13,15 @@ library;
 import 'package:flutter/material.dart';
 import 'package:mesclainvest/pages/catalog/services/catalog_service.dart';
 import 'package:mesclainvest/pages/dashboard/models/dashboard_data.dart';
+import 'package:mesclainvest/pages/dashboard/models/portfolio_item_model.dart';
+import 'package:mesclainvest/pages/dashboard/models/price_snapshot_model.dart';
 import 'package:mesclainvest/pages/dashboard/services/dashboard_service.dart';
+<<<<<<< HEAD
 import 'package:mesclainvest/pages/dashboard/models/transaction_model.dart';
+=======
+import 'package:mesclainvest/pages/dashboard/services/portfolio_service.dart';
+import 'package:mesclainvest/pages/dashboard/services/token_history_service.dart';
+>>>>>>> pr-65-davi
 import 'package:mesclainvest/pages/startup/models/startup_model.dart';
 
 /*
@@ -23,16 +30,26 @@ import 'package:mesclainvest/pages/startup/models/startup_model.dart';
 
 /// Gerencia o estado e a lógica de apresentação do Dashboard.
 class DashboardController extends ChangeNotifier {
+<<<<<<< HEAD
   // Dependências.
   final DashboardService _dashboardService = DashboardService();
   final CatalogService _catalogService = CatalogService();
+=======
+
+  // Dependências.
+  final DashboardService    _dashboardService    = DashboardService();
+  final TokenHistoryService _tokenHistoryService = TokenHistoryService();
+  final CatalogService      _catalogService      = CatalogService();
+  final PortfolioService    _portfolioService    = PortfolioService();
+>>>>>>> pr-65-davi
 
   // Estado da UI.
-  bool isLoading = true; // Controle de carregamento.
-  bool exibirValores = true; // Visibilidade dos saldos.
-  DashboardData? data; // Dados consolidados.
+  bool isLoading     = true;
+  bool exibirValores = true;
+  DashboardData? data;
   String? errorMessage;
 
+<<<<<<< HEAD
   // Estado de favoritos (gerenciado separadamente do modelo).
   final Set<String> _favoriteIds = {};
 
@@ -42,6 +59,20 @@ class DashboardController extends ChangeNotifier {
   selectedStartupFilter; // null = Todas, 'Favoritas' = Favoritas, ou stage (ex: 'new', 'operating')
 
   /// Carrega dados do dashboard e startups em paralelo.
+=======
+  // Portfolio do usuário.
+  List<PortfolioItemModel> portfolio = [];
+
+  // Estado do card de valorização (mantido para compatibilidade).
+  bool             isLoadingChart   = false;
+  String           selectedPeriod   = 'weekly';
+  TokenHistoryModel? tokenHistory;
+  String?          chartErrorMessage;
+  List<StartupModel> startups       = [];
+  StartupModel?    selectedStartup;
+
+  /// Carrega dados do dashboard e a lista de startups.
+>>>>>>> pr-65-davi
   Future<void> loadDashboard() async {
     isLoading = true;
     errorMessage = null;
@@ -51,6 +82,7 @@ class DashboardController extends ChangeNotifier {
       final results = await Future.wait([
         _dashboardService.fetchUserDashboardData(),
         _catalogService.fetchStartups(),
+<<<<<<< HEAD
       ]);
 
       data = results[0] as DashboardData;
@@ -60,11 +92,61 @@ class DashboardController extends ChangeNotifier {
       _favoriteIds
         ..clear()
         ..addAll(data!.favoriteIds);
+=======
+        _portfolioService.fetchPortfolio(),
+      ]);
+
+      data      = results[0] as DashboardData;
+      startups  = results[1] as List<StartupModel>;
+      portfolio = results[2] as List<PortfolioItemModel>;
+
+      if (startups.isNotEmpty) {
+        selectedStartup = startups.first;
+        await _loadChart();
+      }
+>>>>>>> pr-65-davi
     } catch (e) {
-      errorMessage = 'Erro ao carregar dados: $e';
+      errorMessage = 'Não foi possível carregar os dados.\nVerifique sua conexão e tente novamente.';
     } finally {
       isLoading = false;
       notifyListeners();
+<<<<<<< HEAD
+=======
+    }
+  }
+
+  /// Troca a startup selecionada e recarrega o gráfico.
+  Future<void> selectStartup(StartupModel startup) async {
+    selectedStartup = startup;
+    notifyListeners();
+    await _loadChart();
+  }
+
+  /// Troca o período e recarrega o gráfico.
+  Future<void> selectPeriod(String period) async {
+    selectedPeriod = period;
+    notifyListeners();
+    await _loadChart();
+  }
+
+  Future<void> _loadChart() async {
+    if (selectedStartup == null) return;
+    isLoadingChart   = true;
+    chartErrorMessage = null;
+    notifyListeners();
+
+    try {
+      tokenHistory = await _tokenHistoryService.fetchHistory(
+        selectedStartup!.id,
+        selectedPeriod,
+      );
+    } catch (_) {
+      tokenHistory      = null;
+      chartErrorMessage = 'Não foi possível carregar o histórico. Tente novamente.';
+    } finally {
+      isLoadingChart = false;
+      notifyListeners();
+>>>>>>> pr-65-davi
     }
   }
 
