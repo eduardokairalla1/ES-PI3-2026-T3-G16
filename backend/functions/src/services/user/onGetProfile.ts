@@ -9,6 +9,7 @@
  */
 import {HttpsError} from 'firebase-functions/v2/https';
 import {getUser} from '../../db/users/storage';
+import {verifyAuth} from '../../utils/auth';
 import {logger} from '../../utils/logger';
 
 
@@ -40,14 +41,8 @@ export async function handleOnGetProfile(request: CallableRequest)
 {
     try
     {
-        // verify authentication
-        if (request.auth === null || request.auth === undefined)
-        {
-            throw new AuthError('User must be authenticated.');
-        }
-
-        // extract uid from auth context
-        const {uid} = request.auth;
+        // verify authentication and extract uid
+        const uid = verifyAuth(request);
 
         // fetch user document from Firestore
         logger.info(`Fetching profile for user "${uid}"...`, {data: {uid}});

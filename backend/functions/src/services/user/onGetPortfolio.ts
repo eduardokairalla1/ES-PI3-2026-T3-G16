@@ -9,6 +9,7 @@
  */
 import {HttpsError} from 'firebase-functions/v2/https';
 import {getStartup} from '../../db/startups/storage';
+import {verifyAuth} from '../../utils/auth';
 import {logger} from '../../utils/logger';
 import db from '../../configs';
 
@@ -42,12 +43,8 @@ export async function handleOnGetPortfolio(request: CallableRequest)
 {
     try
     {
-        if (request.auth === null || request.auth === undefined)
-        {
-            throw new AuthError('User must be authenticated.');
-        }
-
-        const {uid} = request.auth;
+        // verify authentication and extract uid
+        const uid = verifyAuth(request);
 
         logger.info(`Fetching portfolio for user "${uid}"...`);
 

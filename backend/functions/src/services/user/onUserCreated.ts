@@ -10,6 +10,7 @@
 import {HttpsError} from 'firebase-functions/v2/https';
 import {addUser, getUserByCpf} from '../../db/users/storage';
 import {createWallet} from '../../db/wallets/storage';
+import {verifyAuth} from '../../utils/auth';
 import {logger} from '../../utils/logger';
 import {parseRequest} from '../../utils/validation';
 
@@ -44,14 +45,9 @@ export async function handleOnUserCreated(request: CallableRequest)
 {
     try
     {
-        // verify authentication
-        if (request.auth === null || request.auth === undefined)
-        {
-            throw new AuthError('User must be authenticated.');
-        }
-
-        // extract user info from auth context
-        const {uid, token} = request.auth;
+        // verify authentication and extract uid
+        const uid   = verifyAuth(request);
+        const token = request.auth!.token;
 
         // ensure email is present in auth token
         const email = token.email;

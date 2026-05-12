@@ -10,6 +10,7 @@
 import {HttpsError} from 'firebase-functions/v2/https';
 import {getPriceSnapshots} from '../../db/price_history/storage';
 import {getStartup} from '../../db/startups/storage';
+import {verifyAuth} from '../../utils/auth';
 import {logger} from '../../utils/logger';
 import db from '../../configs';
 
@@ -73,12 +74,8 @@ export async function handleOnGetTokenHistory(request: CallableRequest)
 {
     try
     {
-        if (request.auth === null || request.auth === undefined)
-        {
-            throw new AuthError('User must be authenticated.');
-        }
-
-        const {uid}               = request.auth;
+        // verify authentication and extract uid
+        const uid                 = verifyAuth(request);
         const {startupId, period} = parseRequest(GetTokenHistoryRequest, request.data);
 
         logger.info(`Fetching token history for "${startupId}" — uid: ${uid}, period: ${period}`);

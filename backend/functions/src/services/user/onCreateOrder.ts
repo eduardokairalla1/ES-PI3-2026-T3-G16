@@ -11,6 +11,7 @@ import {HttpsError} from 'firebase-functions/v2/https';
 import {getWallet, createWallet} from '../../db/wallets/storage';
 import {getStartup} from '../../db/startups/storage';
 import {createOrder, updateOrderStatus} from '../../db/orders/storage';
+import {verifyAuth} from '../../utils/auth';
 import {calcTokenPrice} from '../../utils/pricing';
 import {logger} from '../../utils/logger';
 import db from '../../configs';
@@ -62,13 +63,8 @@ export async function handleOnCreateOrder(request: CallableRequest)
 {
     try
     {
-        // verify authentication
-        if (request.auth === null || request.auth === undefined)
-        {
-            throw new AuthError('User must be authenticated.');
-        }
-
-        const {uid} = request.auth;
+        // verify authentication and extract uid
+        const uid = verifyAuth(request);
 
         // validate request
         const {startupId, quantity, type} = parseRequest(CreateOrderRequest, request.data);
