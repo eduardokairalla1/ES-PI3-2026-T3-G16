@@ -137,23 +137,26 @@ class _ProfilePageState extends State<ProfilePage> {
         ? profile!.fullName[0].toUpperCase()
         : 'U';
 
-    return Container(
-      width: 90,
-      height: 90,
-      decoration: const BoxDecoration(
-        color: Colors.black,
-        shape: BoxShape.circle,
+    return GestureDetector(
+      onTap: () => context.push('/profile/settings'),
+      child: Container(
+        width: 90,
+        height: 90,
+        decoration: const BoxDecoration(
+          color: Colors.black,
+          shape: BoxShape.circle,
+        ),
+        child: profile?.photoUrl != null
+            ? ClipOval(
+                child: Image.network(
+                  profile!.photoUrl!,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) =>
+                      _avatarInitial(initial),
+                ),
+              )
+            : _avatarInitial(initial),
       ),
-      child: profile?.photoUrl != null
-          ? ClipOval(
-              child: Image.network(
-                profile!.photoUrl!,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) =>
-                    _avatarInitial(initial),
-              ),
-            )
-          : _avatarInitial(initial),
     );
   }
 

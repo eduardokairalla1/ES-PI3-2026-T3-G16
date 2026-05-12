@@ -12,11 +12,13 @@ import 'package:mesclainvest/pages/startup/models/startup_model.dart';
 class StartupHeader extends StatelessWidget {
   final StartupModel startup;
   final String userName;
+  final String? photoUrl;
 
   const StartupHeader({
     super.key,
     required this.startup,
     required this.userName,
+    this.photoUrl,
   });
 
   @override
@@ -89,25 +91,42 @@ class StartupHeader extends StatelessWidget {
 
           const SizedBox(width: 12),
 
-          Container(
-            width: 38,
-            height: 38,
-            decoration: const BoxDecoration(
-              color: Colors.black,
-              shape: BoxShape.circle,
-            ),
-            child: Center(
-              child: Text(
-                initial,
-                style: const TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
-                ),
+          // --- Avatar do Usuário (clicável → abre perfil) ---
+          GestureDetector(
+            onTap: () => context.go('/profile'),
+            child: Container(
+              width: 38,
+              height: 38,
+              decoration: const BoxDecoration(
+                color: Colors.black,
+                shape: BoxShape.circle,
+              ),
+              child: ClipOval(
+                child: photoUrl != null
+                    ? Image.network(
+                        photoUrl!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) =>
+                            _avatarInitial(initial),
+                      )
+                    : _avatarInitial(initial),
               ),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _avatarInitial(String initial) {
+    return Center(
+      child: Text(
+        initial,
+        style: const TextStyle(
+          fontSize: 15,
+          fontWeight: FontWeight.w700,
+          color: Colors.white,
+        ),
       ),
     );
   }

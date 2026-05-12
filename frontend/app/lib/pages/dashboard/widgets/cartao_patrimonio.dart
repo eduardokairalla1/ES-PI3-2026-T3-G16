@@ -45,7 +45,7 @@ class CartaoPatrimonio extends StatelessWidget {
         children: [
 
           Text(
-            'Valor total estimado',
+            'Patrimônio',
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.bold,

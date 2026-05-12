@@ -38,6 +38,9 @@ import {parseRequest} from '../../utils/validation';
  * CODE
  */
 
+import {getUserDocId} from '../../db/users/storage';
+import {InvestmentDocument} from '../../db/investments/model';
+
 /**
  * I handle the onCreateOrder callable.
  *
@@ -48,7 +51,7 @@ import {parseRequest} from '../../utils/validation';
  *   4. Create order with status "pending"
  *   5. Firestore transaction: re-read startup + wallet inside tx,
  *      validate stock + balance, debit wallet, decrement available_tokens,
- *      update token_price, record price snapshot — all atomic
+ *      update token_price, record price snapshot, and update user investments — all atomic
  *   6. Mark order "completed"
  *
  * Using a transaction (not a batch) for step 5 ensures that concurrent
@@ -88,6 +91,13 @@ export async function handleOnCreateOrder(request: CallableRequest)
             throw new NotFoundError(`Startup "${startupId}" not found.`);
         }
 
+        // locate user's document for subcollections
+        const userDocId = await getUserDocId(uid);
+        if (userDocId === null)
+        {
+            throw new NotFoundError(`User document not found for uid "${uid}".`);
+        }
+
         // pre-provision wallet so the transaction can always read it
         logger.info(`Ensuring wallet exists for user "${uid}"...`);
         const existingWallet = await getWallet(uid);
@@ -121,10 +131,12 @@ export async function handleOnCreateOrder(request: CallableRequest)
             {
                 const startupRef  = db.collection('startups').doc(startupId);
                 const walletRef   = db.collection('wallets').doc(uid);
+                const investmentRef = db.collection('users').doc(userDocId).collection('investments').doc(startupId);
 
-                const [startupSnap, walletSnap] = await Promise.all([
+                const [startupSnap, walletSnap, investmentSnap] = await Promise.all([
                     tx.get(startupRef),
                     tx.get(walletRef),
+                    tx.get(investmentRef),
                 ]);
 
                 const available         = startupSnap.data()!.available_tokens as number;
@@ -161,6 +173,35 @@ export async function handleOnCreateOrder(request: CallableRequest)
                     token_price:      newPrice,
                     updated_at:       now,
                 });
+
+                // --- Update Investment record ---
+                if (investmentSnap.exists)
+                {
+                    const currentInv = investmentSnap.data() as InvestmentDocument;
+                    const oldQty = currentInv.token_quantity;
+                    const oldAvg = currentInv.avg_purchase_price;
+                    const newQty = oldQty + quantity;
+                    // calculate weighted average price
+                    const newAvg = (oldQty * oldAvg + amount) / newQty;
+
+                    tx.update(investmentRef, {
+                        token_quantity: newQty,
+                        avg_purchase_price: newAvg,
+                        updated_at: now,
+                    });
+                }
+                else
+                {
+                    tx.set(investmentRef, {
+                        avg_purchase_price: unitPrice,
+                        created_at: now,
+                        startup_id: startupId,
+                        startup_logo_url: startup.logo_url,
+                        startup_name: startup.name,
+                        token_quantity: quantity,
+                        updated_at: now,
+                    });
+                }
 
                 const snapRef = db
                     .collection('price_history')

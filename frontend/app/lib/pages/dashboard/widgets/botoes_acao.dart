@@ -401,25 +401,21 @@ class BotoesAcao extends StatelessWidget {
             icon: Icons.add,
             label: 'Depositar',
             onTap: () => _mostrarDialogoDeposito(context),
-            isPrimary: true,
           ),
           _BotaoAcaoItem(
             icon: Icons.trending_up,
             label: 'Comprar',
             onTap: () {},
-            isPrimary: false,
           ),
           _BotaoAcaoItem(
             icon: Icons.account_balance_outlined,
             label: 'Vender',
             onTap: () {},
-            isPrimary: false,
           ),
           _BotaoAcaoItem(
             icon: Icons.receipt_long_outlined,
             label: 'Extrato',
             onTap: () => _mostrarDialogoExtrato(context),
-            isPrimary: false,
           ),
         ],
       ),
@@ -432,13 +428,11 @@ class _BotaoAcaoItem extends StatefulWidget {
   final IconData icon;
   final String label;
   final VoidCallback onTap;
-  final bool isPrimary;
 
   const _BotaoAcaoItem({
     required this.icon,
     required this.label,
     required this.onTap,
-    required this.isPrimary,
   });
 
   @override
@@ -463,15 +457,13 @@ class _BotaoAcaoItemState extends State<_BotaoAcaoItem> {
             width: 56,
             height: 56,
             decoration: BoxDecoration(
-              color: widget.isPrimary
-                  ? (_isPressed ? Colors.grey[800] : Colors.black)
-                  : (_isPressed ? Colors.grey[300] : const Color(0xFFF2F2F2)),
+              color: _isPressed ? Colors.black : const Color(0xFFF2F2F2),
               borderRadius: BorderRadius.circular(16),
-              boxShadow: widget.isPrimary && !_isPressed
+              boxShadow: _isPressed
                   ? [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.18),
-                        blurRadius: 8,
+                        color: Colors.black.withValues(alpha: 0.15),
+                        blurRadius: 10,
                         offset: const Offset(0, 4),
                       ),
                     ]
@@ -479,9 +471,7 @@ class _BotaoAcaoItemState extends State<_BotaoAcaoItem> {
             ),
             child: Icon(
               widget.icon,
-              color: widget.isPrimary
-                  ? (_isPressed ? Colors.grey[300] : Colors.white)
-                  : Colors.black87,
+              color: _isPressed ? Colors.white : Colors.black87,
               size: 24,
             ),
           ),

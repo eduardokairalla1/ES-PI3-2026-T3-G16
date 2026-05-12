@@ -83,8 +83,10 @@ class _StartupDetailPageState extends State<StartupDetailPage> {
           );
         }
 
-        final startup = _controller.startup!;
-        final userName = AppState.instance.profile?.fullName ?? 'Usuário';
+        final startup  = _controller.startup!;
+        final profile  = AppState.instance.profile;
+        final userName = profile?.fullName ?? 'Usuário';
+        final photoUrl = profile?.photoUrl;
 
         return DefaultTabController(
           length: 4,
@@ -94,7 +96,11 @@ class _StartupDetailPageState extends State<StartupDetailPage> {
               bottom: false,
               child: Column(
                 children: [
-                  StartupHeader(startup: startup, userName: userName),
+                  StartupHeader(
+                    startup: startup,
+                    userName: userName,
+                    photoUrl: photoUrl,
+                  ),
 
                   StartupInfoCard(startup: startup),
 
