@@ -39,6 +39,32 @@ export async function createOrder(
 
 
 /**
+ * I return all orders for a user filtered by type and status.
+ *
+ * @param uid    the user's Firebase Auth uid
+ * @param type   order type to filter by
+ * @param status order status to filter by
+ *
+ * @returns list of matching order documents
+ */
+export async function getOrdersByTypeAndStatus(
+    uid: string,
+    type: OrderDocument['type'],
+    status: OrderDocument['status'],
+): Promise<OrderDocument[]>
+{
+    const snap = await db
+        .collection('orders')
+        .where('uid', '==', uid)
+        .where('type', '==', type)
+        .where('status', '==', status)
+        .get();
+
+    return snap.docs.map(doc => doc.data() as OrderDocument);
+}
+
+
+/**
  * I update the status (and optional extra fields) of an existing order.
  *
  * @param orderId       Firestore document ID of the order

@@ -9,6 +9,7 @@
  */
 import {HttpsError} from 'firebase-functions/v2/https';
 import {getPublicQuestions, getStartup, getUserPrivateQuestions} from '../../db/startups/storage';
+import {verifyAuth} from '../../utils/auth';
 import {logger} from '../../utils/logger';
 
 
@@ -45,11 +46,8 @@ export async function handleOnGetQuestions(request: CallableRequest)
 {
     try
     {
-        // verify authentication
-        if (request.auth === null || request.auth === undefined)
-        {
-            throw new AuthError('User must be authenticated.');
-        }
+        // verify authentication and extract uid
+        const uid = verifyAuth(request);
 
         // validate request data
         const parsed = parseRequest(GetQuestionsRequest, request.data);
@@ -65,7 +63,7 @@ export async function handleOnGetQuestions(request: CallableRequest)
         logger.info(`Fetching questions for startup "${parsed.startupId}"...`);
         const [publicQs, privateQs] = await Promise.all([
             getPublicQuestions(parsed.startupId),
-            getUserPrivateQuestions(parsed.startupId, request.auth.uid),
+            getUserPrivateQuestions(parsed.startupId, uid),
         ]);
 
         const toMs = (d: any) => d?.toMillis ? d.toMillis() : new Date(d).getTime();

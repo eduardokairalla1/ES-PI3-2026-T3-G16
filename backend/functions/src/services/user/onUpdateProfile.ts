@@ -9,6 +9,7 @@
  */
 import {HttpsError} from 'firebase-functions/v2/https';
 import {getUser, updateUser} from '../../db/users/storage';
+import {verifyAuth} from '../../utils/auth';
 import {logger} from '../../utils/logger';
 
 
@@ -44,11 +45,8 @@ export async function handleOnUpdateProfile(request: CallableRequest)
 {
     try
     {
-        // verify authentication
-        if (request.auth === null || request.auth === undefined)
-        {
-            throw new AuthError('User must be authenticated.');
-        }
+        // verify authentication and extract uid
+        const uid = verifyAuth(request);
 
         // validate request data
         const parsed = parseRequest(UpdateProfileRequest, request.data);
@@ -65,17 +63,17 @@ export async function handleOnUpdateProfile(request: CallableRequest)
         }
 
         // apply updates
-        logger.info(`Updating profile for user "${request.auth.uid}"...`);
-        await updateUser(request.auth.uid, updates);
+        logger.info(`Updating profile for user "${uid}"...`);
+        await updateUser(uid, updates);
 
         // fetch and return the refreshed profile
-        const user = await getUser(request.auth.uid);
+        const user = await getUser(uid);
         if (user === null)
         {
-            throw new AuthError(`User "${request.auth.uid}" not found after update.`);
+            throw new AuthError(`User "${uid}" not found after update.`);
         }
 
-        logger.info(`Profile for user "${request.auth.uid}" updated successfully.`);
+        logger.info(`Profile for user "${uid}" updated successfully.`);
 
         return {
             fullName: user.full_name,
