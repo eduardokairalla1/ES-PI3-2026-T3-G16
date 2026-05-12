@@ -10,6 +10,7 @@
 import {HttpsError} from 'firebase-functions/v2/https';
 import {addQuestion, getStartup} from '../../db/startups/storage';
 import {getUser} from '../../db/users/storage';
+import {verifyAuth} from '../../utils/auth';
 import {logger} from '../../utils/logger';
 
 
@@ -46,13 +47,8 @@ export async function handleOnSendQuestion(request: CallableRequest)
 {
     try
     {
-        // verify authentication
-        if (request.auth === null || request.auth === undefined)
-        {
-            throw new AuthError('User must be authenticated.');
-        }
-
-        const {uid} = request.auth;
+        // verify authentication and extract uid
+        const uid = verifyAuth(request);
 
         // validate request data
         const parsed = parseRequest(SendQuestionRequest, request.data);

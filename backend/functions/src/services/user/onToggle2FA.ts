@@ -9,6 +9,7 @@
  */
 import {HttpsError} from 'firebase-functions/v2/https';
 import {toggleUserTwoFA} from '../../db/users/storage';
+import {verifyAuth} from '../../utils/auth';
 import {logger} from '../../utils/logger';
 
 
@@ -41,15 +42,12 @@ export async function handleOnToggle2FA(request: CallableRequest)
 {
     try
     {
-        // verify authentication
-        if (request.auth === null || request.auth === undefined)
-        {
-            throw new AuthError('User must be authenticated.');
-        }
+        // verify authentication and extract uid
+        const uid = verifyAuth(request);
 
-        logger.info(`Toggling 2FA for user "${request.auth.uid}"...`);
-        const twoFaEnabled = await toggleUserTwoFA(request.auth.uid);
-        logger.info(`2FA for user "${request.auth.uid}" is now ${twoFaEnabled ? 'enabled' : 'disabled'}.`);
+        logger.info(`Toggling 2FA for user "${uid}"...`);
+        const twoFaEnabled = await toggleUserTwoFA(uid);
+        logger.info(`2FA for user "${uid}" is now ${twoFaEnabled ? 'enabled' : 'disabled'}.`);
 
         return {twoFaEnabled};
     }

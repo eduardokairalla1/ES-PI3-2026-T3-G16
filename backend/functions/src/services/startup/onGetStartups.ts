@@ -10,6 +10,7 @@
 import {HttpsError} from 'firebase-functions/v2/https';
 import {getOldestSnapshotSince} from '../../db/price_history/storage';
 import {getStartups} from '../../db/startups/storage';
+import {verifyAuth} from '../../utils/auth';
 import {logger} from '../../utils/logger';
 
 
@@ -46,10 +47,7 @@ export async function handleOnGetStartups(request: CallableRequest)
     try
     {
         // verify authentication
-        if (request.auth === null || request.auth === undefined)
-        {
-            throw new AuthError('User must be authenticated.');
-        }
+        verifyAuth(request);
 
         // validate request data
         const parsed = parseRequest(GetStartupsRequest, request.data);
