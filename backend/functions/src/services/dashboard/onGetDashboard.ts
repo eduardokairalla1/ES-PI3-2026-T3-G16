@@ -12,6 +12,7 @@ import {getUser, getUserCount} from '../../db/users/storage';
 import {getUserInvestments} from '../../db/investments/storage';
 import {getUserFavorites} from '../../db/favorites/storage';
 import {getStartups} from '../../db/startups/storage';
+import {getWallet} from '../../db/wallets/storage';
 import {logger} from '../../utils/logger';
 
 
@@ -56,8 +57,9 @@ export async function handleOnGetDashboard(request: CallableRequest)
         // fetch all data in parallel for performance
         logger.info(`Fetching dashboard data for user "${uid}"...`);
 
-        const [user, investments, favorites, startups, userCount] = await Promise.all([
+        const [user, wallet, investments, favorites, startups, userCount] = await Promise.all([
             getUser(uid),
+            getWallet(uid),
             getUserInvestments(uid),
             getUserFavorites(uid),
             getStartups(),
@@ -143,7 +145,7 @@ export async function handleOnGetDashboard(request: CallableRequest)
             rendimentoDiarioPorcentagem,
             rendimentoDiarioValor,
             rentabilidadeMediaMercado: rentabilidadeMedia,
-            saldoDisponivel: user.balance ?? 0,
+            saldoDisponivel: wallet?.balance ?? 0,
             totalInvestidoresMercado: userCount,
             totalStartupsMercado: totalStartups,
         };

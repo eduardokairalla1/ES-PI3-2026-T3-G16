@@ -53,3 +53,25 @@ export async function createWallet(uid: string): Promise<void>
 
     await db.collection('wallets').doc(uid).set(wallet);
 }
+
+import {FieldValue} from 'firebase-admin/firestore';
+
+/**
+ * I add balance to a user's wallet.
+ * If the wallet doesn't exist, it will be created with the initial amount.
+ *
+ * @param uid    Firebase Auth UID
+ * @param amount amount to add
+ */
+export async function deposit(uid: string, amount: number): Promise<void>
+{
+    const walletRef = db.collection('wallets').doc(uid);
+    
+    // use FieldValue.increment to ensure atomicity
+    // use set with merge: true to automatically create the document if it doesn't exist
+    await walletRef.set({
+        uid,
+        balance: FieldValue.increment(amount),
+        updated_at: new Date(),
+    }, {merge: true});
+}

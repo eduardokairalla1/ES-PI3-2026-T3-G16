@@ -11,6 +11,7 @@ import {HttpsError} from 'firebase-functions/v2/https';
 import {getWallet, createWallet} from '../../db/wallets/storage';
 import {getStartup} from '../../db/startups/storage';
 import {createOrder, updateOrderStatus} from '../../db/orders/storage';
+import {recordTransaction} from '../../db/transactions/storage';
 import {calcTokenPrice} from '../../utils/pricing';
 import {logger} from '../../utils/logger';
 import db from '../../configs';
@@ -188,6 +189,14 @@ export async function handleOnCreateOrder(request: CallableRequest)
             await updateOrderStatus(order.id, 'failed', {failure_reason: reason});
             throw txError;
         }
+
+        // record the transaction in the user's statement (extrato)
+        await recordTransaction(uid, {
+            amount: totalAmount,
+            type: 'buy',
+            description: `Compra de ${quantity} tokens da startup ${startup.name}`,
+            status: 'completed',
+        });
 
         // mark order as completed
         const completedAt = new Date();

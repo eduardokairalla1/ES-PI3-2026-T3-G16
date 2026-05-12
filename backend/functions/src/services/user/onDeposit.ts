@@ -7,7 +7,7 @@
  * IMPORTS
  */
 import {HttpsError} from 'firebase-functions/v2/https';
-import {deposit, getUser} from '../../db/users/storage';
+import {deposit, getWallet} from '../../db/wallets/storage';
 import {recordTransaction} from '../../db/transactions/storage';
 import {logger} from '../../utils/logger';
 
@@ -75,8 +75,8 @@ export async function handleOnDeposit(request: CallableRequest)
         });
 
         // Fetch updated balance via existing storage function
-        const updatedUser = await getUser(uid);
-        const newBalance = updatedUser?.balance ?? 0;
+        const updatedWallet = await getWallet(uid);
+        const newBalance = updatedWallet?.balance ?? 0;
 
         return {
             message: 'Deposit successful.',
