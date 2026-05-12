@@ -9,8 +9,6 @@
  * TYPES
  */
 
-import 'package:intl/intl.dart';
-
 /// Resumo de uma posição do usuário em uma startup.
 class InvestimentoResumo {
   final String startupId;

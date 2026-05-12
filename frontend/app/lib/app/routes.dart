@@ -2,7 +2,6 @@
 
 // --- IMPORTS ---
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mesclainvest/pages/auth/forgot_password_page.dart';
 import 'package:mesclainvest/pages/catalog/catalog_page.dart';
