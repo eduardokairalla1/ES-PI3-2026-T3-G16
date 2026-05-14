@@ -10,7 +10,8 @@
     "deploy": "npx firebase deploy",
     "seed": "FIRESTORE_EMULATOR_HOST=localhost:8080 npx --yes tsx functions/scripts/seed-startups.ts",
     "seed:orders": "FIRESTORE_EMULATOR_HOST=localhost:8080 npx --yes tsx functions/scripts/seed-orders.ts",
-    "seed:investments": "FIRESTORE_EMULATOR_HOST=localhost:8080 npx --yes tsx functions/scripts/seed-investments.ts"
+    "seed:investments": "FIRESTORE_EMULATOR_HOST=localhost:8080 npx --yes tsx functions/scripts/seed-investments.ts",
+    "seed:users": "npx --yes tsx functions/scripts/seed-users.ts"
   },
   "dependencies": {
     "zod": "^4.3.6"
