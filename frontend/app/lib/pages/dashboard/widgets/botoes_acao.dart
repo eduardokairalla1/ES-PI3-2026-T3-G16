@@ -15,6 +15,7 @@ import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:mesclainvest/pages/dashboard/controllers/dashboard_controller.dart';
 import 'package:mesclainvest/pages/dashboard/models/transaction_model.dart';
+import 'package:mesclainvest/shared/widgets/app_button.dart';
 
 /*
  * HELPERS
@@ -151,103 +152,76 @@ class BotoesAcao extends StatelessWidget {
                     ),
             ),
             actions: [
-              TextButton(
+              AppButton(
+                label: 'Cancelar',
+                variant: AppButtonVariant.text,
+                size: AppButtonSize.small,
+                fullWidth: false,
                 onPressed: isProcessando ? null : () => Navigator.pop(context),
-                child: const Text(
-                  'Cancelar',
-                  style: TextStyle(color: Colors.grey),
-                ),
               ),
-              ElevatedButton(
-                onPressed: isProcessando
-                    ? null
-                    : () async {
-                        if (!mostrarConfirmacao) {
-                          // Passo 1: Validação e preparação da confirmação
-                          // Passo 1: parse o valor formatado pelo _CurrencyInputFormatter
-                          // O texto está no formato "1.234,56" — converte para double
-                          final raw = valorController.text
-                              .replaceAll('.', '')
-                              .replaceAll(',', '.');
-                          final double? parsedValue = double.tryParse(raw);
+              AppButton(
+                label: mostrarConfirmacao ? 'Confirmar' : 'Continuar',
+                size: AppButtonSize.small,
+                fullWidth: false,
+                isLoading: isProcessando,
+                onPressed: () async {
+                  if (!mostrarConfirmacao) {
+                    final raw = valorController.text
+                        .replaceAll('.', '')
+                        .replaceAll(',', '.');
+                    final double? parsedValue = double.tryParse(raw);
 
-                          if (parsedValue != null && parsedValue > 0) {
-                            if (parsedValue > 100000) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                    'O valor máximo para depósito é R\$ 100.000,00.',
-                                  ),
-                                  backgroundColor: Colors.orange,
-                                ),
-                              );
-                              return;
-                            }
-                            setState(() {
-                              valorFinal = parsedValue;
-                              mostrarConfirmacao = true;
-                            });
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text(
-                                  'Por favor, insira um valor válido.',
-                                ),
-                              ),
-                            );
-                          }
-                        } else {
-                          // Passo 2: Execução do depósito via Controller
-                          setState(() => isProcessando = true);
-                          try {
-                            await controller.deposit(valorFinal!);
-                            if (context.mounted) {
-                              Navigator.pop(context);
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    'Depósito de R\$ ${valorFinal!.toStringAsFixed(2)} realizado com sucesso!',
-                                  ),
-                                  backgroundColor: Colors.green,
-                                ),
-                              );
-                            }
-                          } catch (e) {
-                            setState(() => isProcessando = false);
-                            if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text('Erro: $e'),
-                                  backgroundColor: Colors.red,
-                                ),
-                              );
-                            }
-                          }
-                        }
-                      },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.black,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 12,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: isProcessando
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2,
+                    if (parsedValue != null && parsedValue > 0) {
+                      if (parsedValue > 100000) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              'O valor máximo para depósito é R\$ 100.000,00.',
+                            ),
+                            backgroundColor: Colors.orange,
+                          ),
+                        );
+                        return;
+                      }
+                      setState(() {
+                        valorFinal = parsedValue;
+                        mostrarConfirmacao = true;
+                      });
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Por favor, insira um valor válido.'),
                         ),
-                      )
-                    : Text(
-                        mostrarConfirmacao ? 'Confirmar' : 'Continuar',
-                        style: const TextStyle(color: Colors.white),
-                      ),
+                      );
+                    }
+                  } else {
+                    setState(() => isProcessando = true);
+                    try {
+                      await controller.deposit(valorFinal!);
+                      if (context.mounted) {
+                        Navigator.pop(context);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              'Depósito de R\$ ${valorFinal!.toStringAsFixed(2)} realizado com sucesso!',
+                            ),
+                            backgroundColor: Colors.green,
+                          ),
+                        );
+                      }
+                    } catch (e) {
+                      setState(() => isProcessando = false);
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Erro: $e'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      }
+                    }
+                  }
+                },
               ),
             ],
           );
@@ -383,9 +357,12 @@ class BotoesAcao extends StatelessWidget {
           ),
         ),
         actions: [
-          TextButton(
+          AppButton(
+            label: 'Fechar',
+            variant: AppButtonVariant.text,
+            size: AppButtonSize.small,
+            fullWidth: false,
             onPressed: () => Navigator.pop(context),
-            child: const Text('Fechar', style: TextStyle(color: Colors.black)),
           ),
         ],
       ),

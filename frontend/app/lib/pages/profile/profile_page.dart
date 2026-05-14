@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import 'package:mesclainvest/app/app_state.dart';
 import 'package:mesclainvest/core/models/user_profile.dart';
 import 'package:mesclainvest/pages/profile/controllers/profile_controller.dart';
+import 'package:mesclainvest/shared/widgets/app_button.dart';
 import 'package:mesclainvest/shared/widgets/bottom_nav.dart';
 
 // --- PAGE ---
@@ -480,51 +481,15 @@ class _ProfilePageState extends State<ProfilePage> {
   // ── Sign out ──────────────────────────────────────────────────────────────
 
   Widget _signOutButton(BuildContext context) {
-    return GestureDetector(
-      onTap: _controller.isSigningOut
-          ? null
-          : () async {
-              await _controller.signOut();
-              if (context.mounted) context.go('/');
-            },
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.black.withValues(alpha: 0.1)),
-        ),
-        child: _controller.isSigningOut
-            ? const Center(
-                child: SizedBox(
-                  width: 22,
-                  height: 22,
-                  child: CircularProgressIndicator(
-                    color: Colors.black,
-                    strokeWidth: 2,
-                  ),
-                ),
-              )
-            : Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(
-                    Icons.logout_rounded,
-                    size: 24,
-                    color: Colors.black,
-                  ),
-                  const SizedBox(width: 10),
-                  const Text(
-                    'Sair da Conta',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.black,
-                    ),
-                  ),
-                ],
-              ),
-      ),
+    return AppButton(
+      label: 'Sair da Conta',
+      variant: AppButtonVariant.secondary,
+      icon: Icons.logout_rounded,
+      isLoading: _controller.isSigningOut,
+      onPressed: () async {
+        await _controller.signOut();
+        if (context.mounted) context.go('/');
+      },
     );
   }
 

@@ -9,6 +9,7 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mesclainvest/app/app_state.dart';
 import 'package:mesclainvest/pages/profile/services/profile_service.dart';
+import 'package:mesclainvest/shared/widgets/app_button.dart';
 
 // --- PAGE ---
 
@@ -275,36 +276,10 @@ class _SettingsPageState extends State<SettingsPage> {
             const SizedBox(height: 32),
 
             // Save button.
-            SizedBox(
-              width: double.infinity,
-              height: 52,
-              child: ElevatedButton(
-                onPressed: _isSaving ? null : _saveProfile,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.black,
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                ),
-                child: _isSaving
-                    ? const SizedBox(
-                        width: 22,
-                        height: 22,
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2,
-                        ),
-                      )
-                    : const Text(
-                        'Salvar',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-              ),
+            AppButton(
+              label: 'Salvar',
+              isLoading: _isSaving,
+              onPressed: _saveProfile,
             ),
           ],
         ),
