@@ -16,6 +16,7 @@ export interface userDocument
     created_at: Date;
     cpf: string;
     email: string;
+    favorite_ids: string[];
     full_name: string;
     phone: string;
     photo_url: string | null;
