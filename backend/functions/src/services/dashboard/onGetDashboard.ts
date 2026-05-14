@@ -16,6 +16,7 @@ import {getOrdersByTypeAndStatus} from '../../db/orders/storage';
 import {getOldestSnapshotSince} from '../../db/price_history/storage';
 import {mapTotalTokensByStartup, calcWeeklyReturn} from '../../utils/walletUtils';
 import {logger} from '../../utils/logger';
+import {verifyAuth} from '../../utils/auth';
 
 
 /**
@@ -49,12 +50,7 @@ export async function handleOnGetDashboard(request: CallableRequest)
     try
     {
         // verify authentication
-        if (request.auth === null || request.auth === undefined)
-        {
-            throw new AuthError('User must be authenticated.');
-        }
-
-        const {uid} = request.auth;
+        const uid = verifyAuth(request);
 
         // fetch all data in parallel for performance
         logger.info(`Fetching dashboard data for user "${uid}"...`);

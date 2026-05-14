@@ -10,6 +10,7 @@ import {getTransactions} from '../../db/transactions/storage';
 import {getAllCompletedOrdersByUid} from '../../db/orders/storage';
 import {getStartups} from '../../db/startups/storage';
 import {logger} from '../../utils/logger';
+import {verifyAuth} from '../../utils/auth';
 
 import {AuthError} from '../../errors/authError';
 import {InternalError} from '../../errors/internalError';
@@ -27,12 +28,7 @@ export async function handleOnGetTransactions(request: CallableRequest)
 {
     try
     {
-        if (request.auth === null || request.auth === undefined)
-        {
-            throw new AuthError('User must be authenticated.');
-        }
-
-        const {uid} = request.auth;
+        const uid = verifyAuth(request);
         const limit: number = request.data.limit || 20;
 
         logger.info(`Fetching unified transaction history for user "${uid}"...`);
