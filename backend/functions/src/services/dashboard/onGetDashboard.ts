@@ -11,11 +11,11 @@ import {HttpsError} from 'firebase-functions/v2/https';
 import {getUser, getUserCount} from '../../db/users/storage';
 import {getUserInvestments} from '../../db/investments/storage';
 import {getUserFavorites} from '../../db/favorites/storage';
-import {getStartup, getStartups} from '../../db/startups/storage';
+import {getStartups} from '../../db/startups/storage';
 import {getWallet} from '../../db/wallets/storage';
 import {getOrdersByTypeAndStatus} from '../../db/orders/storage';
 import {getOldestSnapshotSince} from '../../db/price_history/storage';
-import {mapTotalTokensByStartup, calcWeeklyReturn} from '../user/onGetWallet';
+import {mapTotalTokensByStartup, calcWeeklyReturn} from '../../utils/walletUtils';
 import {logger} from '../../utils/logger';
 
 
@@ -85,21 +85,16 @@ export async function handleOnGetDashboard(request: CallableRequest)
 
         // calculate portfolio total and investments with current prices
         let patrimonioTotal = 0;
-        let rendimentoTotal = 0;
-        let custoTotal = 0;
 
         const investimentosFormatted = investments.map(inv =>
         {
             const currentPrice = startupPriceMap.get(inv.startup_id) ?? inv.avg_purchase_price;
             const currentValue = inv.token_quantity * currentPrice;
-            const costValue = inv.token_quantity * inv.avg_purchase_price;
             const variation = inv.avg_purchase_price > 0
                 ? ((currentPrice - inv.avg_purchase_price) / inv.avg_purchase_price) * 100
                 : 0;
 
             patrimonioTotal += currentValue;
-            rendimentoTotal += (currentValue - costValue);
-            custoTotal += costValue;
 
             return {
                 currentPrice,
@@ -120,14 +115,13 @@ export async function handleOnGetDashboard(request: CallableRequest)
         const weeklyValues = await Promise.all(
             Object.entries(totalTokensByStartup).map(async ([startupId, quantity]) =>
             {
-                const [startup, snapshot] = await Promise.all([
-                    getStartup(startupId),
-                    getOldestSnapshotSince(startupId, weekAgo),
-                ]);
-                if (startup === null) return {currentValue: 0, pastValue: 0};
-                const pastPrice = snapshot?.price ?? startup.token_price;
+                const currentPrice = startupPriceMap.get(startupId);
+                if (currentPrice === undefined) return {currentValue: 0, pastValue: 0};
+
+                const snapshot = await getOldestSnapshotSince(startupId, weekAgo);
+                const pastPrice = snapshot?.price ?? currentPrice;
                 return {
-                    currentValue: quantity * startup.token_price,
+                    currentValue: quantity * currentPrice,
                     pastValue: quantity * pastPrice,
                 };
             }),

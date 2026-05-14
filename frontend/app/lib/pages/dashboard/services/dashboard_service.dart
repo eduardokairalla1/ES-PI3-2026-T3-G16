@@ -11,7 +11,6 @@ library;
  */
 
 import 'package:cloud_functions/cloud_functions.dart';
-import 'package:mesclainvest/app/app_state.dart';
 import 'package:mesclainvest/pages/dashboard/models/dashboard_data.dart';
 
 /*
