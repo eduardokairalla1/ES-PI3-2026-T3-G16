@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mesclainvest/pages/dashboard/controllers/dashboard_controller.dart';
 import 'package:mesclainvest/pages/dashboard/widgets/dashboard_skeleton.dart';
 import 'package:mesclainvest/pages/dashboard/widgets/widgets.dart';
+import 'package:mesclainvest/shared/widgets/app_button.dart';
 import 'package:mesclainvest/shared/widgets/delayed_shimmer.dart';
 
 class PaginaDashboard extends StatefulWidget {
@@ -82,19 +83,11 @@ class _PaginaDashboardState extends State<PaginaDashboard> {
               style: const TextStyle(fontSize: 15, color: Colors.black54),
             ),
             const SizedBox(height: 24),
-            GestureDetector(
-              onTap: _controller.loadDashboard,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                decoration: BoxDecoration(
-                  color: Colors.black,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Text(
-                  'Tentar novamente',
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
-                ),
-              ),
+            AppButton(
+              label: 'Tentar novamente',
+              size: AppButtonSize.small,
+              fullWidth: false,
+              onPressed: _controller.loadDashboard,
             ),
           ],
         ),
