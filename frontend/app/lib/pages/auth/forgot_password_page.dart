@@ -10,6 +10,7 @@ import 'package:mesclainvest/core/exceptions/auth.dart';
 import 'package:mesclainvest/core/exceptions/infrastructure.dart';
 import 'package:mesclainvest/core/services/auth.dart';
 import 'package:mesclainvest/pages/auth/widgets/auth_constants.dart';
+import 'package:mesclainvest/shared/widgets/app_button.dart';
 
 // --- CONSTANTS ---
 
@@ -37,7 +38,6 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage>
 
   // state variables
   bool _isLoading = false;
-  bool _btnPressed = false;
   bool _sent = false;
   String? _error;
 
@@ -281,43 +281,11 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage>
           ),
 
           // --- send link button ---
-          GestureDetector(
-            onTapDown: (_) => setState(() => _btnPressed = true),
-            onTapUp: (_) {
-              setState(() => _btnPressed = false);
-              if (!_isLoading) _submit();
-            },
-            onTapCancel: () => setState(() => _btnPressed = false),
-            child: AnimatedScale(
-              scale: _btnPressed ? 0.97 : 1.0,
-              duration: const Duration(milliseconds: 80),
-              child: Container(
-                width: double.infinity,
-                height: 58,
-                decoration: BoxDecoration(
-                  color: Colors.black,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                alignment: Alignment.center,
-                child: _isLoading
-                    ? const SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2.5,
-                        ),
-                      )
-                    : Text(
-                        'ENVIAR LINK',
-                        style: GoogleFonts.inter(
-                          fontWeight: FontWeight.w800,
-                          fontSize: 20,
-                          color: Colors.white,
-                        ),
-                      ),
-              ),
-            ),
+          AppButton(
+            label: 'ENVIAR LINK',
+            size: AppButtonSize.large,
+            isLoading: _isLoading,
+            onPressed: _submit,
           ),
         ],
       ),
@@ -376,25 +344,10 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage>
         const SizedBox(height: 40),
 
         // --- back to login button ---
-        GestureDetector(
-          onTap: () => context.go('/login'),
-          child: Container(
-            width: double.infinity,
-            height: 58,
-            decoration: BoxDecoration(
-              color: Colors.black,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            alignment: Alignment.center,
-            child: Text(
-              'VOLTAR AO LOGIN',
-              style: GoogleFonts.inter(
-                fontWeight: FontWeight.w800,
-                fontSize: 20,
-                color: Colors.white,
-              ),
-            ),
-          ),
+        AppButton(
+          label: 'VOLTAR AO LOGIN',
+          size: AppButtonSize.large,
+          onPressed: () => context.go('/login'),
         ),
       ],
     );
