@@ -79,3 +79,22 @@ export async function updateOrderStatus(
 {
     await db.collection('orders').doc(orderId).update({status, ...extraFields});
 }
+
+
+/**
+ * I return all completed orders (buy and sell) for a user.
+ *
+ * @param uid the user's Firebase Auth uid
+ *
+ * @returns list of completed order documents
+ */
+export async function getAllCompletedOrdersByUid(uid: string): Promise<OrderDocument[]>
+{
+    const snap = await db
+        .collection('orders')
+        .where('uid', '==', uid)
+        .where('status', '==', 'completed')
+        .get();
+
+    return snap.docs.map(doc => doc.data() as OrderDocument);
+}
