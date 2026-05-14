@@ -11,7 +11,11 @@ import {HttpsError} from 'firebase-functions/v2/https';
 import {getUser, getUserCount} from '../../db/users/storage';
 import {getUserInvestments} from '../../db/investments/storage';
 import {getUserFavorites} from '../../db/favorites/storage';
-import {getStartups} from '../../db/startups/storage';
+import {getStartup, getStartups} from '../../db/startups/storage';
+import {getWallet} from '../../db/wallets/storage';
+import {getOrdersByTypeAndStatus} from '../../db/orders/storage';
+import {getOldestSnapshotSince} from '../../db/price_history/storage';
+import {mapTotalTokensByStartup, calcWeeklyReturn} from '../user/onGetWallet';
 import {logger} from '../../utils/logger';
 
 
@@ -56,12 +60,14 @@ export async function handleOnGetDashboard(request: CallableRequest)
         // fetch all data in parallel for performance
         logger.info(`Fetching dashboard data for user "${uid}"...`);
 
-        const [user, investments, favorites, startups, userCount] = await Promise.all([
+        const [user, investments, favorites, startups, userCount, wallet, orders] = await Promise.all([
             getUser(uid),
             getUserInvestments(uid),
             getUserFavorites(uid),
             getStartups(),
             getUserCount(),
+            getWallet(uid),
+            getOrdersByTypeAndStatus(uid, 'buy', 'completed'),
         ]);
 
         // user not found
@@ -105,12 +111,31 @@ export async function handleOnGetDashboard(request: CallableRequest)
             };
         });
 
-        // calculate daily yield as a fraction of total variation
-        // (simulates daily movement as ~1/30 of monthly variation)
-        const rendimentoDiarioPorcentagem = custoTotal > 0
-            ? Math.round(((rendimentoTotal / custoTotal) * 100 / 30) * 100) / 100
-            : 0;
-        const rendimentoDiarioValor = Math.round((rendimentoTotal / 30) * 100) / 100;
+        // calculate real weekly return using price history (from onGetWallet logic)
+        const weekAgo = new Date();
+        weekAgo.setDate(weekAgo.getDate() - 7);
+
+        const totalTokensByStartup = mapTotalTokensByStartup(orders);
+
+        const weeklyValues = await Promise.all(
+            Object.entries(totalTokensByStartup).map(async ([startupId, quantity]) =>
+            {
+                const [startup, snapshot] = await Promise.all([
+                    getStartup(startupId),
+                    getOldestSnapshotSince(startupId, weekAgo),
+                ]);
+                if (startup === null) return {currentValue: 0, pastValue: 0};
+                const pastPrice = snapshot?.price ?? startup.token_price;
+                return {
+                    currentValue: quantity * startup.token_price,
+                    pastValue: quantity * pastPrice,
+                };
+            }),
+        );
+
+        const {weeklyReturn, weeklyReturnPct} = calcWeeklyReturn(weeklyValues);
+        const rendimentoDiarioValor = Math.round(weeklyReturn * 100) / 100;
+        const rendimentoDiarioPorcentagem = Math.round(weeklyReturnPct * 100) / 100;
 
         // market stats
         const totalStartups = startups.length;
@@ -143,7 +168,7 @@ export async function handleOnGetDashboard(request: CallableRequest)
             rendimentoDiarioPorcentagem,
             rendimentoDiarioValor,
             rentabilidadeMediaMercado: rentabilidadeMedia,
-            saldoDisponivel: user.balance ?? 0,
+            saldoDisponivel: wallet?.balance ?? user.balance ?? 0,
             totalInvestidoresMercado: userCount,
             totalStartupsMercado: totalStartups,
         };
