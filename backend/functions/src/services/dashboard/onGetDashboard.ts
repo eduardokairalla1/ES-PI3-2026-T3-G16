@@ -183,7 +183,7 @@ export async function handleOnGetDashboard(request: CallableRequest)
             rendimentoDiarioPorcentagem,
             rendimentoDiarioValor,
             rentabilidadeMediaMercado: rentabilidadeMedia,
-            saldoDisponivel: wallet?.balance ?? user.balance ?? 0,
+            saldoDisponivel: wallet?.balance ?? 0,
             totalInvestidoresMercado: userCount,
             totalStartupsMercado: totalStartups,
         };
