@@ -1,36 +1,25 @@
 /**
  * Function callable onGetTransactions.
+ * Returns a unified statement: deposits from transactions + buy/sell from orders.
  *
  * Alex Gabriel Soares Sousa - 24802449
  */
 
-/**
- * IMPORTS
- */
 import {HttpsError} from 'firebase-functions/v2/https';
 import {getTransactions} from '../../db/transactions/storage';
+import {getAllCompletedOrdersByUid} from '../../db/orders/storage';
+import {getStartups} from '../../db/startups/storage';
 import {logger} from '../../utils/logger';
 
-
-/**
- * ERRORS
- */
 import {AuthError} from '../../errors/authError';
+import {InternalError} from '../../errors/internalError';
 
-
-/**
- * TYPES
- */
 import type {CallableRequest} from 'firebase-functions/v2/https';
 
 
 /**
- * CODE
- */
-
-/**
  * I handle the onGetTransactions callable.
- * Returns the list of recent transactions for the user.
+ * Merges deposit transactions with completed token orders, sorted by date descending.
  *
  * @param request Body: { limit?: number }
  */
@@ -38,22 +27,60 @@ export async function handleOnGetTransactions(request: CallableRequest)
 {
     try
     {
-        // verify authentication
         if (request.auth === null || request.auth === undefined)
         {
             throw new AuthError('User must be authenticated.');
         }
 
         const {uid} = request.auth;
-        const limit = request.data.limit || 20;
+        const limit: number = request.data.limit || 20;
 
-        logger.info(`Fetching transactions for user "${uid}" (limit: ${limit})...`);
+        logger.info(`Fetching unified transaction history for user "${uid}"...`);
 
-        const transactions = await getTransactions(uid, limit);
+        const [deposits, orders, startups] = await Promise.all([
+            getTransactions(uid, 200),
+            getAllCompletedOrdersByUid(uid),
+            getStartups(),
+        ]);
 
-        return {
-            transactions,
-        };
+        // build startup name lookup
+        const startupNameMap = new Map<string, string>();
+        for (const s of startups)
+        {
+            startupNameMap.set(s.id, s.name);
+        }
+
+        // map orders to the unified transaction shape
+        const orderTransactions = orders.map(order =>
+        {
+            const startupName = startupNameMap.get(order.startup_id) ?? order.startup_id;
+            const description = order.type === 'buy'
+                ? `Compra de tokens — ${startupName}`
+                : `Venda de tokens — ${startupName}`;
+
+            return {
+                id:          order.id,
+                amount:      order.total_amount,
+                description,
+                created_at:  order.completed_at ?? order.created_at,
+                type:        order.type,
+                status:      order.status,
+            };
+        });
+
+        // merge and sort by date descending, then apply limit
+        const all = [...deposits, ...orderTransactions].sort((a, b) =>
+        {
+            const dateA = a.created_at instanceof Date ? a.created_at : new Date(a.created_at as string);
+            const dateB = b.created_at instanceof Date ? b.created_at : new Date(b.created_at as string);
+            return dateB.getTime() - dateA.getTime();
+        });
+
+        const transactions = all.slice(0, limit);
+
+        logger.info(`Returning ${transactions.length} transactions for user "${uid}".`);
+
+        return {transactions};
     }
     catch (error: unknown)
     {
@@ -62,7 +89,8 @@ export async function handleOnGetTransactions(request: CallableRequest)
             throw new HttpsError('unauthenticated', error.message);
         }
 
-        logger.error('Failed to fetch transactions:', error);
-        throw new HttpsError('internal', 'Failed to fetch transaction history.');
+        const internal = new InternalError('Failed to fetch transaction history.', error);
+        logger.error(internal.message, internal.cause);
+        throw new HttpsError('internal', internal.message);
     }
 }
