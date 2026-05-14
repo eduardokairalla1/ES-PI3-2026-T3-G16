@@ -13,6 +13,7 @@ import 'package:mesclainvest/core/exceptions/infrastructure.dart';
 import 'package:mesclainvest/core/services/auth.dart';
 import 'package:mesclainvest/pages/auth/widgets/auth_constants.dart';
 import 'package:mesclainvest/pages/auth/widgets/input_formatters.dart';
+import 'package:mesclainvest/shared/widgets/app_button.dart';
 
 // --- CODE ---
 
@@ -44,7 +45,6 @@ class _RegisterPageState extends State<RegisterPage>
   // define state variables
   bool _isLoading = false;
   bool _showPassword = false;
-  bool _btnPressed = false;
   String? _error;
   DateTime? _birthDate;
   String? _birthDateError;
@@ -594,48 +594,17 @@ class _RegisterPageState extends State<RegisterPage>
                     ),
 
                     // register button
-                    GestureDetector(
-                      onTapDown: (_) => setState(() => _btnPressed = true),
-                      onTapUp: (_) {
-                        setState(() => _btnPressed = false);
-                        if (_isLoading) return;
+                    AppButton(
+                      label: 'CADASTRAR',
+                      size: AppButtonSize.large,
+                      isLoading: _isLoading,
+                      onPressed: () {
                         final bdError = _calcBirthDateError();
                         final formOk =
                             _formKey.currentState?.validate() ?? false;
                         setState(() => _birthDateError = bdError);
                         if (formOk && bdError == null) _submit();
                       },
-                      onTapCancel: () => setState(() => _btnPressed = false),
-                      child: AnimatedScale(
-                        scale: _btnPressed ? 0.97 : 1.0,
-                        duration: const Duration(milliseconds: 80),
-                        child: Container(
-                          width: double.infinity,
-                          height: 58,
-                          decoration: BoxDecoration(
-                            color: Colors.black,
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          alignment: Alignment.center,
-                          child: _isLoading
-                              ? const SizedBox(
-                                  width: 24,
-                                  height: 24,
-                                  child: CircularProgressIndicator(
-                                    color: Colors.white,
-                                    strokeWidth: 2.5,
-                                  ),
-                                )
-                              : Text(
-                                  'CADASTRAR',
-                                  style: GoogleFonts.inter(
-                                    fontWeight: FontWeight.w800,
-                                    fontSize: 20,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                        ),
-                      ),
                     ),
                     const SizedBox(height: 24),
 

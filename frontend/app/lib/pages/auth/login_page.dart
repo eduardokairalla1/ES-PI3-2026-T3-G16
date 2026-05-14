@@ -11,6 +11,7 @@ import 'package:mesclainvest/core/exceptions/auth.dart';
 import 'package:mesclainvest/core/exceptions/infrastructure.dart';
 import 'package:mesclainvest/core/services/auth.dart';
 import 'package:mesclainvest/pages/auth/widgets/auth_constants.dart';
+import 'package:mesclainvest/shared/widgets/app_button.dart';
 // --- CONSTANTS ---
 /// --- CODE ---
 
@@ -38,7 +39,6 @@ class _LoginPageState extends State<LoginPage>
   // define state variables
   bool _isLoading = false;
   bool _showPassword = false;
-  bool _btnPressed = false;
   String? _error;
 
   // entrance animation
@@ -308,46 +308,15 @@ class _LoginPageState extends State<LoginPage>
                     ),
 
                     // --- login button ---
-                    GestureDetector(
-                      onTapDown: (_) => setState(() => _btnPressed = true),
-                      onTapUp: (_) {
-                        setState(() => _btnPressed = false);
-                        if (_isLoading) return;
+                    AppButton(
+                      label: 'ENTRAR',
+                      size: AppButtonSize.large,
+                      isLoading: _isLoading,
+                      onPressed: () {
                         if (_formKey.currentState?.validate() ?? false) {
                           _submit();
                         }
                       },
-                      onTapCancel: () => setState(() => _btnPressed = false),
-                      child: AnimatedScale(
-                        scale: _btnPressed ? 0.97 : 1.0,
-                        duration: const Duration(milliseconds: 80),
-                        child: Container(
-                          width: double.infinity,
-                          height: 58,
-                          decoration: BoxDecoration(
-                            color: Colors.black,
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          alignment: Alignment.center,
-                          child: _isLoading
-                              ? const SizedBox(
-                                  width: 24,
-                                  height: 24,
-                                  child: CircularProgressIndicator(
-                                    color: Colors.white,
-                                    strokeWidth: 2.5,
-                                  ),
-                                )
-                              : Text(
-                                  'ENTRAR',
-                                  style: GoogleFonts.inter(
-                                    fontWeight: FontWeight.w800,
-                                    fontSize: 20,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                        ),
-                      ),
                     ),
                     const SizedBox(height: 20),
 
