@@ -5,6 +5,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mesclainvest/shared/widgets/app_button.dart';
 
 // --- CONSTANTS ---
 const _kBottom = Colors.black87;
@@ -26,9 +27,6 @@ class HomePage extends StatefulWidget {
 /// I represent the mutable state for the home page.
 class _HomePageState extends State<HomePage>
     with SingleTickerProviderStateMixin {
-  // state variables
-  bool _btnPressed = false;
-
   // entrance animation
   late final AnimationController _entranceCtrl;
   late final Animation<double> _fadeAnim;
@@ -98,43 +96,11 @@ class _HomePageState extends State<HomePage>
                       const SizedBox(height: 16),
 
                       // --- login button ---
-                      GestureDetector(
-                        onTapDown: (_) => setState(() => _btnPressed = true),
-                        onTapUp: (_) {
-                          setState(() => _btnPressed = false);
-                          context.go('/login');
-                        },
-                        onTapCancel: () => setState(() => _btnPressed = false),
-                        child: AnimatedScale(
-                          scale: _btnPressed ? 0.97 : 1.0,
-                          duration: const Duration(milliseconds: 80),
-                          child: Container(
-                            width: double.infinity,
-                            height: 58,
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              border: Border.all(color: Colors.black),
-                              borderRadius: BorderRadius.circular(20),
-                              boxShadow: const [
-                                BoxShadow(
-                                  color: Colors.black26,
-                                  blurRadius: 4,
-                                  offset: Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            alignment: Alignment.center,
-                            child: Text(
-                              'ENTRAR',
-                              style: GoogleFonts.inter(
-                                fontWeight: FontWeight.w300,
-                                fontSize: 20,
-                                height: 24 / 20,
-                                color: Colors.black,
-                              ),
-                            ),
-                          ),
-                        ),
+                      AppButton(
+                        label: 'ENTRAR',
+                        variant: AppButtonVariant.secondary,
+                        size: AppButtonSize.large,
+                        onPressed: () => context.go('/login'),
                       ),
                       const SizedBox(height: 16),
 

@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import 'package:mesclainvest/app/app_state.dart';
 import 'package:mesclainvest/pages/startup/controllers/startup_controller.dart';
 import 'package:mesclainvest/pages/startup/widgets/widgets.dart';
+import 'package:mesclainvest/shared/widgets/app_button.dart';
 
 // --- PAGE ---
 
@@ -66,16 +67,11 @@ class _StartupDetailPageState extends State<StartupDetailPage> {
                     style: const TextStyle(fontSize: 15, color: Colors.black54),
                   ),
                   const SizedBox(height: 20),
-                  ElevatedButton(
+                  AppButton(
+                    label: 'Tentar novamente',
+                    size: AppButtonSize.small,
+                    fullWidth: false,
                     onPressed: () => _controller.load(widget.startupId),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.black,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                    ),
-                    child: const Text('Tentar novamente'),
                   ),
                 ],
               ),
@@ -211,27 +207,9 @@ class _InvestPanel extends StatelessWidget {
   Widget _investButton() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
-      child: SizedBox(
-        height: 52,
-        child: ElevatedButton(
-          onPressed: _controller.openOrderPanel,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.black,
-            foregroundColor: Colors.white,
-            elevation: 0,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
-            ),
-          ),
-          child: const Text(
-            'INVESTIR NESTA STARTUP',
-            style: TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.5,
-            ),
-          ),
-        ),
+      child: AppButton(
+        label: 'INVESTIR NESTA STARTUP',
+        onPressed: _controller.openOrderPanel,
       ),
     );
   }
@@ -345,66 +323,29 @@ class _InvestPanel extends StatelessWidget {
           const SizedBox(height: 14),
 
           // confirm + cancel buttons
-          SizedBox(
-            width: double.infinity,
-            height: 52,
-            child: ElevatedButton(
-              onPressed: _controller.isBuyingTokens
-                  ? null
-                  : () async {
-                      final ok = await _controller.buyTokens(_startupId);
-                      if (ok && context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Investimento realizado com sucesso!'),
-                            backgroundColor: Colors.black,
-                          ),
-                        );
-                      }
-                    },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.black,
-                foregroundColor: Colors.white,
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-              ),
-              child: _controller.isBuyingTokens
-                  ? const SizedBox(
-                      width: 22,
-                      height: 22,
-                      child: CircularProgressIndicator(
-                        color: Colors.white,
-                        strokeWidth: 2.5,
-                      ),
-                    )
-                  : const Text(
-                      'CONFIRMAR INVESTIMENTO',
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-            ),
+          AppButton(
+            label: 'CONFIRMAR INVESTIMENTO',
+            isLoading: _controller.isBuyingTokens,
+            onPressed: () async {
+              final ok = await _controller.buyTokens(_startupId);
+              if (ok && context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Investimento realizado com sucesso!'),
+                    backgroundColor: Colors.black,
+                  ),
+                );
+              }
+            },
           ),
 
           const SizedBox(height: 8),
 
-          GestureDetector(
-            onTap: _controller.closeOrderPanel,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              child: Text(
-                'Cancelar',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.grey.shade500,
-                ),
-              ),
-            ),
+          AppButton(
+            label: 'Cancelar',
+            variant: AppButtonVariant.text,
+            size: AppButtonSize.small,
+            onPressed: _controller.closeOrderPanel,
           ),
 
         ],
