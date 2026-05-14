@@ -42,7 +42,7 @@ import type {walletDocument} from '../../db/wallets/model';
  *
  * @returns map of startupId → total quantity held
  */
-function mapTotalTokensByStartup(orders: OrderDocument[]): Record<string, number>
+export function mapTotalTokensByStartup(orders: OrderDocument[]): Record<string, number>
 {
     const totalTokensByStartup: Record<string, number> = {};
 
@@ -62,7 +62,7 @@ function mapTotalTokensByStartup(orders: OrderDocument[]): Record<string, number
  *
  * @returns weeklyReturn (BRL) and weeklyReturnPct (%)
  */
-function calcWeeklyReturn(
+export function calcWeeklyReturn(
     values: {currentValue: number; pastValue: number}[],
 ): {weeklyReturn: number; weeklyReturnPct: number}
 {
