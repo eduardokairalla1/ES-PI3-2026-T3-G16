@@ -8,6 +8,7 @@
  * IMPORTS
  */
 import db from '../../configs';
+import {FieldValue} from 'firebase-admin/firestore';
 
 
 /**
@@ -52,4 +53,42 @@ export async function createWallet(uid: string): Promise<void>
     };
 
     await db.collection('wallets').doc(uid).set(wallet);
+}
+
+
+/**
+ * I increment the wallet balance for a user.
+ *
+ * @param uid    Firebase Auth UID
+ * @param amount positive amount to add
+ */
+export async function depositToWallet(uid: string, amount: number): Promise<void>
+{
+    const ref  = db.collection('wallets').doc(uid);
+    const snap = await ref.get();
+
+    if (!snap.exists)
+    {
+        throw new Error(`Wallet not found for user "${uid}".`);
+    }
+
+    await ref.update({
+        'balance':    FieldValue.increment(amount),
+        'updated_at': new Date(),
+    });
+}
+
+
+/**
+ * I return the current wallet balance for a user.
+ *
+ * @param uid Firebase Auth UID
+ *
+ * @returns current balance
+ */
+export async function getWalletBalance(uid: string): Promise<number>
+{
+    const snap = await db.collection('wallets').doc(uid).get();
+    if (!snap.exists) throw new Error(`Wallet not found for user "${uid}".`);
+    return (snap.data()!.balance as number) ?? 0;
 }
