@@ -10,7 +10,6 @@
  */
 export interface userDocument
 {
-    balance: number;
     birth_date: string;
 
     created_at: Date;
