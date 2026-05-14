@@ -86,6 +86,7 @@ export async function addUser(
 
         'created_at': new Date(),
         'email': email,
+        'favorite_ids': [],
         'full_name': full_name,
         'phone': phone,
         'photo_url': null,
@@ -185,6 +186,8 @@ export async function getUserCount(): Promise<number>
 import {FieldValue} from 'firebase-admin/firestore';
 
 
+
+
 /**
  * I add balance to a user.
  *
@@ -210,3 +213,58 @@ export async function deposit(uid: string, amount: number): Promise<void>
 }
 
 
+/**
+ * I toggle a startup ID in the user's favorite_ids array.
+ * Returns true if now favorited, false if removed.
+ *
+ * @param uid       Firebase Auth UID
+ * @param startupId startup document ID
+ */
+export async function toggleFavoriteId(uid: string, startupId: string): Promise<boolean>
+{
+    const snapshot = await db.collection('users')
+        .where('uid', '==', uid)
+        .limit(1)
+        .get();
+
+    if (snapshot.empty) throw new Error(`User "${uid}" not found.`);
+
+    const doc = snapshot.docs[0];
+    const current = (doc.data() as userDocument).favorite_ids ?? [];
+    const isFavorited = current.includes(startupId);
+
+    if (isFavorited)
+    {
+        await doc.ref.update({
+            'favorite_ids': FieldValue.arrayRemove(startupId),
+            'updated_at': new Date(),
+        });
+        return false;
+    }
+
+    await doc.ref.update({
+        'favorite_ids': FieldValue.arrayUnion(startupId),
+        'updated_at': new Date(),
+    });
+    return true;
+}
+
+
+/**
+ * I return the favorite startup IDs for a user.
+ *
+ * @param uid Firebase Auth UID
+ *
+ * @returns array of startup IDs
+ */
+export async function getFavoriteIds(uid: string): Promise<string[]>
+{
+    const snapshot = await db.collection('users')
+        .where('uid', '==', uid)
+        .limit(1)
+        .get();
+
+    if (snapshot.empty) return [];
+
+    return (snapshot.docs[0].data() as userDocument).favorite_ids ?? [];
+}
