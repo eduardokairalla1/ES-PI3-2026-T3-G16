@@ -1,89 +1,35 @@
 /**
  * Favorite database operations.
+ * Delegates to the user document's favorite_ids field.
  *
  * Alex Gabriel Soares Sousa - 24802449
  */
 
-/**
- * IMPORTS
- */
-import db from '../../configs';
-import {getUserDocId} from '../users/storage';
+import {toggleFavoriteId, getFavoriteIds} from '../users/storage';
 
 
 /**
- * TYPES
- */
-import type {FavoriteDocument} from './model';
-
-
-/**
- * CODE
- */
-
-
-/**
- * I get all favorite startup IDs for a user.
+ * I toggle a favorite for a user.
  *
- * @param uid Firebase Auth UID of the user
+ * @param uid       Firebase Auth UID
+ * @param startupId Firestore document ID of the startup
  *
- * @returns list of favorite documents
+ * @returns true if now favorited, false if removed
  */
-export async function getUserFavorites(uid: string): Promise<FavoriteDocument[]>
+export async function toggleFavorite(uid: string, startupId: string): Promise<boolean>
 {
-    const userDocId = await getUserDocId(uid);
-    if (userDocId === null) return [];
-
-    const snapshot = await db
-        .collection('users')
-        .doc(userDocId)
-        .collection('favorites')
-        .get();
-
-    return snapshot.docs.map(doc => doc.data() as FavoriteDocument);
+    return toggleFavoriteId(uid, startupId);
 }
 
 
 /**
- * I toggle a favorite for a user. If the startup is already favorited,
- * it is removed. Otherwise, it is added.
+ * I get all favorite startup IDs for a user as plain strings.
  *
- * @param uid       Firebase Auth UID of the user
- * @param startupId Firestore document ID of the startup
+ * @param uid Firebase Auth UID
  *
- * @returns true if the startup is now favorited, false if unfavorited
+ * @returns array of startup IDs
  */
-export async function toggleFavorite(uid: string, startupId: string): Promise<boolean>
+export async function getUserFavoriteIds(uid: string): Promise<string[]>
 {
-    const userDocId = await getUserDocId(uid);
-    if (userDocId === null)
-    {
-        throw new Error(`User "${uid}" not found.`);
-    }
-
-    const favCol = db
-        .collection('users')
-        .doc(userDocId)
-        .collection('favorites');
-
-    // check if already favorited
-    const existing = await favCol
-        .where('startup_id', '==', startupId)
-        .limit(1)
-        .get();
-
-    if (!existing.empty)
-    {
-        // remove favorite
-        await existing.docs[0].ref.delete();
-        return false;
-    }
-
-    // add favorite
-    const favorite: FavoriteDocument = {
-        'created_at': new Date(),
-        'startup_id': startupId,
-    };
-    await favCol.add(favorite);
-    return true;
+    return getFavoriteIds(uid);
 }
