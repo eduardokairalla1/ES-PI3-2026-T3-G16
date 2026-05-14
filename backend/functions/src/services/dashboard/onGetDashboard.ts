@@ -10,7 +10,7 @@
 import {HttpsError} from 'firebase-functions/v2/https';
 import {getUser, getUserCount} from '../../db/users/storage';
 import {getUserInvestments} from '../../db/investments/storage';
-import {getUserFavorites} from '../../db/favorites/storage';
+import {getUserFavoriteIds} from '../../db/favorites/storage';
 import {getStartups} from '../../db/startups/storage';
 import {getWallet} from '../../db/wallets/storage';
 import {getOrdersByTypeAndStatus} from '../../db/orders/storage';
@@ -60,14 +60,14 @@ export async function handleOnGetDashboard(request: CallableRequest)
         // fetch all data in parallel for performance
         logger.info(`Fetching dashboard data for user "${uid}"...`);
 
-        const [user, investments, favorites, startups, userCount, wallet, orders] = await Promise.all([
+        const [user, favorites, startups, userCount, wallet, orders, investments] = await Promise.all([
             getUser(uid),
-            getUserInvestments(uid),
-            getUserFavorites(uid),
+            getUserFavoriteIds(uid),
             getStartups(),
             getUserCount(),
             getWallet(uid),
             getOrdersByTypeAndStatus(uid, 'buy', 'completed'),
+            getUserInvestments(uid),
         ]);
 
         // user not found
@@ -150,7 +150,7 @@ export async function handleOnGetDashboard(request: CallableRequest)
             : 0;
 
         // extract favorite startup IDs
-        const favoriteIds = favorites.map(f => f.startup_id);
+        const favoriteIds = favorites; // already string[]
 
         logger.info(`Dashboard data for user "${uid}" fetched successfully.`);
 
