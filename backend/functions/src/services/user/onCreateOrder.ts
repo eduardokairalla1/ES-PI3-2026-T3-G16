@@ -11,6 +11,7 @@ import {HttpsError} from 'firebase-functions/v2/https';
 import {getWallet, createWallet} from '../../db/wallets/storage';
 import {getStartup} from '../../db/startups/storage';
 import {createOrder, updateOrderStatus} from '../../db/orders/storage';
+import {recordTransaction} from '../../db/transactions/storage';
 import {verifyAuth} from '../../utils/auth';
 import {calcTokenPrice} from '../../utils/pricing';
 import {logger} from '../../utils/logger';
@@ -188,6 +189,21 @@ export async function handleOnCreateOrder(request: CallableRequest)
         // mark order as completed
         const completedAt = new Date();
         await updateOrderStatus(order.id, 'completed', {completed_at: completedAt});
+
+        // Record in transaction history — best-effort, does not roll back the order
+        try
+        {
+            await recordTransaction(uid, {
+                amount:      totalAmount,
+                description: `Compra de tokens — ${startup.name}`,
+                status:      'completed',
+                type:        'buy',
+            });
+        }
+        catch (txErr)
+        {
+            logger.warning(`Failed to record transaction for order "${order.id}": ${txErr}`);
+        }
 
         logger.info(`Order "${order.id}" completed. User "${uid}" bought ${quantity} tokens of "${startupId}".`);
 
