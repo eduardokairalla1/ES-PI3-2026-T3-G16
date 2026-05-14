@@ -7,7 +7,7 @@
  * IMPORTS
  */
 import {HttpsError} from 'firebase-functions/v2/https';
-import {deposit, getUser} from '../../db/users/storage';
+import {depositToWallet, getWalletBalance} from '../../db/wallets/storage';
 import {recordTransaction} from '../../db/transactions/storage';
 import {logger} from '../../utils/logger';
 
@@ -64,7 +64,7 @@ export async function handleOnDeposit(request: CallableRequest)
         logger.info(`Processing deposit of R$ ${amount} for user "${uid}"...`);
 
 
-        await deposit(uid, amount);
+        await depositToWallet(uid, amount);
 
         // Record in transaction history
         await recordTransaction(uid, {
@@ -74,13 +74,12 @@ export async function handleOnDeposit(request: CallableRequest)
             type: 'deposit',
         });
 
-        // Fetch updated balance via existing storage function
-        const updatedUser = await getUser(uid);
-        const newBalance = updatedUser?.balance ?? 0;
+        // Fetch updated balance
+        const newBalance = await getWalletBalance(uid);
 
         return {
-            message: 'Deposit successful.',
             newBalance,
+            message: `Deposit of R$ ${amount} completed successfully.`,
         };
 
     }
