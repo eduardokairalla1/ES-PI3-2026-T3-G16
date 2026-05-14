@@ -9,7 +9,6 @@
  */
 import {HttpsError} from 'firebase-functions/v2/https';
 import {getUser, getUserCount} from '../../db/users/storage';
-import {getUserInvestments} from '../../db/investments/storage';
 import {getUserFavoriteIds} from '../../db/favorites/storage';
 import {getStartups} from '../../db/startups/storage';
 import {getWallet} from '../../db/wallets/storage';
@@ -60,14 +59,13 @@ export async function handleOnGetDashboard(request: CallableRequest)
         // fetch all data in parallel for performance
         logger.info(`Fetching dashboard data for user "${uid}"...`);
 
-        const [user, favorites, startups, userCount, wallet, orders, investments] = await Promise.all([
+        const [user, favorites, startups, userCount, wallet, orders] = await Promise.all([
             getUser(uid),
             getUserFavoriteIds(uid),
             getStartups(),
             getUserCount(),
             getWallet(uid),
             getOrdersByTypeAndStatus(uid, 'buy', 'completed'),
-            getUserInvestments(uid),
         ]);
 
         // user not found
@@ -76,33 +74,56 @@ export async function handleOnGetDashboard(request: CallableRequest)
             throw new AuthError(`Profile not found for user "${uid}".`);
         }
 
-        // build startup price lookup map
+        // build startup lookup maps (price + details)
         const startupPriceMap = new Map<string, number>();
+        const startupNameMap  = new Map<string, {name: string; logoUrl: string}>();
         for (const s of startups)
         {
             startupPriceMap.set(s.id, s.token_price);
+            startupNameMap.set(s.id, {name: s.name, logoUrl: s.logo_url ?? ''});
         }
 
-        // calculate portfolio total and investments with current prices
+        // derive portfolio from completed buy orders
+        const holdingsByStartup = new Map<string, {quantity: number; totalCost: number}>();
+        for (const order of orders)
+        {
+            const existing = holdingsByStartup.get(order.startup_id);
+            if (existing)
+            {
+                existing.quantity  += order.quantity;
+                existing.totalCost += order.unit_price * order.quantity;
+            }
+            else
+            {
+                holdingsByStartup.set(order.startup_id, {
+                    quantity:  order.quantity,
+                    totalCost: order.unit_price * order.quantity,
+                });
+            }
+        }
+
         let patrimonioTotal = 0;
 
-        const investimentosFormatted = investments.map(inv =>
+        const investimentosFormatted = Array.from(holdingsByStartup.entries()).map(([startupId, holding]) =>
         {
-            const currentPrice = startupPriceMap.get(inv.startup_id) ?? inv.avg_purchase_price;
-            const currentValue = inv.token_quantity * currentPrice;
-            const variation = inv.avg_purchase_price > 0
-                ? ((currentPrice - inv.avg_purchase_price) / inv.avg_purchase_price) * 100
+            const currentPrice = startupPriceMap.get(startupId) ?? 0;
+            const avgPrice     = holding.quantity > 0 ? holding.totalCost / holding.quantity : 0;
+            const currentValue = holding.quantity * currentPrice;
+            const variation    = avgPrice > 0
+                ? ((currentPrice - avgPrice) / avgPrice) * 100
                 : 0;
 
             patrimonioTotal += currentValue;
 
+            const details = startupNameMap.get(startupId) ?? {name: '', logoUrl: ''};
+
             return {
                 currentPrice,
-                startupId: inv.startup_id,
-                startupLogoUrl: inv.startup_logo_url,
-                startupName: inv.startup_name,
-                tokenQuantity: inv.token_quantity,
-                variation: Math.round(variation * 100) / 100,
+                startupId,
+                startupLogoUrl: details.logoUrl,
+                startupName:    details.name,
+                tokenQuantity:  holding.quantity,
+                variation:      Math.round(variation * 100) / 100,
             };
         });
 
