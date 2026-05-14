@@ -81,15 +81,18 @@ class CabecalhoDashboard extends StatelessWidget {
             const SizedBox(width: 12),
 
             // --- Nome do Usuário ---
-            Text(
-              userName,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: Colors.black87,
+            Expanded(
+              child: Text(
+                userName,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black87,
+                ),
               ),
             ),
-            const Spacer(),
 
             // --- Ícone de Notificações ---
             Stack(
