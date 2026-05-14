@@ -10,6 +10,7 @@ import {HttpsError} from 'firebase-functions/v2/https';
 import {depositToWallet, getWalletBalance} from '../../db/wallets/storage';
 import {recordTransaction} from '../../db/transactions/storage';
 import {logger} from '../../utils/logger';
+import {verifyAuth} from '../../utils/auth';
 
 
 /**
@@ -39,12 +40,7 @@ export async function handleOnDeposit(request: CallableRequest)
     try
     {
         // verify authentication
-        if (request.auth === null || request.auth === undefined)
-        {
-            throw new AuthError('User must be authenticated.');
-        }
-
-        const {uid} = request.auth;
+        const uid = verifyAuth(request);
         let {amount} = request.data;
 
         // validation
