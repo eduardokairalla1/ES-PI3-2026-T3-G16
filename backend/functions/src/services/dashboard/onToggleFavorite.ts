@@ -11,6 +11,7 @@ import {HttpsError} from 'firebase-functions/v2/https';
 import {toggleFavorite} from '../../db/favorites/storage';
 import {getStartup} from '../../db/startups/storage';
 import {logger} from '../../utils/logger';
+import {verifyAuth} from '../../utils/auth';
 
 
 /**
@@ -47,15 +48,10 @@ export async function handleOnToggleFavorite(request: CallableRequest)
     try
     {
         // verify authentication
-        if (request.auth === null || request.auth === undefined)
-        {
-            throw new AuthError('User must be authenticated.');
-        }
+        const uid = verifyAuth(request);
 
         // validate request data
         const parsed = parseRequest(ToggleFavoriteRequest, request.data);
-
-        const {uid} = request.auth;
 
         // verify startup exists
         const startup = await getStartup(parsed.startupId);
