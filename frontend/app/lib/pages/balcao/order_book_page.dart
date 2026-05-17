@@ -1,4 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -86,8 +88,8 @@ class _OrderBookList extends StatelessWidget {
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance
           .collection('orders')
-          .where('startup_id', '==', startupId)
-          .where('status', '==', 'pending')
+          .where('startup_id', isEqualTo: startupId)
+          .where('status', isEqualTo: 'pending')
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -103,9 +105,9 @@ class _OrderBookList extends StatelessWidget {
         final buyOrders = docs.where((d) => d['type'] == 'buy').toList();
         final sellOrders = docs.where((d) => d['type'] == 'sell').toList();
 
-        // Sort: Buy orders highest price first, Sell orders lowest price first
+        // Sort: Buy orders descending (highest bid at top), Sell orders descending (lowest ask at bottom)
         buyOrders.sort((a, b) => (b['unit_price'] as num).compareTo(a['unit_price'] as num));
-        sellOrders.sort((a, b) => (a['unit_price'] as num).compareTo(b['unit_price'] as num));
+        sellOrders.sort((a, b) => (b['unit_price'] as num).compareTo(a['unit_price'] as num));
 
         // In a real order book, we aggregate quantities by price. 
         // For simplicity we show individual orders.
@@ -176,6 +178,7 @@ class _OrderRow extends StatelessWidget {
     final total = price * quantity;
     final color = isBuy ? Colors.green.shade600 : Colors.red.shade600;
     final bgColor = isBuy ? Colors.green.shade50 : Colors.red.shade50;
+    final isMine = data['uid'] == FirebaseAuth.instance.currentUser?.uid;
 
     return Container(
       color: bgColor.withValues(alpha: 0.3),
@@ -191,10 +194,21 @@ class _OrderRow extends StatelessWidget {
             ),
           ),
           Expanded(
-            child: Text(
-              NumberFormat.decimalPattern('pt_BR').format(quantity),
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.black87),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  NumberFormat.decimalPattern('pt_BR').format(quantity),
+                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.black87),
+                ),
+                if (isMine) ...[
+                  const SizedBox(width: 8),
+                  GestureDetector(
+                    onTap: () => _cancelOrder(context, data['id']),
+                    child: Icon(Icons.cancel, size: 16, color: Colors.grey.shade500),
+                  ),
+                ],
+              ],
             ),
           ),
           SizedBox(
@@ -208,5 +222,32 @@ class _OrderRow extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Future<void> _cancelOrder(BuildContext context, String orderId) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Cancelar Ordem?'),
+        content: const Text('Tem certeza que deseja cancelar esta ordem? Os ativos serão estornados.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('NÃO', style: TextStyle(color: Colors.black))),
+          TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('SIM', style: TextStyle(color: Colors.red))),
+        ],
+      ),
+    );
+
+    if (confirm == true && context.mounted) {
+      try {
+        await FirebaseFunctions.instance.httpsCallable('onCancelOrder').call({'orderId': orderId});
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Ordem cancelada com sucesso.')));
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Erro ao cancelar ordem.')));
+        }
+      }
+    }
   }
 }

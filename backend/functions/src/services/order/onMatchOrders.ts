@@ -47,11 +47,11 @@ export const onMatchOrders = onDocumentCreated('orders/{orderId}', async (event)
             if (currentOrder.type === 'buy') {
                 oppositeOrders = oppositeOrders
                     .filter(o => o.unit_price <= currentOrder.unit_price)
-                    .sort((a, b) => a.unit_price - b.unit_price || a.created_at.toMillis() - b.created_at.toMillis());
+                    .sort((a, b) => a.unit_price - b.unit_price || a.created_at.getTime() - b.created_at.getTime());
             } else {
                 oppositeOrders = oppositeOrders
                     .filter(o => o.unit_price >= currentOrder.unit_price)
-                    .sort((a, b) => b.unit_price - a.unit_price || a.created_at.toMillis() - b.created_at.toMillis());
+                    .sort((a, b) => b.unit_price - a.unit_price || a.created_at.getTime() - b.created_at.getTime());
             }
 
             let remainingQuantity = currentOrder.quantity;

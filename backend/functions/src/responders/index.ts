@@ -54,5 +54,7 @@ export const onGetTokenHistory = onCall({cors: true}, handleOnGetTokenHistory);
 export const onGetDashboard    = onCall({cors: true}, handleOnGetDashboard);
 export const onToggleFavorite  = onCall({cors: true}, handleOnToggleFavorite);
 
-// order triggers
+// order triggers and calls
+import {handleOnCancelOrder} from '../services/order/onCancelOrder';
+export const onCancelOrder = onCall({cors: true}, handleOnCancelOrder);
 export {onMatchOrders} from '../services/order/onMatchOrders';

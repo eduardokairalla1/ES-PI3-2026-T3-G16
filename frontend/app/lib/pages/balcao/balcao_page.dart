@@ -272,7 +272,7 @@ class _StartupMarketCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    'Tokens Livres: ${NumberFormat.decimalPattern('pt_BR').format(startup.availableTokens)}',
+                    'Tokens Livres: ${NumberFormat.decimalPattern('pt_BR').format(startup.totalTokens)}',
                     style: TextStyle(
                       fontSize: 12,
                       color: Colors.grey.shade600,
