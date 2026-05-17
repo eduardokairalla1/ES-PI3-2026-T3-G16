@@ -13,3 +13,4 @@ export 'meus_investimentos.dart';
 export 'navegacao_inferior.dart';
 export 'resumo_mercado.dart';
 export 'startups_ecossistema.dart';
+export 'grafico_evolucao_patrimonio.dart';

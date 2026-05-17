@@ -1,14 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:mesclainvest/pages/dashboard/models/portfolio_item_model.dart';
 import 'package:mesclainvest/pages/dashboard/services/portfolio_service.dart';
+import 'package:mesclainvest/pages/catalog/services/catalog_service.dart';
+import 'package:mesclainvest/pages/startup/models/startup_model.dart';
 
 class BalcaoController extends ChangeNotifier {
 
   final PortfolioService _portfolioService = PortfolioService();
+  final CatalogService _catalogService = CatalogService();
 
   bool isLoading = true;
   String? errorMessage;
   List<PortfolioItemModel> portfolio = [];
+  List<StartupModel> startups = [];
 
   Future<void> load() async {
     isLoading = true;
@@ -16,9 +20,14 @@ class BalcaoController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      portfolio = await _portfolioService.fetchPortfolio();
+      final futures = await Future.wait([
+        _portfolioService.fetchPortfolio(),
+        _catalogService.fetchStartups()
+      ]);
+      portfolio = futures[0] as List<PortfolioItemModel>;
+      startups = futures[1] as List<StartupModel>;
     } catch (_) {
-      errorMessage = 'Não foi possível carregar seus investimentos.\nVerifique sua conexão e tente novamente.';
+      errorMessage = 'Não foi possível carregar os dados.\nVerifique sua conexão e tente novamente.';
     } finally {
       isLoading = false;
       notifyListeners();

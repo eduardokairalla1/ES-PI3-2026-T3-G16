@@ -19,6 +19,8 @@ class StartupController extends ChangeNotifier {
   bool isBuyingTokens    = false;
   bool showOrderPanel    = false;
   int  orderQuantity     = 1;
+  double orderPrice      = 0.0;
+  String orderType       = 'buy'; // 'buy' or 'sell'
   String? buyErrorMessage;
 
   StartupModel? startup;
@@ -39,6 +41,7 @@ class StartupController extends ChangeNotifier {
 
       startup = results[0] as StartupModel;
       questions = results[1] as List<QuestionModel>;
+      orderPrice = startup?.tokenPrice ?? 0.0;
     } catch (_) {
       errorMessage = 'Não foi possível carregar a startup. Tente novamente.';
     } finally {
@@ -49,6 +52,8 @@ class StartupController extends ChangeNotifier {
 
   void openOrderPanel() {
     orderQuantity   = 1;
+    orderPrice      = startup?.tokenPrice ?? 0.0;
+    orderType       = 'buy';
     buyErrorMessage = null;
     showOrderPanel  = true;
     notifyListeners();
@@ -68,15 +73,25 @@ class StartupController extends ChangeNotifier {
     if (orderQuantity > 1) orderQuantity--;
     notifyListeners();
   }
+  
+  void setOrderPrice(double price) {
+    orderPrice = price;
+    notifyListeners();
+  }
+  
+  void setOrderType(String type) {
+    orderType = type;
+    notifyListeners();
+  }
 
-  /// I buy tokens and return true on success.
-  Future<bool> buyTokens(String startupId) async {
+  /// I place an order and return true on success.
+  Future<bool> placeOrder(String startupId) async {
     isBuyingTokens  = true;
     buyErrorMessage = null;
     notifyListeners();
 
     try {
-      await _service.buyTokens(startupId, orderQuantity);
+      await _service.createOrder(startupId, orderQuantity, orderPrice, orderType);
       showOrderPanel = false;
       return true;
     } on FirebaseFunctionsException catch (e) {
@@ -84,9 +99,9 @@ class StartupController extends ChangeNotifier {
         case 'invalid-argument':
           final msg = e.message ?? '';
           if (msg.toLowerCase().contains('balance')) {
-            buyErrorMessage = 'Saldo insuficiente para realizar este investimento.';
+            buyErrorMessage = 'Saldo insuficiente para realizar esta ordem.';
           } else if (msg.toLowerCase().contains('token')) {
-            buyErrorMessage = 'Tokens insuficientes disponíveis para esta startup.';
+            buyErrorMessage = 'Tokens insuficientes na sua carteira/mercado.';
           } else {
             buyErrorMessage = e.message ?? 'Dados inválidos.';
           }
@@ -95,7 +110,7 @@ class StartupController extends ChangeNotifier {
         case 'unauthenticated':
           buyErrorMessage = 'Sessão expirada. Faça login novamente.';
         default:
-          buyErrorMessage = 'Não foi possível realizar o investimento. Tente novamente.';
+          buyErrorMessage = 'Não foi possível realizar a ordem. Tente novamente.';
       }
       return false;
     } finally {

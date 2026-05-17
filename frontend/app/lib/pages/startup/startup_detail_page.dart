@@ -188,8 +188,7 @@ class _InvestPanel extends StatelessWidget {
       animation: _controller,
       builder: (context, _) {
         final startup   = _controller.startup;
-        final price     = startup?.tokenPrice ?? 0.0;
-        final total     = price * _controller.orderQuantity;
+        final total     = _controller.orderPrice * _controller.orderQuantity;
         final formatter = NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
 
         return AnimatedSize(
@@ -208,7 +207,7 @@ class _InvestPanel extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
       child: AppButton(
-        label: 'INVESTIR NESTA STARTUP',
+        label: 'NOVA ORDEM (COMPRA/VENDA)',
         onPressed: _controller.openOrderPanel,
       ),
     );
@@ -219,6 +218,8 @@ class _InvestPanel extends StatelessWidget {
     NumberFormat formatter,
     double total,
   ) {
+    final isBuy = _controller.orderType == 'buy';
+
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
       decoration: BoxDecoration(
@@ -240,10 +241,37 @@ class _InvestPanel extends StatelessWidget {
             ),
           ),
 
-          Text(
-            'Investir em ${_controller.startup?.name ?? ''}',
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+          Row(
+            children: [
+              Expanded(
+                child: GestureDetector(
+                  onTap: () => _controller.setOrderType('buy'),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    decoration: BoxDecoration(
+                      color: isBuy ? Colors.green.shade600 : Colors.grey.shade100,
+                      borderRadius: const BorderRadius.horizontal(left: Radius.circular(8)),
+                    ),
+                    child: Text('COMPRAR', textAlign: TextAlign.center, style: TextStyle(color: isBuy ? Colors.white : Colors.black54, fontWeight: FontWeight.bold)),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: GestureDetector(
+                  onTap: () => _controller.setOrderType('sell'),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    decoration: BoxDecoration(
+                      color: !isBuy ? Colors.red.shade600 : Colors.grey.shade100,
+                      borderRadius: const BorderRadius.horizontal(right: Radius.circular(8)),
+                    ),
+                    child: Text('VENDER', textAlign: TextAlign.center, style: TextStyle(color: !isBuy ? Colors.white : Colors.black54, fontWeight: FontWeight.bold)),
+                  ),
+                ),
+              ),
+            ],
           ),
+          
           const SizedBox(height: 20),
 
           // quantity stepper
@@ -266,7 +294,7 @@ class _InvestPanel extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      'Qtd atual: ${_controller.orderQuantity}',
+                      'Quantidade',
                       style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
                     ),
                   ],
@@ -280,6 +308,39 @@ class _InvestPanel extends StatelessWidget {
           ),
 
           const SizedBox(height: 16),
+
+          // Price Input
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade100,
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Preço Limite (R\$):', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.grey.shade700)),
+                SizedBox(
+                  width: 100,
+                  child: TextFormField(
+                    initialValue: _controller.orderPrice.toString(),
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    textAlign: TextAlign.right,
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    decoration: const InputDecoration(border: InputBorder.none),
+                    onChanged: (val) {
+                      final parsed = double.tryParse(val.replaceAll(',', '.'));
+                      if (parsed != null && parsed > 0) {
+                        _controller.setOrderPrice(parsed);
+                      }
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+          
+          const SizedBox(height: 8),
 
           // total cost row
           Container(
@@ -324,14 +385,14 @@ class _InvestPanel extends StatelessWidget {
 
           // confirm + cancel buttons
           AppButton(
-            label: 'CONFIRMAR INVESTIMENTO',
+            label: isBuy ? 'ENVIAR ORDEM DE COMPRA' : 'ENVIAR ORDEM DE VENDA',
             isLoading: _controller.isBuyingTokens,
             onPressed: () async {
-              final ok = await _controller.buyTokens(_startupId);
+              final ok = await _controller.placeOrder(_startupId);
               if (ok && context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Investimento realizado com sucesso!'),
+                  SnackBar(
+                    content: Text('Ordem de ${isBuy ? 'compra' : 'venda'} enviada com sucesso!'),
                     backgroundColor: Colors.black,
                   ),
                 );
