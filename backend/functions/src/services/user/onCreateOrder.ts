@@ -10,13 +10,10 @@
 import {HttpsError} from 'firebase-functions/v2/https';
 import {getWallet, createWallet} from '../../db/wallets/storage';
 import {getStartup} from '../../db/startups/storage';
-import {createOrder, updateOrderStatus} from '../../db/orders/storage';
-import {recordTransaction} from '../../db/transactions/storage';
+import {getUserDocId} from '../../db/users/storage';
 import {verifyAuth} from '../../utils/auth';
-import {calcTokenPrice} from '../../utils/pricing';
 import {logger} from '../../utils/logger';
 import db from '../../configs';
-
 
 /**
  * ERRORS
@@ -26,14 +23,12 @@ import {ValidationError} from '../../errors/validationError';
 import {NotFoundError} from '../../errors/notFoundError';
 import {InternalError} from '../../errors/internalError';
 
-
 /**
  * TYPES
  */
 import type {CallableRequest} from 'firebase-functions/v2/https';
 import {CreateOrderRequest} from '../../types/responders/investment';
 import {parseRequest} from '../../utils/validation';
-
 
 /**
  * CODE
@@ -43,22 +38,16 @@ import {parseRequest} from '../../utils/validation';
  * I handle the onCreateOrder callable.
  *
  * Flow:
- *   1. Validate auth + input (reject non-buy types immediately)
+ *   1. Validate auth + input
  *   2. Verify startup exists
  *   3. Pre-provision wallet if missing
- *   4. Create order with status "pending"
- *   5. Firestore transaction: re-read startup + wallet inside tx,
- *      validate stock + balance, debit wallet, decrement available_tokens,
- *      update token_price, record price snapshot — all atomic
- *   6. Mark order "completed"
+ *   4. Transaction: Verify balance (if buy) or token quantity (if sell).
+ *      Deduct balance or tokens to prevent double-spending.
+ *      Create order in 'orders' collection with status 'pending'.
  *
- * Using a transaction (not a batch) for step 5 ensures that concurrent
- * purchases re-validate stock against the latest available_tokens and
- * abort on contention, preventing the value from going negative.
+ * @param request callable request with startupId, quantity, price, type
  *
- * @param request callable request with startupId, quantity, type
- *
- * @returns orderId, status, totalAmount, completedAt
+ * @returns orderId, status, totalAmount
  */
 export async function handleOnCreateOrder(request: CallableRequest)
 {
@@ -68,13 +57,7 @@ export async function handleOnCreateOrder(request: CallableRequest)
         const uid = verifyAuth(request);
 
         // validate request
-        const {startupId, quantity, type} = parseRequest(CreateOrderRequest, request.data);
-
-        // only buy is implemented — reject sell immediately
-        if (type !== 'buy')
-        {
-            throw new ValidationError('Only buy orders are currently supported.');
-        }
+        const {startupId, quantity, price, type} = parseRequest(CreateOrderRequest, request.data);
 
         // verify startup exists before creating any documents
         logger.info(`Fetching startup "${startupId}"...`);
@@ -92,129 +75,73 @@ export async function handleOnCreateOrder(request: CallableRequest)
             await createWallet(uid);
         }
 
-        // create order as pending — audit trail starts here
-        const order = await createOrder({
-            uid,
-            startup_id:     startupId,
-            type,
-            status:         'pending',
-            quantity,
-            unit_price:     startup.token_price,
-            total_amount:   startup.token_price * quantity,
-            created_at:     new Date(),
-            completed_at:   null,
-            failure_reason: null,
+        const userDocId = await getUserDocId(uid);
+        if (!userDocId) {
+            throw new NotFoundError(`User document not found for uid "${uid}".`);
+        }
+
+        let orderId = '';
+        let totalAmount = 0;
+
+        await db.runTransaction(async (tx) =>
+        {
+            const walletRef = db.collection('wallets').doc(uid);
+            const investmentRef = db.collection('users').doc(userDocId).collection('investments').doc(startupId);
+
+            const [walletSnap, investmentSnap] = await Promise.all([
+                tx.get(walletRef),
+                tx.get(investmentRef),
+            ]);
+
+            totalAmount = price * quantity;
+            const now = new Date();
+
+            if (type === 'buy')
+            {
+                const balance = walletSnap.exists ? (walletSnap.data()!.balance as number) : 0;
+                if (balance < totalAmount)
+                {
+                    throw new ValidationError(`Insufficient balance. Required: ${totalAmount}, available: ${balance}.`);
+                }
+                tx.update(walletRef, {balance: balance - totalAmount, updated_at: now});
+            }
+            else if (type === 'sell')
+            {
+                const tokenQuantity = investmentSnap.exists ? (investmentSnap.data()!.token_quantity as number) : 0;
+                if (tokenQuantity < quantity)
+                {
+                    throw new ValidationError(`Not enough tokens to sell. Required: ${quantity}, available: ${tokenQuantity}.`);
+                }
+                tx.update(investmentRef, {token_quantity: tokenQuantity - quantity, updated_at: now});
+            }
+
+            const orderRef = db.collection('orders').doc();
+            orderId = orderRef.id;
+
+            tx.set(orderRef, {
+                id: orderId,
+                uid,
+                startup_id: startupId,
+                type,
+                status: 'pending',
+                quantity,
+                unit_price: price,
+                total_amount: totalAmount,
+                created_at: now,
+                completed_at: null,
+                failure_reason: null,
+            });
         });
 
-        logger.info(`Order "${order.id}" created as pending.`);
-
-        // transaction: re-read both docs inside to avoid race conditions on available_tokens
-        let totalAmount: number;
-
-        try
-        {
-            ({totalAmount} = await db.runTransaction(async (tx) =>
-            {
-                const startupRef  = db.collection('startups').doc(startupId);
-                const walletRef   = db.collection('wallets').doc(uid);
-
-                const [startupSnap, walletSnap] = await Promise.all([
-                    tx.get(startupRef),
-                    tx.get(walletRef),
-                ]);
-
-                const available         = startupSnap.data()!.available_tokens as number;
-                const balance           = walletSnap.data()!.balance            as number;
-                const basePrice         = startupSnap.data()!.base_price        as number;
-                const totalTokens       = startupSnap.data()!.total_tokens      as number;
-                const appreciationFactor = startupSnap.data()!.appreciation_factor as number;
-                const unitPrice         = startupSnap.data()!.token_price       as number;
-                const amount            = unitPrice * quantity;
-
-                // validate inside transaction — sees the committed state
-                if (available < quantity)
-                {
-                    throw new ValidationError(
-                        `Not enough tokens available. Requested: ${quantity}, available: ${available}.`,
-                    );
-                }
-
-                if (balance < amount)
-                {
-                    throw new ValidationError(
-                        `Insufficient balance. Required: ${amount}, available: ${balance}.`,
-                    );
-                }
-
-                const newAvailable = available - quantity;
-                const newPrice     = calcTokenPrice(basePrice, totalTokens, newAvailable, appreciationFactor);
-                const tokensSold   = totalTokens - newAvailable;
-                const now          = new Date();
-
-                tx.update(walletRef, {balance: balance - amount, updated_at: now});
-                tx.update(startupRef, {
-                    available_tokens: newAvailable,
-                    token_price:      newPrice,
-                    updated_at:       now,
-                });
-
-                const snapRef = db
-                    .collection('price_history')
-                    .doc(startupId)
-                    .collection('snapshots')
-                    .doc();
-
-                tx.set(snapRef, {
-                    id:          snapRef.id,
-                    startup_id:  startupId,
-                    price:       newPrice,
-                    tokens_sold: tokensSold,
-                    recorded_at: now,
-                });
-
-                return {totalAmount: amount};
-            }));
-        }
-        catch (txError: unknown)
-        {
-            // mark order failed before re-throwing
-            const reason = txError instanceof ValidationError
-                ? txError.message
-                : 'Transaction failed.';
-
-            await updateOrderStatus(order.id, 'failed', {failure_reason: reason});
-            throw txError;
-        }
-
-        // mark order as completed
-        const completedAt = new Date();
-        await updateOrderStatus(order.id, 'completed', {completed_at: completedAt});
-
-        // Record in transaction history — best-effort, does not roll back the order
-        try
-        {
-            await recordTransaction(uid, {
-                amount:      totalAmount,
-                description: `Compra de tokens — ${startup.name}`,
-                status:      'completed',
-                type:        'buy',
-            });
-        }
-        catch (txErr)
-        {
-            logger.warning(`Failed to record transaction for order "${order.id}": ${txErr}`);
-        }
-
-        logger.info(`Order "${order.id}" completed. User "${uid}" bought ${quantity} tokens of "${startupId}".`);
+        logger.info(`Order "${orderId}" created as pending. User "${uid}" placed a ${type} order for ${quantity} tokens of "${startupId}" at R$${price}.`);
 
         return {
-            orderId: order.id,
-            status:  'completed',
+            orderId,
+            status:  'pending',
             totalAmount,
-            completedAt,
+            createdAt: new Date(),
         };
     }
-
     catch (error: unknown)
     {
         if (error instanceof AuthError)

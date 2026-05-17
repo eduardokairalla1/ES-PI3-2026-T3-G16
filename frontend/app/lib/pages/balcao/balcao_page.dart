@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:mesclainvest/pages/balcao/controllers/balcao_controller.dart';
 import 'package:mesclainvest/pages/balcao/widgets/balcao_skeleton.dart';
 import 'package:mesclainvest/pages/dashboard/models/portfolio_item_model.dart';
+import 'package:mesclainvest/pages/startup/models/startup_model.dart';
 import 'package:mesclainvest/shared/widgets/app_button.dart';
 import 'package:mesclainvest/shared/widgets/bottom_nav.dart';
 import 'package:mesclainvest/shared/widgets/delayed_shimmer.dart';
@@ -34,60 +35,67 @@ class _BalcaoPageState extends State<BalcaoPage> {
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, _) {
-        return Scaffold(
-          backgroundColor: Colors.white,
-          body: SafeArea(
-            bottom: false,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-
-                const Padding(
-                  padding: EdgeInsets.fromLTRB(20, 20, 20, 0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Balcão',
-                        style: TextStyle(
-                          fontSize: 26,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.black,
-                        ),
+    return DefaultTabController(
+      length: 2,
+      child: AnimatedBuilder(
+        animation: _controller,
+        builder: (context, _) {
+          return Scaffold(
+            backgroundColor: Colors.white,
+            body: SafeArea(
+              bottom: false,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.fromLTRB(20, 20, 20, 10),
+                    child: Text(
+                      'Balcão',
+                      style: TextStyle(
+                        fontSize: 26,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.black,
                       ),
-                      SizedBox(height: 2),
-                      Text(
-                        'Seus investimentos em startups',
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w400,
-                          color: Color(0xFF888888),
-                        ),
-                      ),
+                    ),
+                  ),
+                  TabBar(
+                    labelColor: Colors.black,
+                    unselectedLabelColor: Colors.black38,
+                    labelStyle: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                    ),
+                    unselectedLabelStyle: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    indicator: const UnderlineTabIndicator(
+                      borderSide: BorderSide(color: Colors.black, width: 2.5),
+                      insets: EdgeInsets.symmetric(horizontal: 16),
+                    ),
+                    indicatorSize: TabBarIndicatorSize.label,
+                    tabs: const [
+                      Tab(text: 'Mercado'),
+                      Tab(text: 'Meus Investimentos'),
                     ],
                   ),
-                ),
-
-                const SizedBox(height: 12),
-
-                Expanded(
-                  child: DelayedShimmer(
-                    isLoading: _controller.isLoading,
-                    skeleton: const BalcaoSkeleton(),
-                    child: _buildContent(),
+                  const SizedBox(height: 12),
+                  Expanded(
+                    child: DelayedShimmer(
+                      isLoading: _controller.isLoading,
+                      skeleton: const BalcaoSkeleton(),
+                      child: _buildContent(),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          bottomNavigationBar: const SafeArea(
-            child: BottomNav(currentIndex: 2),
-          ),
-        );
-      },
+            bottomNavigationBar: const SafeArea(
+              child: BottomNav(currentIndex: 2),
+            ),
+          );
+        },
+      ),
     );
   }
 
@@ -119,6 +127,15 @@ class _BalcaoPageState extends State<BalcaoPage> {
       );
     }
 
+    return TabBarView(
+      children: [
+        _buildMercadoTab(),
+        _buildInvestmentsTab(),
+      ],
+    );
+  }
+
+  Widget _buildInvestmentsTab() {
     if (_controller.portfolio.isEmpty) {
       return Center(
         child: Column(
@@ -127,7 +144,7 @@ class _BalcaoPageState extends State<BalcaoPage> {
             const Icon(Icons.storefront_outlined, size: 48, color: Colors.black26),
             const SizedBox(height: 16),
             Text(
-              'Você ainda não tem investimentos.\nExplore as startups disponíveis!',
+              'Você ainda não tem investimentos.\nExplore as startups no Mercado!',
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 15, color: Colors.grey.shade600),
             ),
@@ -153,6 +170,143 @@ class _BalcaoPageState extends State<BalcaoPage> {
           final item = _controller.portfolio[index];
           return _PortfolioCard(item: item, currencyFmt: currencyFmt);
         },
+      ),
+    );
+  }
+
+  Widget _buildMercadoTab() {
+    if (_controller.startups.isEmpty) {
+      return const Center(child: Text('Nenhuma startup encontrada no mercado.'));
+    }
+
+    final currencyFmt = NumberFormat.currency(
+      locale: 'pt_BR',
+      symbol: 'R\$',
+      decimalDigits: 2,
+    );
+
+    return RefreshIndicator(
+      color: Colors.black,
+      onRefresh: _controller.load,
+      child: ListView.builder(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        itemCount: _controller.startups.length,
+        itemBuilder: (context, index) {
+          final startup = _controller.startups[index];
+          return _StartupMarketCard(startup: startup, currencyFmt: currencyFmt);
+        },
+      ),
+    );
+  }
+}
+
+class _StartupMarketCard extends StatelessWidget {
+  final StartupModel startup;
+  final NumberFormat currencyFmt;
+
+  const _StartupMarketCard({required this.startup, required this.currencyFmt});
+
+  @override
+  Widget build(BuildContext context) {
+    final logoUrl = startup.logoUrl ?? '';
+
+    return GestureDetector(
+      onTap: () => context.push('/balcao/orderbook/${startup.id}'),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.grey.shade200),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.02),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.grey.shade100,
+                image: logoUrl.isNotEmpty
+                    ? DecorationImage(
+                        image: NetworkImage(logoUrl),
+                        fit: BoxFit.cover,
+                      )
+                    : null,
+              ),
+              child: logoUrl.isEmpty
+                  ? Center(
+                      child: Text(
+                        startup.name.isNotEmpty
+                            ? startup.name[0].toUpperCase()
+                            : 'S',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 20,
+                        ),
+                      ),
+                    )
+                  : null,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    startup.name,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.black,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    'Tokens Livres: ${NumberFormat.decimalPattern('pt_BR').format(startup.availableTokens)}',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey.shade600,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  currencyFmt.format(startup.tokenPrice),
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'Preço base',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: Colors.grey.shade400,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(width: 8),
+            Icon(Icons.chevron_right, color: Colors.grey.shade400, size: 20),
+          ],
+        ),
       ),
     );
   }

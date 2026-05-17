@@ -10,6 +10,7 @@ import 'package:mesclainvest/pages/auth/login_page.dart';
 import 'package:mesclainvest/pages/auth/register_page.dart';
 import 'package:mesclainvest/pages/auth/reset_password_page.dart';
 import 'package:mesclainvest/pages/balcao/balcao_page.dart';
+import 'package:mesclainvest/pages/balcao/order_book_page.dart';
 import 'package:mesclainvest/pages/dashboard/pagina_dashboard.dart';
 import 'package:mesclainvest/pages/home/home.dart';
 import 'package:mesclainvest/pages/profile/profile_page.dart';
@@ -71,6 +72,12 @@ final router = GoRouter(
     GoRoute(
       path: '/balcao',
       pageBuilder: (context, state) => const NoTransitionPage(child: BalcaoPage()),
+    ),
+    GoRoute(
+      path: '/balcao/orderbook/:id',
+      builder: (context, state) => OrderBookPage(
+        startupId: state.pathParameters['id']!,
+      ),
     ),
     GoRoute(
       path: '/startup/:id',
