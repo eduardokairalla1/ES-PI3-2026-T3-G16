@@ -53,3 +53,6 @@ export const onGetTokenHistory = onCall({cors: true}, handleOnGetTokenHistory);
 // dashboard functions
 export const onGetDashboard    = onCall({cors: true}, handleOnGetDashboard);
 export const onToggleFavorite  = onCall({cors: true}, handleOnToggleFavorite);
+
+// order triggers
+export {onMatchOrders} from '../services/order/onMatchOrders';
