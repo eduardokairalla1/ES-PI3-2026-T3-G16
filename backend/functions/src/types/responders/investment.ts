@@ -23,6 +23,15 @@ export const CreateOrderRequest = z.object(
     },
 );
 
+export const UpdateOrderRequest = z.object(
+    {
+        orderId:   z.string().min(1, 'Order ID is required'),
+        quantity:  z.number().int().min(1, 'Quantity must be at least 1'),
+        price:     z.number().positive('Price must be positive'),
+        type:      z.enum(['buy', 'sell']),
+    },
+);
+
 export const GetTokenHistoryRequest = z.object(
     {
         startupId: z.string().min(1, 'Startup ID is required'),
@@ -35,4 +44,5 @@ export const GetTokenHistoryRequest = z.object(
  * EXPORTS
  */
 export type CreateOrderRequest    = z.infer<typeof CreateOrderRequest>;
+export type UpdateOrderRequest    = z.infer<typeof UpdateOrderRequest>;
 export type GetTokenHistoryRequest = z.infer<typeof GetTokenHistoryRequest>;

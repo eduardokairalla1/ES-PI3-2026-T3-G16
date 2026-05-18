@@ -56,5 +56,7 @@ export const onToggleFavorite  = onCall({cors: true}, handleOnToggleFavorite);
 
 // order triggers and calls
 import {handleOnCancelOrder} from '../services/order/onCancelOrder';
+import {handleOnUpdateOrder} from '../services/order/onUpdateOrder';
 export const onCancelOrder = onCall({cors: true}, handleOnCancelOrder);
+export const onUpdateOrder = onCall({cors: true}, handleOnUpdateOrder);
 export {onMatchOrders} from '../services/order/onMatchOrders';

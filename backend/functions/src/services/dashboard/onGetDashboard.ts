@@ -12,9 +12,9 @@ import {getUser, getUserCount} from '../../db/users/storage';
 import {getUserFavoriteIds} from '../../db/favorites/storage';
 import {getStartups} from '../../db/startups/storage';
 import {getWallet} from '../../db/wallets/storage';
-import {getOrdersByTypeAndStatus} from '../../db/orders/storage';
+import {getUserInvestments} from '../../db/investments/storage';
 import {getOldestSnapshotSince} from '../../db/price_history/storage';
-import {mapTotalTokensByStartup, calcWeeklyReturn} from '../../utils/walletUtils';
+import {calcWeeklyReturn} from '../../utils/walletUtils';
 import {logger} from '../../utils/logger';
 import {verifyAuth} from '../../utils/auth';
 
@@ -55,13 +55,13 @@ export async function handleOnGetDashboard(request: CallableRequest)
         // fetch all data in parallel for performance
         logger.info(`Fetching dashboard data for user "${uid}"...`);
 
-        const [user, favorites, startups, userCount, wallet, orders] = await Promise.all([
+        const [user, favorites, startups, userCount, wallet, investments] = await Promise.all([
             getUser(uid),
             getUserFavoriteIds(uid),
             getStartups(),
             getUserCount(),
             getWallet(uid),
-            getOrdersByTypeAndStatus(uid, 'buy', 'completed'),
+            getUserInvestments(uid),
         ]);
 
         // user not found
@@ -79,32 +79,15 @@ export async function handleOnGetDashboard(request: CallableRequest)
             startupNameMap.set(s.id, {name: s.name, logoUrl: s.logo_url ?? ''});
         }
 
-        // derive portfolio from completed buy orders
-        const holdingsByStartup = new Map<string, {quantity: number; totalCost: number}>();
-        for (const order of orders)
-        {
-            const existing = holdingsByStartup.get(order.startup_id);
-            if (existing)
-            {
-                existing.quantity  += order.quantity;
-                existing.totalCost += order.unit_price * order.quantity;
-            }
-            else
-            {
-                holdingsByStartup.set(order.startup_id, {
-                    quantity:  order.quantity,
-                    totalCost: order.unit_price * order.quantity,
-                });
-            }
-        }
-
+        // derive portfolio from actual user investments
         let patrimonioTotal = 0;
 
-        const investimentosFormatted = Array.from(holdingsByStartup.entries()).map(([startupId, holding]) =>
+        const investimentosFormatted = investments.filter(inv => inv.token_quantity > 0).map((holding) =>
         {
+            const startupId = holding.startup_id;
             const currentPrice = startupPriceMap.get(startupId) ?? 0;
-            const avgPrice     = holding.quantity > 0 ? holding.totalCost / holding.quantity : 0;
-            const currentValue = holding.quantity * currentPrice;
+            const avgPrice     = holding.avg_purchase_price;
+            const currentValue = holding.token_quantity * currentPrice;
             const variation    = avgPrice > 0
                 ? ((currentPrice - avgPrice) / avgPrice) * 100
                 : 0;
@@ -118,7 +101,7 @@ export async function handleOnGetDashboard(request: CallableRequest)
                 startupId,
                 startupLogoUrl: details.logoUrl,
                 startupName:    details.name,
-                tokenQuantity:  holding.quantity,
+                tokenQuantity:  holding.token_quantity,
                 variation:      Math.round(variation * 100) / 100,
             };
         });
@@ -127,7 +110,12 @@ export async function handleOnGetDashboard(request: CallableRequest)
         const weekAgo = new Date();
         weekAgo.setDate(weekAgo.getDate() - 7);
 
-        const totalTokensByStartup = mapTotalTokensByStartup(orders);
+        const totalTokensByStartup: Record<string, number> = {};
+        for (const inv of investments) {
+            if (inv.token_quantity > 0) {
+                totalTokensByStartup[inv.startup_id] = inv.token_quantity;
+            }
+        }
 
         const weeklyValues = await Promise.all(
             Object.entries(totalTokensByStartup).map(async ([startupId, quantity]) =>
