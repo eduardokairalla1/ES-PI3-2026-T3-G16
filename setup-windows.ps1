@@ -289,7 +289,7 @@ import 'package:firebase_core/firebase_core.dart';
 /// project/app configuration before emulator hosts are wired.
 class DefaultFirebaseOptions {
   static const FirebaseOptions currentPlatform = FirebaseOptions(
-    apiKey: 'emulator-api-key',
+    apiKey: 'AIzaSyA-fake-key-for-local-emulator-testing',
     appId: '1:854885921307:web:fd5a65eb5d67678de97ebe',
     messagingSenderId: '854885921307',
     projectId: '$projectId',
