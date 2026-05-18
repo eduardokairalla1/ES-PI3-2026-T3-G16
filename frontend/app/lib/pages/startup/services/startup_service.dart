@@ -57,4 +57,18 @@ class StartupService {
 
     return (result.data as Map)['orderId'] as String;
   }
+
+  /// I update a pending order and return the new order ID.
+  Future<String> updateOrder(String orderId, int quantity, double price, String type) async {
+    final result = await _functions
+        .httpsCallable('onUpdateOrder')
+        .call<Map<String, dynamic>>({
+          'orderId': orderId,
+          'quantity': quantity,
+          'price': price,
+          'type': type,
+        });
+
+    return (result.data as Map)['orderId'] as String;
+  }
 }

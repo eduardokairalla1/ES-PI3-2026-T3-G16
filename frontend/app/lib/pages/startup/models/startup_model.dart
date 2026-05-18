@@ -131,6 +131,11 @@ class StartupModel {
   factory StartupModel.fromMap(Map<String, dynamic> map) {
     final rawPartners = (map['partners'] as List<dynamic>?) ?? [];
     final rawAdvisors = (map['advisors'] as List<dynamic>?) ?? [];
+    
+    final rawLogoUrl = map['logoUrl'] as String? ?? '';
+    final fixedLogoUrl = rawLogoUrl.contains('placehold.co') && !rawLogoUrl.contains('.png')
+        ? rawLogoUrl.replaceFirst('?', '.png?')
+        : rawLogoUrl;
 
     return StartupModel(
       id: map['id'] as String? ?? '',
@@ -139,7 +144,7 @@ class StartupModel {
       description: map['description'] as String? ?? '',
       executiveSummary: map['executiveSummary'] as String? ?? '',
       stage: map['stage'] as String? ?? 'new',
-      logoUrl: map['logoUrl'] as String? ?? '',
+      logoUrl: fixedLogoUrl,
       tokenPrice: (map['tokenPrice'] as num?)?.toDouble() ?? 0,
       capitalRaised: (map['capitalRaised'] as num?)?.toDouble() ?? 0,
       totalTokens: (map['totalTokens'] as num?)?.toInt() ?? 0,
@@ -171,7 +176,7 @@ class StartupModel {
           'sessões com NPS de 92. Buscamos R\$ 200.000 em capital semente para escalar a '
           'aquisição de usuários e contratar 2 desenvolvedores.',
       stage: 'new',
-      logoUrl: 'https://placehold.co/200x200/4F46E5/FFFFFF?text=TC',
+      logoUrl: 'https://placehold.co/200x200/4F46E5/FFFFFF.png?text=TC',
       tokenPrice: 0.10,
       capitalRaised: 18000,
       totalTokens: 1000000,
