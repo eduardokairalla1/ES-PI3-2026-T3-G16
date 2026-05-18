@@ -14,8 +14,10 @@ import 'package:mesclainvest/firebase_options.dart';
 
 /// --- CODE ---
 
-// tracks whether Firebase has been configured in this process (survives hot restart)
-bool _firebaseReady = false;
+// tracks whether Firebase core has been initialized in this process (survives hot restart)
+bool _firebaseInitialized = false;
+// tracks whether Firebase emulators have been connected in this process
+bool _emulatorsConnected = false;
 
 /// I am the application entry point.
 Future<void> main() async {
@@ -38,8 +40,9 @@ Future<void> main() async {
   final firestoreEmulatorPort =
     int.tryParse(dotenv.env['FIRESTORE_EMULATOR_PORT'] ?? '8080') ?? 8080;
 
-  if (!_firebaseReady) {
-    _firebaseReady = true;
+  // initialize Firebase core only once per process
+  if (!_firebaseInitialized) {
+    _firebaseInitialized = true;
 
     // initialize Firebase — Android auto-initializes natively before Dart runs,
     // so duplicate-app is expected and can be ignored
@@ -50,14 +53,18 @@ Future<void> main() async {
     } on FirebaseException catch (e) {
       if (e.code != 'duplicate-app') rethrow;
     }
+  }
 
-    // point all Firebase services at the local emulators
-    if (useEmulator) {
-      await FirebaseAuth.instance.useAuthEmulator(emulatorHost, authEmulatorPort);
-      FirebaseFirestore.instance.useFirestoreEmulator(emulatorHost, firestoreEmulatorPort);
-      FirebaseFunctions.instance.useFunctionsEmulator(emulatorHost, functionsEmulatorPort);
-      await FirebaseStorage.instance.useStorageEmulator(emulatorHost, storageEmulatorPort);
-    }
+  // point all Firebase services at the local emulators.
+  // This MUST be done before any Auth operation every time the app starts
+  // (including hot restarts) to prevent the reCAPTCHA Enterprise flow from
+  // making requests to real Google servers with the fake emulator API key.
+  if (useEmulator && !_emulatorsConnected) {
+    _emulatorsConnected = true;
+    await FirebaseAuth.instance.useAuthEmulator(emulatorHost, authEmulatorPort);
+    FirebaseFirestore.instance.useFirestoreEmulator(emulatorHost, firestoreEmulatorPort);
+    FirebaseFunctions.instance.useFunctionsEmulator(emulatorHost, functionsEmulatorPort);
+    await FirebaseStorage.instance.useStorageEmulator(emulatorHost, storageEmulatorPort);
   }
 
   // start root widget

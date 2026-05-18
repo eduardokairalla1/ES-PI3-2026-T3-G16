@@ -29,11 +29,24 @@
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="favicon.png"/>
 
-  <title>mesclainvest</title>
+  <title>MesclaInvest</title>
   <link rel="manifest" href="manifest.json">
   <style>
     .firebase-emulator-warning { display: none !important; }
   </style>
+  <!--
+    Disables reCAPTCHA Enterprise for Firebase Auth emulator.
+    The Firebase Auth Web SDK v10+ enables reCAPTCHA by default, which
+    causes 400 errors when using a fake emulator API key against real
+    Google servers. Setting this environment variable before the SDK
+    initializes tells Firebase Auth to bypass reCAPTCHA checks.
+  -->
+  <script>
+    // Signal to firebase-auth that we are running against an emulator.
+    // This prevents the reCAPTCHA Enterprise verifier from making
+    // real network requests to identitytoolkit.googleapis.com.
+    self.FIREBASE_AUTH_EMULATOR_HOST = "localhost:9099";
+  </script>
 </head>
 <body>
   <!--
