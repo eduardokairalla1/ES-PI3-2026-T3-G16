@@ -4,7 +4,9 @@ import 'package:intl/intl.dart';
 import 'package:mesclainvest/pages/balcao/controllers/balcao_controller.dart';
 import 'package:mesclainvest/pages/balcao/widgets/balcao_skeleton.dart';
 import 'package:mesclainvest/pages/dashboard/models/portfolio_item_model.dart';
+import 'package:mesclainvest/pages/dashboard/models/pending_order_model.dart';
 import 'package:mesclainvest/pages/startup/models/startup_model.dart';
+import 'package:mesclainvest/pages/balcao/widgets/edit_order_dialog.dart';
 import 'package:mesclainvest/shared/widgets/app_button.dart';
 import 'package:mesclainvest/shared/widgets/bottom_nav.dart';
 import 'package:mesclainvest/shared/widgets/delayed_shimmer.dart';
@@ -50,7 +52,7 @@ class _BalcaoPageState extends State<BalcaoPage> {
                   const Padding(
                     padding: EdgeInsets.fromLTRB(20, 20, 20, 10),
                     child: Text(
-                      'Balcão',
+                      'Investimentos',
                       style: TextStyle(
                         fontSize: 26,
                         fontWeight: FontWeight.w800,
@@ -136,7 +138,7 @@ class _BalcaoPageState extends State<BalcaoPage> {
   }
 
   Widget _buildInvestmentsTab() {
-    if (_controller.portfolio.isEmpty) {
+    if (_controller.portfolio.isEmpty && _controller.pendingOrders.isEmpty) {
       return Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -162,14 +164,39 @@ class _BalcaoPageState extends State<BalcaoPage> {
     return RefreshIndicator(
       color: Colors.black,
       onRefresh: _controller.load,
-      child: ListView.builder(
+      child: ListView(
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        itemCount: _controller.portfolio.length,
-        itemBuilder: (context, index) {
-          final item = _controller.portfolio[index];
-          return _PortfolioCard(item: item, currencyFmt: currencyFmt);
-        },
+        children: [
+          if (_controller.portfolio.isNotEmpty) ...[
+            const Padding(
+              padding: EdgeInsets.only(bottom: 12, left: 4),
+              child: Text('Ativos na Carteira', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            ),
+            ..._controller.portfolio.map((item) => _PortfolioCard(item: item, currencyFmt: currencyFmt)),
+            const SizedBox(height: 16),
+          ],
+          
+          if (_controller.pendingOrders.isNotEmpty) ...[
+            const Padding(
+              padding: EdgeInsets.only(bottom: 12, left: 4),
+              child: Text('Ofertas Pendentes', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            ),
+            ..._controller.pendingOrders.map((order) => _PendingOrderCard(
+              order: order, 
+              currencyFmt: currencyFmt,
+              onEdit: () async {
+                final result = await showDialog(
+                  context: context,
+                  builder: (_) => EditOrderDialog(order: order),
+                );
+                if (result == true) {
+                  _controller.load(); // Reload data after successful edit
+                }
+              },
+            )),
+          ],
+        ],
       ),
     );
   }
@@ -430,6 +457,118 @@ class _PortfolioCard extends StatelessWidget {
             Icon(Icons.chevron_right, color: Colors.grey.shade400, size: 20),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _PendingOrderCard extends StatelessWidget {
+  final PendingOrderModel order;
+  final NumberFormat currencyFmt;
+  final VoidCallback onEdit;
+
+  const _PendingOrderCard({required this.order, required this.currencyFmt, required this.onEdit});
+
+  @override
+  Widget build(BuildContext context) {
+    final logoUrl = order.logoUrl;
+    final isBuy = order.type == 'buy';
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: isBuy ? Colors.green.shade200 : Colors.red.shade200),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.grey.shade100,
+              image: logoUrl.isNotEmpty
+                  ? DecorationImage(
+                      image: NetworkImage(logoUrl),
+                      fit: BoxFit.cover,
+                    )
+                  : null,
+            ),
+            child: logoUrl.isEmpty
+                ? Center(
+                    child: Text(
+                      order.startupName.isNotEmpty
+                          ? order.startupName[0].toUpperCase()
+                          : 'S',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20,
+                      ),
+                    ),
+                  )
+                : null,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      order.startupName,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.black,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: isBuy ? Colors.green.shade100 : Colors.red.shade100,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        isBuy ? 'COMPRA' : 'VENDA',
+                        style: TextStyle(
+                          fontSize: 9,
+                          fontWeight: FontWeight.bold,
+                          color: isBuy ? Colors.green.shade800 : Colors.red.shade800,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '${NumberFormat.decimalPattern('pt_BR').format(order.quantity)} STX a ${currencyFmt.format(order.price)}',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey.shade600,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            icon: Icon(Icons.edit, color: Colors.blue.shade600, size: 22),
+            onPressed: onEdit,
+            tooltip: 'Editar Ordem',
+          ),
+        ],
       ),
     );
   }

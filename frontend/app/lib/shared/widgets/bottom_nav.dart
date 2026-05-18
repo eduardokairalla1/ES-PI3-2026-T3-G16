@@ -37,7 +37,7 @@ class BottomNav extends StatelessWidget {
         children: [
           _NavItem(index: 0, current: currentIndex, iconOutlined: Icons.home_outlined,          iconFilled: Icons.home,         label: 'Home',     route: '/dashboard'),
           _NavItem(index: 1, current: currentIndex, iconOutlined: Icons.rocket_launch_outlined, iconFilled: Icons.rocket_launch, label: 'Startups', route: '/catalog'),
-          _NavItem(index: 2, current: currentIndex, iconOutlined: Icons.storefront_outlined,    iconFilled: Icons.storefront,    label: 'Balcão',   route: '/balcao'),
+          _NavItem(index: 2, current: currentIndex, iconOutlined: Icons.storefront_outlined,    iconFilled: Icons.storefront,    label: 'Investimentos',   route: '/balcao'),
           _NavItem(index: 3, current: currentIndex, iconOutlined: Icons.person_outline,         iconFilled: Icons.person,        label: 'Perfil',   route: '/profile'),
         ],
       ),
