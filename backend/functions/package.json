@@ -10,7 +10,11 @@
     "shell": "npm run build && npx firebase functions:shell",
     "start": "npm run shell",
     "deploy": "npx firebase deploy --only functions",
-    "logs": "npx firebase functions:log"
+    "logs": "npx firebase functions:log",
+    "seed:startups": "npm run build && node lib/scripts/seed-startups.js",
+    "seed:users": "npm run build && node lib/scripts/seed-users.js",
+    "seed:investments": "npm run build && node lib/scripts/seed-investments.js",
+    "seed:orders": "npm run build && node lib/scripts/seed-orders.js"
   },
   "engines": {
     "node": "22"

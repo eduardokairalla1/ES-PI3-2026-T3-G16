@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "module": "NodeNext",
+    "esModuleInterop": true,
+    "moduleResolution": "nodenext",
+    "noImplicitReturns": true,
+    "rootDir": ".",
+    "outDir": "lib",
+    "sourceMap": true,
+    "strict": true,
+    "target": "es2022",
+    "skipLibCheck": true,
+    "noEmitOnError": false
+  },
+  "include": [
+    "scripts/**/*.ts",
+    "src/**/*.ts"
+  ]
+}
