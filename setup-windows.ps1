@@ -737,6 +737,7 @@ if (-not $ready) {
     $seedStartupsJs    = Join-Path $seedOutDir "seed-startups.js"
     $seedUsersJs       = Join-Path $seedOutDir "seed-users.js"
     $seedInvestmentsJs = Join-Path $seedOutDir "seed-investments.js"
+    $seedOrdersJs      = Join-Path $seedOutDir "seed-orders.js"
 
     # Criar tsconfig temporario para compilar os scripts de seed.
     # tsc emite .js mesmo com erros de tipo (noEmitOnError=false por padrao),
@@ -823,6 +824,9 @@ if (-not $ready) {
 
     # --- Seed Investments (precisa de pelo menos um usuario; seed-users garante isso) ---
     [void](Invoke-SeedScript -JsPath $seedInvestmentsJs -Label "investimentos" -SuccessSummary "investimentos registrados")
+
+    # --- Seed Orders (cria 30 ordens pendentes no livro de ofertas) ---
+    [void](Invoke-SeedScript -JsPath $seedOrdersJs -Label "ordens pendentes" -SuccessSummary "ordens criadas no Firestore")
 
     # Limpar variaveis de ambiente
     Remove-Item Env:GCLOUD_PROJECT              -ErrorAction SilentlyContinue
