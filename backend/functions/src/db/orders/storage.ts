@@ -98,3 +98,23 @@ export async function getAllCompletedOrdersByUid(uid: string): Promise<OrderDocu
 
     return snap.docs.map(doc => doc.data() as OrderDocument);
 }
+
+
+/**
+ * I return all pending orders for a startup.
+ *
+ * @param startupId the startup's ID
+ *
+ * @returns list of pending order documents
+ */
+export async function getPendingOrdersByStartupId(startupId: string): Promise<OrderDocument[]>
+{
+    const snap = await db
+        .collection('orders')
+        .where('startup_id', '==', startupId)
+        .where('status', '==', 'pending')
+        .get();
+
+    return snap.docs.map(doc => doc.data() as OrderDocument);
+}
+

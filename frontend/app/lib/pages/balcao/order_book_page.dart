@@ -5,11 +5,26 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:mesclainvest/shared/widgets/app_button.dart';
+import 'package:mesclainvest/pages/startup/services/startup_service.dart';
+import 'package:mesclainvest/pages/balcao/widgets/create_order_dialog.dart';
 
-class OrderBookPage extends StatelessWidget {
+class OrderBookPage extends StatefulWidget {
   final String startupId;
 
   const OrderBookPage({super.key, required this.startupId});
+
+  @override
+  State<OrderBookPage> createState() => _OrderBookPageState();
+}
+
+class _OrderBookPageState extends State<OrderBookPage> {
+  Key _refreshKey = UniqueKey();
+
+  void _refresh() {
+    setState(() {
+      _refreshKey = UniqueKey();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +36,11 @@ class OrderBookPage extends StatelessWidget {
           children: [
             _buildHeader(context),
             Expanded(
-              child: _OrderBookList(startupId: startupId),
+              child: _OrderBookList(
+                key: _refreshKey,
+                startupId: widget.startupId,
+                onRefresh: _refresh,
+              ),
             ),
             _buildBottomPanel(context),
           ],
@@ -67,11 +86,14 @@ class OrderBookPage extends StatelessWidget {
       ),
       child: AppButton(
         label: 'NOVA ORDEM',
-        onPressed: () {
-           // We can open a modal here, or navigate to a new screen.
-           // For simplicity and reusing the PDF's requirement, we will redirect 
-           // the user to the startup page where the InvestPanel will handle the order form.
-           context.push('/startup/$startupId');
+        onPressed: () async {
+          final result = await showDialog<bool>(
+            context: context,
+            builder: (_) => CreateOrderDialog(startupId: widget.startupId),
+          );
+          if (result == true) {
+            _refresh();
+          }
         },
       ),
     );
@@ -80,27 +102,34 @@ class OrderBookPage extends StatelessWidget {
 
 class _OrderBookList extends StatelessWidget {
   final String startupId;
+  final VoidCallback onRefresh;
 
-  const _OrderBookList({required this.startupId});
+  const _OrderBookList({super.key, required this.startupId, required this.onRefresh});
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance
-          .collection('orders')
-          .where('startup_id', isEqualTo: startupId)
-          .where('status', isEqualTo: 'pending')
-          .snapshots(),
+    final startupService = StartupService();
+    return FutureBuilder<List<Map<String, dynamic>>>(
+      future: startupService.fetchOrderBook(startupId),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator(color: Colors.black));
         }
 
         if (snapshot.hasError) {
-          return const Center(child: Text('Erro ao carregar livro de ofertas.'));
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text(
+                'Erro ao carregar livro de ofertas:\n${snapshot.error}',
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: Colors.red),
+              ),
+            ),
+          );
         }
 
-        final docs = snapshot.data?.docs ?? [];
+        final docs = snapshot.data ?? [];
         
         final buyOrders = docs.where((d) => d['type'] == 'buy').toList();
         final sellOrders = docs.where((d) => d['type'] == 'sell').toList();
@@ -108,9 +137,6 @@ class _OrderBookList extends StatelessWidget {
         // Sort: Buy orders descending (highest bid at top), Sell orders descending (lowest ask at bottom)
         buyOrders.sort((a, b) => (b['unit_price'] as num).compareTo(a['unit_price'] as num));
         sellOrders.sort((a, b) => (b['unit_price'] as num).compareTo(a['unit_price'] as num));
-
-        // In a real order book, we aggregate quantities by price. 
-        // For simplicity we show individual orders.
 
         return Container(
           margin: const EdgeInsets.all(16),
@@ -144,7 +170,7 @@ class _OrderBookList extends StatelessWidget {
                   child: Text('Nenhuma oferta de venda', textAlign: TextAlign.center, style: TextStyle(color: Colors.black38)),
                 )
               else
-                ...sellOrders.map((d) => _OrderRow(data: d.data() as Map<String, dynamic>, isBuy: false)),
+                ...sellOrders.map((d) => _OrderRow(data: d, isBuy: false, onRefresh: onRefresh)),
               
               const Divider(height: 24, thickness: 1.5),
 
@@ -155,7 +181,7 @@ class _OrderBookList extends StatelessWidget {
                   child: Text('Nenhuma oferta de compra', textAlign: TextAlign.center, style: TextStyle(color: Colors.black38)),
                 )
               else
-                ...buyOrders.map((d) => _OrderRow(data: d.data() as Map<String, dynamic>, isBuy: true)),
+                ...buyOrders.map((d) => _OrderRow(data: d, isBuy: true, onRefresh: onRefresh)),
             ],
           ),
         );
@@ -167,8 +193,9 @@ class _OrderBookList extends StatelessWidget {
 class _OrderRow extends StatelessWidget {
   final Map<String, dynamic> data;
   final bool isBuy;
+  final VoidCallback onRefresh;
 
-  const _OrderRow({required this.data, required this.isBuy});
+  const _OrderRow({required this.data, required this.isBuy, required this.onRefresh});
 
   @override
   Widget build(BuildContext context) {
@@ -242,6 +269,7 @@ class _OrderRow extends StatelessWidget {
         await FirebaseFunctions.instance.httpsCallable('onCancelOrder').call({'orderId': orderId});
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Ordem cancelada com sucesso.')));
+          onRefresh();
         }
       } catch (e) {
         if (context.mounted) {
@@ -251,3 +279,4 @@ class _OrderRow extends StatelessWidget {
     }
   }
 }
+

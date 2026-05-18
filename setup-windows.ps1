@@ -643,14 +643,36 @@ if (Test-Path $frontendDir) {
     $webIndex = Join-Path (Join-Path $baseDir "frontend\app") "web\index.html"
     if (Test-Path $webIndex) {
         $html = Get-Content $webIndex -Raw
+
+        # 1. Ocultar o banner do emulador
         if ($html -notmatch 'firebase-emulator-warning') {
             $cssBanner = "`n  <style>`n    .firebase-emulator-warning { display: none !important; }`n  </style>`n"
             $html = $html -replace '</head>', "${cssBanner}</head>"
-            Set-Content $webIndex $html -NoNewline
             Write-Host "[OK] Banner do emulador ocultado em web/index.html" -ForegroundColor $cSuccess
         } else {
             Write-Host "[OK] Banner do emulador ja esta configurado para ser oculto" -ForegroundColor $cSuccess
         }
+
+        # 2. Injetar FIREBASE_AUTH_EMULATOR_HOST para suprimir reCAPTCHA Enterprise
+        # O Firebase Auth Web SDK v10+ ativa o reCAPTCHA por padrao, gerando
+        # erros 400 ao tentar validar a chave de API falsa do emulador no
+        # servidor real do Google. Esta configuracao desativa esse comportamento.
+        if ($html -notmatch 'FIREBASE_AUTH_EMULATOR_HOST') {
+            $emulatorScript = @"
+  <script>
+    // Signal to firebase-auth that we are running against an emulator.
+    // This prevents the reCAPTCHA Enterprise verifier from making
+    // real network requests to identitytoolkit.googleapis.com.
+    self.FIREBASE_AUTH_EMULATOR_HOST = "localhost:9099";
+  </script>
+"@
+            $html = $html -replace '</head>', "${emulatorScript}</head>"
+            Write-Host "[OK] Emulador de Auth configurado no index.html (suprime reCAPTCHA Enterprise)" -ForegroundColor $cSuccess
+        } else {
+            Write-Host "[OK] Emulador de Auth ja configurado no index.html" -ForegroundColor $cSuccess
+        }
+
+        Set-Content $webIndex $html -NoNewline
     }
 
     Set-Location $baseDir

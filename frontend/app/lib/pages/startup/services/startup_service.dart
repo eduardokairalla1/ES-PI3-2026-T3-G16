@@ -71,4 +71,15 @@ class StartupService {
 
     return (result.data as Map)['orderId'] as String;
   }
+
+  /// I fetch the order book for a startup.
+  Future<List<Map<String, dynamic>>> fetchOrderBook(String startupId) async {
+    final result = await _functions
+        .httpsCallable('onGetOrderBook')
+        .call<Map<String, dynamic>>({'startupId': startupId});
+
+    final raw = (result.data as Map)['orders'] as List<dynamic>? ?? [];
+    return raw.map((o) => Map<String, dynamic>.from(o as Map)).toList();
+  }
 }
+

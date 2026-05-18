@@ -40,6 +40,12 @@ export const GetQuestionsRequest = z.object(
     },
 );
 
+export const GetOrderBookRequest = z.object(
+    {
+        startupId: z.string().min(1, 'Startup ID is required'),
+    },
+);
+
 
 /**
  * EXPORTS
@@ -48,3 +54,5 @@ export type GetStartupsRequest = z.infer<typeof GetStartupsRequest>;
 export type GetStartupRequest = z.infer<typeof GetStartupRequest>;
 export type SendQuestionRequest = z.infer<typeof SendQuestionRequest>;
 export type GetQuestionsRequest = z.infer<typeof GetQuestionsRequest>;
+export type GetOrderBookRequest = z.infer<typeof GetOrderBookRequest>;
+

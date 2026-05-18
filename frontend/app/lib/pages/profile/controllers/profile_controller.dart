@@ -17,15 +17,26 @@ class ProfileController extends ChangeNotifier {
   final AuthService _authService = AuthService();
   final DashboardService _dashboardService = DashboardService();
 
+  bool _disposed = false;
   bool isTogglingTwoFA = false;
   bool isSigningOut = false;
   bool isLoadingStats = true;
   DashboardData? _dashboardData;
 
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
+  }
+
+  void _safeNotify() {
+    if (!_disposed) notifyListeners();
+  }
+
   /// Carrega dados do dashboard para exibir estatísticas.
   Future<void> loadStats() async {
     isLoadingStats = true;
-    notifyListeners();
+    _safeNotify();
 
     try {
       _dashboardData = await _dashboardService.fetchUserDashboardData();
@@ -33,7 +44,7 @@ class ProfileController extends ChangeNotifier {
       _dashboardData = null;
     } finally {
       isLoadingStats = false;
-      notifyListeners();
+      _safeNotify();
     }
   }
 
@@ -49,28 +60,28 @@ class ProfileController extends ChangeNotifier {
   /// I toggle 2FA and update AppState locally.
   Future<void> toggle2FA() async {
     isTogglingTwoFA = true;
-    notifyListeners();
+    _safeNotify();
 
     try {
       final newState = await _service.toggle2FA();
       AppState.instance.updateProfileLocally(twoFaEnabled: newState);
     } finally {
       isTogglingTwoFA = false;
-      notifyListeners();
+      _safeNotify();
     }
   }
 
   /// I sign the user out and clear app state.
   Future<void> signOut() async {
     isSigningOut = true;
-    notifyListeners();
+    _safeNotify();
 
     try {
       await _authService.signOut();
       AppState.instance.clearProfile();
     } finally {
       isSigningOut = false;
-      notifyListeners();
+      _safeNotify();
     }
   }
 }

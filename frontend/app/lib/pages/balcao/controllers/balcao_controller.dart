@@ -10,16 +10,27 @@ class BalcaoController extends ChangeNotifier {
   final PortfolioService _portfolioService = PortfolioService();
   final CatalogService _catalogService = CatalogService();
 
+  bool _disposed = false;
   bool isLoading = true;
   String? errorMessage;
   List<PortfolioItemModel> portfolio = [];
   List<PendingOrderModel> pendingOrders = [];
   List<StartupModel> startups = [];
 
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
+  }
+
+  void _safeNotify() {
+    if (!_disposed) notifyListeners();
+  }
+
   Future<void> load() async {
     isLoading = true;
     errorMessage = null;
-    notifyListeners();
+    _safeNotify();
 
     try {
       final futures = await Future.wait([
@@ -34,7 +45,7 @@ class BalcaoController extends ChangeNotifier {
       errorMessage = 'Não foi possível carregar os dados.\nVerifique sua conexão e tente novamente.';
     } finally {
       isLoading = false;
-      notifyListeners();
+      _safeNotify();
     }
   }
 }
