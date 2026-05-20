@@ -9,6 +9,9 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:mesclainvest/app/app.dart';
+import 'package:mesclainvest/app/app_state.dart';
+import 'package:mesclainvest/app/theme/theme_controller.dart';
+import 'package:mesclainvest/core/services/auth.dart';
 import 'package:mesclainvest/firebase_options.dart';
 
 
@@ -59,6 +62,38 @@ Future<void> main() async {
       await FirebaseStorage.instance.useStorageEmulator(emulatorHost, storageEmulatorPort);
     }
   }
+
+  // load persisted theme preference before first frame
+  await ThemeController.instance.load();
+
+  // Firebase Auth restores the session asynchronously on web, which means
+  // `currentUser` can be null at this exact moment even when a valid session
+  // is being restored from IndexedDB. Wait for the first emission of
+  // `authStateChanges` so we know the real state before deciding whether to
+  // pre-fetch the profile. This avoids the "Usuário" / "—" flash on refresh.
+  final authService = AuthService();
+  final restoredUser = await authService.authStateChanges.first;
+  if (restoredUser != null) {
+    try {
+      await AppState.instance.loadProfile(authService);
+    } catch (_) {
+      // best-effort; pages render with placeholders and the listener below
+      // will retry on the next auth state change
+    }
+  }
+
+  // Keep AppState in sync with future auth state changes so sign-out from
+  // anywhere in the app clears the profile, and sign-in (e.g. from a fresh
+  // tab) repopulates it without needing an explicit call site.
+  authService.authStateChanges.listen((user) async {
+    if (user == null) {
+      AppState.instance.clearProfile();
+    } else if (AppState.instance.profile == null) {
+      try {
+        await AppState.instance.loadProfile(authService);
+      } catch (_) {}
+    }
+  });
 
   // start root widget
   runApp(const MesclaInvestApp());
