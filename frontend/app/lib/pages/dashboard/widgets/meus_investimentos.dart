@@ -16,6 +16,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:mesclainvest/pages/dashboard/controllers/dashboard_controller.dart';
 import 'package:mesclainvest/pages/dashboard/models/dashboard_data.dart';
+import 'package:mesclainvest/shared/styles/app_colors.dart';
 
 /*
  * CONSTANTES
@@ -51,25 +52,18 @@ class MeusInvestimentos extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
+              Text(
                 'Meus Investimentos',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
-                  color: Colors.black,
+                  color: AppColors.textPrimary(context),
                   letterSpacing: -0.5,
                 ),
               ),
-              // Botão para ver o portfólio completo (Em desenvolvimento)
+              // Botão para ver o portfólio completo (tela dedicada).
               GestureDetector(
-                onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Portfólio completo em breve!'),
-                      backgroundColor: Colors.black,
-                    ),
-                  );
-                },
+                onTap: () => context.push('/carteira/investimentos'),
                 child: Row(
                   children: [
                     Text(
@@ -99,12 +93,12 @@ class MeusInvestimentos extends StatelessWidget {
                   Icon(
                     Icons.account_balance_wallet_outlined,
                     size: 48,
-                    color: Colors.grey.shade300,
+                    color: AppColors.textMuted(context),
                   ),
                   const SizedBox(height: 16),
                   Text(
                     'Você ainda não possui investimentos.',
-                    style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+                    style: TextStyle(color: AppColors.textSecondary(context), fontSize: 14),
                   ),
                 ],
               ),
@@ -156,9 +150,9 @@ class InvestimentoCard extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.surfaceColor(context),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.grey.shade200),
+          border: Border.all(color: AppColors.border(context)),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.02),
@@ -175,7 +169,7 @@ class InvestimentoCard extends StatelessWidget {
               height: 48,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.grey.shade100,
+                color: AppColors.surfaceMuted(context),
                 image: investimento.startupLogoUrl.isNotEmpty
                     ? DecorationImage(
                         image: NetworkImage(investimento.startupLogoUrl),
@@ -206,10 +200,10 @@ class InvestimentoCard extends StatelessWidget {
                 children: [
                   Text(
                     investimento.startupName,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
-                      color: Colors.black,
+                      color: AppColors.textPrimary(context),
                     ),
                   ),
                   const SizedBox(height: 2),
@@ -217,7 +211,7 @@ class InvestimentoCard extends StatelessWidget {
                     '${NumberFormat.decimalPattern('pt_BR').format(investimento.tokenQuantity)} STX num. Tokens',
                     style: TextStyle(
                       fontSize: 12,
-                      color: Colors.grey.shade600,
+                      color: AppColors.textSecondary(context),
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -231,10 +225,10 @@ class InvestimentoCard extends StatelessWidget {
               children: [
                 Text(
                   exibirValores ? _currencyFmt.format(valorTotal) : 'R\$ •••••',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
-                    color: Colors.black,
+                    color: AppColors.textPrimary(context),
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -264,14 +258,14 @@ class InvestimentoCard extends StatelessWidget {
                 else
                   Text(
                     '•••••%',
-                    style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+                    style: TextStyle(fontSize: 12, color: AppColors.textMuted(context)),
                   ),
               ],
             ),
 
             const SizedBox(width: 8),
             // Ícone de chevron para indicar navegabilidade
-            Icon(Icons.chevron_right, color: Colors.grey.shade400, size: 20),
+            Icon(Icons.chevron_right, color: AppColors.textMuted(context), size: 20),
           ],
         ),
       ),

@@ -13,6 +13,7 @@ library;
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:mesclainvest/app/app_state.dart';
+import 'package:mesclainvest/shared/styles/app_colors.dart';
 
 import 'package:mesclainvest/pages/dashboard/controllers/dashboard_controller.dart';
 
@@ -43,9 +44,9 @@ class CabecalhoDashboard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.surfaceColor(context),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.grey.shade200),
+          border: Border.all(color: AppColors.border(context)),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.05),
@@ -62,8 +63,8 @@ class CabecalhoDashboard extends StatelessWidget {
               child: Container(
                 width: 40,
                 height: 40,
-                decoration: const BoxDecoration(
-                  color: Colors.black,
+                decoration: BoxDecoration(
+                  color: AppColors.textPrimary(context),
                   shape: BoxShape.circle,
                 ),
                 child: ClipOval(
@@ -86,10 +87,10 @@ class CabecalhoDashboard extends StatelessWidget {
                 userName,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: Colors.black87,
+                  color: AppColors.textPrimary(context),
                 ),
               ),
             ),
@@ -99,9 +100,9 @@ class CabecalhoDashboard extends StatelessWidget {
               children: [
                 IconButton(
                   onPressed: () {},
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.notifications_outlined,
-                    color: Colors.black87,
+                    color: AppColors.textPrimary(context),
                     size: 24,
                   ),
                 ),
@@ -132,13 +133,15 @@ class CabecalhoDashboard extends StatelessWidget {
 
   /// Retorna o widget com a inicial do nome caso não haja foto.
   Widget _initial(String letter) {
-    return Center(
-      child: Text(
-        letter,
-        style: const TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.w600,
-          color: Colors.white,
+    return Builder(
+      builder: (context) => Center(
+        child: Text(
+          letter,
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: AppColors.surfaceColor(context),
+          ),
         ),
       ),
     );
