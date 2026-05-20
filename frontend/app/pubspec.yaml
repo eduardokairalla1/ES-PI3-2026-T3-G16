@@ -51,6 +51,9 @@ dependencies:
   # Environment variables
   flutter_dotenv: ^6.0.0
 
+  # Local persistence (theme preference)
+  shared_preferences: ^2.3.2
+
   # Navigation
   go_router: ^17.1.0
   intl: ^0.20.2
