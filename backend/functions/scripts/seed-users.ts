@@ -63,7 +63,15 @@ const LAST_NAMES = [
  * HELPERS
  */
 
-// CPF check-digit helper — Mod11 with the weight running from `startWeight` down to 2.
+/**
+ * I compute one CPF check digit using the Mod11 algorithm, with the weight
+ * running from `startWeight` down to 2.
+ *
+ * @param digits      base digits of the CPF (either 9 for d1, or 10 for d2)
+ * @param startWeight starting weight (10 for the first digit, 11 for the second)
+ *
+ * @returns the resulting check digit (0..9)
+ */
 function checkDigit(digits: number[], startWeight: number): number
 {
     let sum = 0;
@@ -76,9 +84,15 @@ function checkDigit(digits: number[], startWeight: number): number
 }
 
 
-// I produce a Mod11-valid 11-digit CPF deterministically from `seed`. Spread
-// across the digit space so the 30 outputs don't collide and don't look like
-// obvious test sequences (e.g. 11111111111 which is rejected by real validators).
+/**
+ * I produce a Mod11-valid 11-digit CPF deterministically from `seed`. Spread
+ * across the digit space so the 30 outputs don't collide and don't look like
+ * obvious test sequences (e.g. 11111111111 which is rejected by real validators).
+ *
+ * @param seed any positive integer; same input → same CPF
+ *
+ * @returns 11-digit numeric string with valid check digits
+ */
 function generateCpf(seed: number): string
 {
     const base   = (seed * 1234567) % 1000000000;
@@ -91,7 +105,13 @@ function generateCpf(seed: number): string
 }
 
 
-// I produce a Brazilian-format mobile phone number deterministically from `seed`.
+/**
+ * I produce a Brazilian-format mobile phone number deterministically from `seed`.
+ *
+ * @param seed any positive integer; same input → same phone
+ *
+ * @returns string in the form `(DDD) 9XXXX-XXXX`
+ */
 function generatePhone(seed: number): string
 {
     const ddds = [11, 21, 19, 31, 41, 51, 61, 71, 81, 85];
@@ -104,7 +124,14 @@ function generatePhone(seed: number): string
 }
 
 
-// I produce a birth date (YYYY-MM-DD) deterministically from `seed`, always 18+.
+/**
+ * I produce a birth date (YYYY-MM-DD) deterministically from `seed`, always 18+
+ * relative to the project timeline (years in 1985..2005).
+ *
+ * @param seed any positive integer; same input → same date
+ *
+ * @returns ISO-style date string `YYYY-MM-DD`
+ */
 function generateBirthDate(seed: number): string
 {
     const year  = 1985 + (seed % 21);              // 1985..2005
@@ -118,6 +145,12 @@ function generateBirthDate(seed: number): string
  * SEED
  */
 
+/**
+ * I seed {@link TOTAL_USERS} demo users into the Auth + Firestore emulators,
+ * each with a Firestore `users/` document and a `wallets/` doc pre-funded
+ * with {@link STARTING_BALANCE}. Idempotent — UIDs are deterministic and
+ * existing users are skipped on rerun.
+ */
 async function seed(): Promise<void>
 {
     const app  = initializeApp({projectId: PROJECT_ID});
