@@ -6,6 +6,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:mesclainvest/pages/startup/models/startup_model.dart';
+import 'package:mesclainvest/pages/startup/widgets/startup_token_info.dart';
+import 'package:mesclainvest/shared/styles/app_colors.dart';
 
 // --- WIDGET ---
 
@@ -21,14 +23,14 @@ class AboutTab extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _sectionTitle('Sumário Executivo'),
+          _sectionTitle(context, 'Sumário Executivo'),
           const SizedBox(height: 10),
           Text(
             startup.executiveSummary,
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w500,
-              color: Colors.black.withValues(alpha: 0.65),
+              color: AppColors.textSecondary(context),
               height: 1.55,
             ),
           ),
@@ -39,6 +41,7 @@ class AboutTab extends StatelessWidget {
             children: [
               Expanded(
                 child: _statCard(
+                  context: context,
                   label: 'CAPITAL CAPTADO',
                   value: NumberFormat.currency(
                     locale: 'pt_BR',
@@ -51,6 +54,7 @@ class AboutTab extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: _statCard(
+                  context: context,
                   label: 'TOKENS EMITIDOS',
                   value: NumberFormat.compact(
                     locale: 'pt_BR',
@@ -62,25 +66,33 @@ class AboutTab extends StatelessWidget {
             ],
           ),
 
+          // --- Pedro Henrique Medeiros dos Reis - 24801656 ---
+          // Token sigla + sold % progress bar — gives context for the
+          // balcão (the per-startup order book uses this token name).
+          const SizedBox(height: 16),
+          StartupTokenInfo(startup: startup),
+          // --- end Pedro ---
+
           const SizedBox(height: 24),
 
-          _sectionTitle('Sobre o Projeto'),
+          _sectionTitle(context, 'Sobre o Projeto'),
           const SizedBox(height: 10),
           Text(
             startup.description,
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w500,
-              color: Colors.black.withValues(alpha: 0.65),
+              color: AppColors.textSecondary(context),
               height: 1.55,
             ),
           ),
 
           const SizedBox(height: 24),
 
-          _sectionTitle('Documentos'),
+          _sectionTitle(context, 'Documentos'),
           const SizedBox(height: 10),
           _documentItem(
+            context: context,
             icon: Icons.picture_as_pdf_outlined,
             title: 'Plano de Negócios',
             subtitle: 'Em breve',
@@ -93,18 +105,19 @@ class AboutTab extends StatelessWidget {
     );
   }
 
-  Widget _sectionTitle(String text) {
+  Widget _sectionTitle(BuildContext context, String text) {
     return Text(
       text,
-      style: const TextStyle(
+      style: TextStyle(
         fontSize: 16,
         fontWeight: FontWeight.w700,
-        color: Colors.black,
+        color: AppColors.textPrimary(context),
       ),
     );
   }
 
   Widget _statCard({
+    required BuildContext context,
     required String label,
     required String value,
     required IconData icon,
@@ -113,9 +126,9 @@ class AboutTab extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surfaceColor(context),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.black.withValues(alpha: 0.08)),
+        border: Border.all(color: AppColors.border(context)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.04),
@@ -134,17 +147,17 @@ class AboutTab extends StatelessWidget {
             style: TextStyle(
               fontSize: 10,
               fontWeight: FontWeight.w700,
-              color: Colors.black.withValues(alpha: 0.5),
+              color: AppColors.textMuted(context),
               letterSpacing: 0.5,
             ),
           ),
           const SizedBox(height: 4),
           Text(
             value,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w700,
-              color: Colors.black87,
+              color: AppColors.textPrimary(context),
             ),
           ),
         ],
@@ -153,6 +166,7 @@ class AboutTab extends StatelessWidget {
   }
 
   Widget _documentItem({
+    required BuildContext context,
     required IconData icon,
     required String title,
     required String subtitle,
@@ -161,9 +175,9 @@ class AboutTab extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surfaceColor(context),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.black.withValues(alpha: 0.08)),
+        border: Border.all(color: AppColors.border(context)),
       ),
       child: Row(
         children: [
@@ -171,10 +185,10 @@ class AboutTab extends StatelessWidget {
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: Colors.grey.shade100,
+              color: AppColors.surfaceMuted(context),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(icon, color: Colors.black54, size: 22),
+            child: Icon(icon, color: AppColors.textSecondary(context), size: 22),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -183,10 +197,10 @@ class AboutTab extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
-                    color: Colors.black,
+                    color: AppColors.textPrimary(context),
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -194,7 +208,7 @@ class AboutTab extends StatelessWidget {
                   subtitle,
                   style: TextStyle(
                     fontSize: 13,
-                    color: Colors.black.withValues(alpha: 0.45),
+                    color: AppColors.textMuted(context),
                   ),
                 ),
               ],
@@ -202,7 +216,7 @@ class AboutTab extends StatelessWidget {
           ),
           Icon(
             available ? Icons.download_outlined : Icons.lock_outline,
-            color: Colors.black38,
+            color: AppColors.textMuted(context),
             size: 20,
           ),
         ],

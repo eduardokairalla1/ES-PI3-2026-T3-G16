@@ -12,6 +12,7 @@ library;
  */
 
 import 'package:flutter/material.dart';
+import 'package:mesclainvest/shared/styles/app_colors.dart';
 
 /*
  * CODE
@@ -36,9 +37,9 @@ class StatsBox extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.surfaceColor(context),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.grey.shade100),
+          border: Border.all(color: AppColors.border(context)),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.05),
@@ -55,10 +56,10 @@ class StatsBox extends StatelessWidget {
             Text(
               primaryText,
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.w800,
-                color: Colors.black87,
+                color: AppColors.textPrimary(context),
                 letterSpacing: -0.5,
               ),
             ),
@@ -71,7 +72,7 @@ class StatsBox extends StatelessWidget {
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
-                color: Colors.grey.shade600,
+                color: AppColors.textSecondary(context),
                 height: 1.2,
               ),
             ),

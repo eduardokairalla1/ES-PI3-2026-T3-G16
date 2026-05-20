@@ -10,6 +10,7 @@ import 'package:mesclainvest/pages/dashboard/models/price_snapshot_model.dart';
 import 'package:mesclainvest/pages/startup/controllers/valorizacao_controller.dart';
 import 'package:mesclainvest/pages/startup/widgets/startup_header.dart';
 import 'package:mesclainvest/pages/startup/widgets/startup_info_card.dart';
+import 'package:mesclainvest/shared/styles/app_colors.dart';
 
 
 // --- CONSTANTES ---
@@ -57,15 +58,17 @@ class _ValorizacaoPageState extends State<ValorizacaoPage> {
       animation: _controller,
       builder: (context, _) {
         if (_controller.isLoading) {
-          return const Scaffold(
-            backgroundColor: Colors.white,
-            body: Center(child: CircularProgressIndicator(color: Colors.black)),
+          return Scaffold(
+            backgroundColor: AppColors.pageBackground(context),
+            body: Center(
+              child: CircularProgressIndicator(color: AppColors.textPrimary(context)),
+            ),
           );
         }
 
         if (_controller.errorMessage != null || _controller.startup == null) {
           return Scaffold(
-            backgroundColor: const Color(0xFFF8F8F8),
+            backgroundColor: AppColors.pageBackground(context),
             body: SafeArea(
               child: Column(
                 children: [
@@ -74,7 +77,7 @@ class _ValorizacaoPageState extends State<ValorizacaoPage> {
                     child: Center(
                       child: Text(
                         _controller.errorMessage ?? 'Erro inesperado.',
-                        style: const TextStyle(color: Colors.black54),
+                        style: TextStyle(color: AppColors.textSecondary(context)),
                         textAlign: TextAlign.center,
                       ),
                     ),
@@ -90,7 +93,7 @@ class _ValorizacaoPageState extends State<ValorizacaoPage> {
         final history  = _controller.tokenHistory;
 
         return Scaffold(
-          backgroundColor: const Color(0xFFF8F8F8),
+          backgroundColor: AppColors.pageBackground(context),
           body: SafeArea(
             bottom: false,
             child: Column(
@@ -108,7 +111,7 @@ class _ValorizacaoPageState extends State<ValorizacaoPage> {
                         // reusa o info card (preço atual + stage badge)
                         StartupInfoCard(startup: startup),
 
-                        Divider(height: 1, color: Colors.grey.shade200),
+                        Divider(height: 1, color: AppColors.border(context)),
 
                         // resumo do investimento
                         if (history != null && history.hasInvestment)
@@ -144,19 +147,19 @@ class _ValorizacaoPageState extends State<ValorizacaoPage> {
   Widget _buildFallbackHeader(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-      color: Colors.white,
+      color: AppColors.surfaceColor(context),
       child: Row(
         children: [
           GestureDetector(
             onTap: () => Navigator.of(context).pop(),
             child: Container(
               width: 38, height: 38,
-              decoration: BoxDecoration(color: Colors.grey.shade100, shape: BoxShape.circle),
-              child: const Icon(Icons.arrow_back, size: 20),
+              decoration: BoxDecoration(color: AppColors.surfaceMuted(context), shape: BoxShape.circle),
+              child: Icon(Icons.arrow_back, size: 20, color: AppColors.textPrimary(context)),
             ),
           ),
           const SizedBox(width: 12),
-          const Text('Valorização', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+          Text('Valorização', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.textPrimary(context))),
         ],
       ),
     );
@@ -179,7 +182,7 @@ class _InvestmentSummary extends StatelessWidget {
     final isPositive    = changePercent >= 0;
 
     return Container(
-      color: Colors.white,
+      color: AppColors.surfaceColor(context),
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
       child: Row(
         children: [
@@ -188,12 +191,12 @@ class _InvestmentSummary extends StatelessWidget {
             children: [
               Text(
                 currencyFmt.format(history.totalValue),
-                style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800),
+                style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: AppColors.textPrimary(context)),
               ),
               const SizedBox(height: 4),
               Text(
                 '${history.tokenQuantity} tokens · ${currencyFmt.format(history.currentPrice)}/un',
-                style: TextStyle(fontSize: 13, color: Colors.grey.shade500),
+                style: TextStyle(fontSize: 13, color: AppColors.textMuted(context)),
               ),
             ],
           ),
@@ -220,7 +223,7 @@ class _InvestmentSummary extends StatelessWidget {
               ),
               Text(
                 'no período',
-                style: TextStyle(fontSize: 11, color: Colors.grey.shade400),
+                style: TextStyle(fontSize: 11, color: AppColors.textMuted(context)),
               ),
             ],
           ),
@@ -258,7 +261,7 @@ class _PeriodSelector extends StatelessWidget {
               margin: const EdgeInsets.only(right: 8),
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
               decoration: BoxDecoration(
-                color: isSelected ? Colors.black : Colors.grey.shade100,
+                color: isSelected ? AppColors.textPrimary(context) : AppColors.surfaceMuted(context),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(
@@ -266,7 +269,7 @@ class _PeriodSelector extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
-                  color: isSelected ? Colors.white : Colors.grey.shade600,
+                  color: isSelected ? AppColors.surfaceColor(context) : AppColors.textSecondary(context),
                 ),
               ),
             ),
@@ -290,9 +293,9 @@ class _ChartSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (controller.isLoadingChart) {
-      return const SizedBox(
+      return SizedBox(
         height: 260,
-        child: Center(child: CircularProgressIndicator(color: Colors.black, strokeWidth: 2)),
+        child: Center(child: CircularProgressIndicator(color: AppColors.textPrimary(context), strokeWidth: 2)),
       );
     }
 
@@ -303,12 +306,12 @@ class _ChartSection extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.wifi_off_outlined, size: 36, color: Colors.black12),
+              Icon(Icons.wifi_off_outlined, size: 36, color: AppColors.textMuted(context)),
               const SizedBox(height: 8),
               Text(
                 controller.chartError!,
                 textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 13, color: Colors.black38),
+                style: TextStyle(fontSize: 13, color: AppColors.textSecondary(context)),
               ),
             ],
           ),
@@ -323,12 +326,12 @@ class _ChartSection extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.show_chart, size: 40, color: Colors.black12),
+              Icon(Icons.show_chart, size: 40, color: AppColors.textMuted(context)),
               const SizedBox(height: 8),
               Text(
                 'Você ainda não investiu\nnesta startup',
                 textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 13, color: Colors.black38),
+                style: TextStyle(fontSize: 13, color: AppColors.textSecondary(context)),
               ),
             ],
           ),

@@ -13,6 +13,7 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:mesclainvest/pages/dashboard/controllers/dashboard_controller.dart';
+import 'package:mesclainvest/shared/styles/app_colors.dart';
 import 'package:intl/intl.dart';
 
 /*
@@ -48,9 +49,9 @@ class CartaoPatrimonio extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surfaceColor(context),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade300),
+        border: Border.all(color: AppColors.border(context)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
@@ -68,7 +69,7 @@ class CartaoPatrimonio extends StatelessWidget {
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.bold,
-              color: Colors.grey.shade700,
+              color: AppColors.textSecondary(context),
               letterSpacing: 0.5,
             ),
           ),
@@ -83,10 +84,10 @@ class CartaoPatrimonio extends StatelessWidget {
                 child: Text(
                   visivel ? valPatrimonio : 'R\$ *********',
                   key: ValueKey<bool>(visivel),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black87,
+                    color: AppColors.textPrimary(context),
                   ),
                 ),
               ),
@@ -99,7 +100,7 @@ class CartaoPatrimonio extends StatelessWidget {
                   child: Container(
                     padding: const EdgeInsets.all(4),
                     decoration: BoxDecoration(
-                      color: Colors.grey.shade100,
+                      color: AppColors.surfaceMuted(context),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
@@ -107,7 +108,7 @@ class CartaoPatrimonio extends StatelessWidget {
                           ? Icons.visibility_outlined
                           : Icons.visibility_off_outlined,
                       size: 20,
-                      color: Colors.grey.shade600,
+                      color: AppColors.textSecondary(context),
                     ),
                   ),
                 ),
@@ -131,7 +132,7 @@ class CartaoPatrimonio extends StatelessWidget {
                       ? (data.rendimentoDiarioValor >= 0
                             ? Colors.green
                             : Colors.red)
-                      : Colors.grey.shade300,
+                      : AppColors.textMuted(context),
                   size: 16,
                 ),
                 const SizedBox(width: 4),
@@ -146,7 +147,7 @@ class CartaoPatrimonio extends StatelessWidget {
                         ? (data.rendimentoDiarioValor >= 0
                               ? Colors.green.shade700
                               : Colors.red.shade700)
-                        : Colors.grey,
+                        : AppColors.textMuted(context),
                   ),
                 ),
                 const SizedBox(width: 4),
@@ -156,14 +157,14 @@ class CartaoPatrimonio extends StatelessWidget {
                       : '(****) ****',
                   style: TextStyle(
                     fontSize: 14,
-                    color: visivel ? Colors.grey.shade600 : Colors.grey,
+                    color: visivel ? AppColors.textSecondary(context) : AppColors.textMuted(context),
                   ),
                 ),
               ],
             ),
           ),
 
-          const Divider(height: 32, thickness: 1, color: Colors.black12),
+          Divider(height: 32, thickness: 1, color: AppColors.borderSoft(context)),
 
           // --- Saldo Disponível na Carteira (Wallet) ---
           Row(
@@ -176,7 +177,7 @@ class CartaoPatrimonio extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.bold,
-                      color: Colors.grey.shade500,
+                      color: AppColors.textMuted(context),
                       letterSpacing: 0.5,
                     ),
                   ),
@@ -185,10 +186,10 @@ class CartaoPatrimonio extends StatelessWidget {
                     visivel
                         ? formatter.format(data.saldoDisponivel)
                         : 'R\$ ****',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
-                      color: Colors.black87,
+                      color: AppColors.textPrimary(context),
                     ),
                   ),
                 ],

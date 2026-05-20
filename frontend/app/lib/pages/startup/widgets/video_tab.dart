@@ -5,6 +5,7 @@
 // --- IMPORTS ---
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:mesclainvest/shared/styles/app_colors.dart';
 
 // --- WIDGET ---
 
@@ -16,12 +17,12 @@ class VideoTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (videoUrl == null || videoUrl!.isEmpty) {
-      return _emptyState();
+      return _emptyState(context);
     }
     return _withVideo(context, videoUrl!);
   }
 
-  Widget _emptyState() {
+  Widget _emptyState(BuildContext context) {
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -30,22 +31,22 @@ class VideoTab extends StatelessWidget {
             width: 80,
             height: 80,
             decoration: BoxDecoration(
-              color: Colors.grey.shade100,
+              color: AppColors.surfaceMuted(context),
               shape: BoxShape.circle,
             ),
             child: Icon(
               Icons.videocam_off_outlined,
               size: 38,
-              color: Colors.grey.shade400,
+              color: AppColors.textMuted(context),
             ),
           ),
           const SizedBox(height: 16),
-          const Text(
+          Text(
             'Nenhum vídeo disponível',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w700,
-              color: Colors.black54,
+              color: AppColors.textSecondary(context),
             ),
           ),
           const SizedBox(height: 6),
@@ -54,7 +55,7 @@ class VideoTab extends StatelessWidget {
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 13,
-              color: Colors.black.withValues(alpha: 0.4),
+              color: AppColors.textMuted(context),
               height: 1.5,
             ),
           ),
@@ -112,32 +113,32 @@ class VideoTab extends StatelessWidget {
 
           const SizedBox(height: 20),
 
-          const Text(
+          Text(
             'Link do vídeo',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w700,
-              color: Colors.black,
+              color: AppColors.textPrimary(context),
             ),
           ),
           const SizedBox(height: 10),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: AppColors.surfaceColor(context),
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: Colors.black.withValues(alpha: 0.08)),
+              border: Border.all(color: AppColors.border(context)),
             ),
             child: Row(
               children: [
-                const Icon(Icons.link, size: 18, color: Colors.black54),
+                Icon(Icons.link, size: 18, color: AppColors.textSecondary(context)),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
                     url,
                     style: TextStyle(
                       fontSize: 13,
-                      color: Colors.black.withValues(alpha: 0.65),
+                      color: AppColors.textSecondary(context),
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -148,7 +149,6 @@ class VideoTab extends StatelessWidget {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                         content: Text('Link copiado!'),
-                        backgroundColor: Colors.black,
                         duration: Duration(seconds: 2),
                       ),
                     );
@@ -156,13 +156,13 @@ class VideoTab extends StatelessWidget {
                   child: Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: Colors.grey.shade100,
+                      color: AppColors.surfaceMuted(context),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.copy_outlined,
                       size: 16,
-                      color: Colors.black54,
+                      color: AppColors.textSecondary(context),
                     ),
                   ),
                 ),

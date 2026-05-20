@@ -5,6 +5,7 @@
 // --- IMPORTS ---
 import 'package:flutter/material.dart';
 import 'package:mesclainvest/pages/startup/models/startup_model.dart';
+import 'package:mesclainvest/shared/styles/app_colors.dart';
 
 // --- WIDGET ---
 
@@ -20,15 +21,15 @@ class PartnersTab extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _sectionTitle('Sócios Fundadores'),
+          _sectionTitle(context, 'Sócios Fundadores'),
           const SizedBox(height: 12),
-          ...startup.partners.map(_partnerCard),
+          ...startup.partners.map((p) => _partnerCard(context, p)),
 
           if (startup.advisors.isNotEmpty) ...[
             const SizedBox(height: 24),
-            _sectionTitle('Conselho & Mentores'),
+            _sectionTitle(context, 'Conselho & Mentores'),
             const SizedBox(height: 12),
-            ...startup.advisors.map(_advisorCard),
+            ...startup.advisors.map((a) => _advisorCard(context, a)),
           ],
 
           const SizedBox(height: 32),
@@ -37,18 +38,18 @@ class PartnersTab extends StatelessWidget {
     );
   }
 
-  Widget _sectionTitle(String text) {
+  Widget _sectionTitle(BuildContext context, String text) {
     return Text(
       text,
-      style: const TextStyle(
+      style: TextStyle(
         fontSize: 16,
         fontWeight: FontWeight.w700,
-        color: Colors.black,
+        color: AppColors.textPrimary(context),
       ),
     );
   }
 
-  Widget _partnerCard(PartnerModel partner) {
+  Widget _partnerCard(BuildContext context, PartnerModel partner) {
     final initial = partner.name.isNotEmpty
         ? partner.name[0].toUpperCase()
         : '?';
@@ -56,9 +57,9 @@ class PartnersTab extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surfaceColor(context),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.black.withValues(alpha: 0.08)),
+        border: Border.all(color: AppColors.border(context)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.04),
@@ -73,17 +74,17 @@ class PartnersTab extends StatelessWidget {
           Container(
             width: 48,
             height: 48,
-            decoration: const BoxDecoration(
-              color: Colors.black,
+            decoration: BoxDecoration(
+              color: AppColors.textPrimary(context),
               shape: BoxShape.circle,
             ),
             child: Center(
               child: Text(
                 initial,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
-                  color: Colors.white,
+                  color: AppColors.surfaceColor(context),
                 ),
               ),
             ),
@@ -100,10 +101,10 @@ class PartnersTab extends StatelessWidget {
                     Expanded(
                       child: Text(
                         partner.name,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w700,
-                          color: Colors.black,
+                          color: AppColors.textPrimary(context),
                         ),
                       ),
                     ),
@@ -113,15 +114,15 @@ class PartnersTab extends StatelessWidget {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.black,
+                        color: AppColors.textPrimary(context),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
                         '${partner.equityPct.toStringAsFixed(0)}%',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w700,
-                          color: Colors.white,
+                          color: AppColors.surfaceColor(context),
                         ),
                       ),
                     ),
@@ -135,7 +136,7 @@ class PartnersTab extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w500,
-                    color: Colors.black.withValues(alpha: 0.5),
+                    color: AppColors.textMuted(context),
                   ),
                 ),
 
@@ -145,7 +146,7 @@ class PartnersTab extends StatelessWidget {
                     partner.bio!,
                     style: TextStyle(
                       fontSize: 13,
-                      color: Colors.black.withValues(alpha: 0.6),
+                      color: AppColors.textSecondary(context),
                       height: 1.5,
                     ),
                   ),
@@ -158,7 +159,7 @@ class PartnersTab extends StatelessWidget {
     );
   }
 
-  Widget _advisorCard(AdvisorModel advisor) {
+  Widget _advisorCard(BuildContext context, AdvisorModel advisor) {
     final initial = advisor.name.isNotEmpty
         ? advisor.name[0].toUpperCase()
         : '?';
@@ -166,9 +167,9 @@ class PartnersTab extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surfaceColor(context),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.black.withValues(alpha: 0.08)),
+        border: Border.all(color: AppColors.border(context)),
       ),
       child: Row(
         children: [
@@ -176,16 +177,16 @@ class PartnersTab extends StatelessWidget {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: Colors.grey.shade200,
+              color: AppColors.surfaceMuted(context),
               shape: BoxShape.circle,
             ),
             child: Center(
               child: Text(
                 initial,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
-                  color: Colors.black54,
+                  color: AppColors.textSecondary(context),
                 ),
               ),
             ),
@@ -197,17 +198,17 @@ class PartnersTab extends StatelessWidget {
               children: [
                 Text(
                   advisor.name,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
-                    color: Colors.black,
+                    color: AppColors.textPrimary(context),
                   ),
                 ),
                 Text(
                   advisor.role,
                   style: TextStyle(
                     fontSize: 12,
-                    color: Colors.black.withValues(alpha: 0.5),
+                    color: AppColors.textMuted(context),
                   ),
                 ),
               ],
