@@ -57,6 +57,22 @@ export async function handleOnGetPortfolio(request: CallableRequest)
             .orderBy('created_at', 'asc')
             .get();
 
+        // --- Pedro Henrique Medeiros dos Reis - 24801656 ---
+        // After the balcão / P2P market shipped, completed buys overstate the
+        // user's holdings because they don't account for tokens the user sold.
+        // We also need to subtract:
+        //   - completed sell filled quantities
+        //   - cancelled sell filled quantities (partial fills that already left
+        //     the user's hands before cancel)
+        // We can't easily AND these two extra conditions in the same query, so
+        // pull all sell orders (completed and cancelled) and aggregate below.
+        const sellOrdersSnap = await db
+            .collection('orders')
+            .where('uid',  '==', uid)
+            .where('type', '==', 'sell')
+            .get();
+        // --- end Pedro ---
+
         if (ordersSnap.empty)
         {
             return {holdings: []};
@@ -82,6 +98,30 @@ export async function handleOnGetPortfolio(request: CallableRequest)
                 byStartup.set(startupId, {quantity, firstUnitPrice: unitPrice});
             }
         }
+
+        // --- Pedro Henrique Medeiros dos Reis - 24801656 ---
+        // subtract tokens that left the user's holdings via sells
+        for (const doc of sellOrdersSnap.docs)
+        {
+            const data      = doc.data();
+            const status    = data.status as string;
+            const startupId = data.startup_id as string;
+            const filled    = (data.filled_quantity as number) ?? 0;
+
+            // only completed or cancelled (partially-filled) sells consumed tokens
+            if (status !== 'completed' && status !== 'cancelled') continue;
+            if (filled <= 0) continue;
+            if (!byStartup.has(startupId)) continue;
+
+            byStartup.get(startupId)!.quantity -= filled;
+        }
+
+        // drop startups whose net quantity dropped to zero or less (fully sold)
+        for (const [sid, agg] of Array.from(byStartup.entries()))
+        {
+            if (agg.quantity <= 0) byStartup.delete(sid);
+        }
+        // --- end Pedro ---
 
         // fetch startup details and build holdings
         const holdings = await Promise.all(

@@ -42,6 +42,7 @@ export interface StartupDocument
     partners: PartnerDocument[];
     stage: StartupStage;
     tagline: string;
+    token_name: string;
     token_price: number;
     total_tokens: number;
     updated_at: Date | null;

@@ -92,3 +92,66 @@ export async function getWalletBalance(uid: string): Promise<number>
     if (!snap.exists) throw new Error(`Wallet not found for user "${uid}".`);
     return (snap.data()!.balance as number) ?? 0;
 }
+
+
+// --- ORDER BOOK HELPERS ---
+// Pedro Henrique Medeiros dos Reis - 24801656
+
+/**
+ * I get a reference to a wallet document, for use inside a transaction.
+ *
+ * @param uid Firebase Auth UID
+ *
+ * @returns Firestore DocumentReference for the wallet
+ */
+export function getWalletRef(uid: string): FirebaseFirestore.DocumentReference
+{
+    return db.collection('wallets').doc(uid);
+}
+
+
+/**
+ * I debit a wallet by the given amount, inside a transaction.
+ * The caller is responsible for reading the current balance via tx.get first
+ * and passing it in, so the math stays consistent with what the tx saw.
+ *
+ * @param tx             Firestore transaction
+ * @param walletRef      Firestore DocumentReference of the wallet
+ * @param currentBalance the balance value read inside the same transaction
+ * @param amount         positive amount to debit
+ */
+export function txDebitWallet(
+    tx: FirebaseFirestore.Transaction,
+    walletRef: FirebaseFirestore.DocumentReference,
+    currentBalance: number,
+    amount: number,
+): void
+{
+    tx.update(walletRef, {
+        balance:    currentBalance - amount,
+        updated_at: new Date(),
+    });
+}
+
+
+/**
+ * I credit a wallet by the given amount, inside a transaction.
+ * Same contract as txDebitWallet — caller must pass the value read in the tx.
+ *
+ * @param tx             Firestore transaction
+ * @param walletRef      Firestore DocumentReference of the wallet
+ * @param currentBalance the balance value read inside the same transaction
+ * @param amount         positive amount to credit
+ */
+export function txCreditWallet(
+    tx: FirebaseFirestore.Transaction,
+    walletRef: FirebaseFirestore.DocumentReference,
+    currentBalance: number,
+    amount: number,
+): void
+{
+    tx.update(walletRef, {
+        balance:    currentBalance + amount,
+        updated_at: new Date(),
+    });
+}

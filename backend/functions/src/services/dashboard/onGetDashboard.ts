@@ -8,11 +8,11 @@
  * IMPORTS
  */
 import {HttpsError} from 'firebase-functions/v2/https';
-import {getUser, getUserCount} from '../../db/users/storage';
+import {getUser} from '../../db/users/storage';
 import {getUserFavoriteIds} from '../../db/favorites/storage';
 import {getStartups} from '../../db/startups/storage';
 import {getWallet} from '../../db/wallets/storage';
-import {getOrdersByTypeAndStatus} from '../../db/orders/storage';
+import {getOrdersByTypeAndStatus, countActiveInvestors} from '../../db/orders/storage';
 import {getOldestSnapshotSince} from '../../db/price_history/storage';
 import {mapTotalTokensByStartup, calcWeeklyReturn} from '../../utils/walletUtils';
 import {logger} from '../../utils/logger';
@@ -55,11 +55,11 @@ export async function handleOnGetDashboard(request: CallableRequest)
         // fetch all data in parallel for performance
         logger.info(`Fetching dashboard data for user "${uid}"...`);
 
-        const [user, favorites, startups, userCount, wallet, orders] = await Promise.all([
+        const [user, favorites, startups, activeInvestors, wallet, orders] = await Promise.all([
             getUser(uid),
             getUserFavoriteIds(uid),
             getStartups(),
-            getUserCount(),
+            countActiveInvestors(),
             getWallet(uid),
             getOrdersByTypeAndStatus(uid, 'buy', 'completed'),
         ]);
@@ -151,20 +151,29 @@ export async function handleOnGetDashboard(request: CallableRequest)
         // market stats
         const totalStartups = startups.length;
 
-        // calculate average market profitability as percentage variation per startup
-        // uses (capital_raised / total_tokens) as a proxy for initial cost price
-        const rentabilidadeMedia = startups.length > 0
+        // --- Pedro Henrique Medeiros dos Reis - 24801656 ---
+        // Real monthly return: average % variation across all startups,
+        // comparing today's price to the price from ~30 days ago in the
+        // price_history snapshots. If a startup has no snapshot in the
+        // window (newer than 30 days), we treat it as 0% (no contribution).
+        const monthAgo = new Date();
+        monthAgo.setDate(monthAgo.getDate() - 30);
+
+        const startupReturns = await Promise.all(
+            startups.map(async (s) =>
+            {
+                const snap = await getOldestSnapshotSince(s.id, monthAgo);
+                if (snap === null || snap.price <= 0) return 0;
+                return ((s.token_price - snap.price) / snap.price) * 100;
+            }),
+        );
+
+        const rentabilidadeMedia = startupReturns.length > 0
             ? Math.round(
-                startups.reduce((sum, s) =>
-                {
-                    const costPrice = s.total_tokens > 0 ? s.capital_raised / s.total_tokens : 0;
-                    const variation = costPrice > 0
-                        ? ((s.token_price - costPrice) / costPrice) * 100
-                        : 0;
-                    return sum + variation;
-                }, 0) / startups.length * 100,
+                (startupReturns.reduce((sum, r) => sum + r, 0) / startupReturns.length) * 100,
             ) / 100
             : 0;
+        // --- end Pedro ---
 
         // extract favorite startup IDs
         const favoriteIds = favorites; // already string[]
@@ -180,7 +189,7 @@ export async function handleOnGetDashboard(request: CallableRequest)
             rendimentoDiarioValor,
             rentabilidadeMediaMercado: rentabilidadeMedia,
             saldoDisponivel: wallet?.balance ?? 0,
-            totalInvestidoresMercado: userCount,
+            totalInvestidoresMercado: activeInvestors,
             totalStartupsMercado: totalStartups,
         };
     }
