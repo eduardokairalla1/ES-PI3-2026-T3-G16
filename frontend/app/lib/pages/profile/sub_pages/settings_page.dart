@@ -9,6 +9,7 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mesclainvest/app/app_state.dart';
 import 'package:mesclainvest/pages/profile/services/profile_service.dart';
+import 'package:mesclainvest/shared/styles/app_colors.dart';
 import 'package:mesclainvest/shared/widgets/app_button.dart';
 
 // --- PAGE ---
@@ -69,10 +70,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Foto atualizada!'),
-            backgroundColor: Colors.black,
-          ),
+          const SnackBar(content: Text('Foto atualizada!')),
         );
       }
     } catch (e, stack) {
@@ -114,10 +112,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Perfil atualizado!'),
-            backgroundColor: Colors.black,
-          ),
+          const SnackBar(content: Text('Perfil atualizado!')),
         );
       }
     } catch (e) {
@@ -142,27 +137,27 @@ class _SettingsPageState extends State<SettingsPage> {
         : 'U';
 
     return Scaffold(
-      backgroundColor: Colors.grey.shade50,
+      backgroundColor: AppColors.pageBackground(context),
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.surfaceColor(context),
         elevation: 0,
         leading: GestureDetector(
           onTap: () =>
               context.canPop() ? context.pop() : context.go('/profile'),
-          child: const Icon(Icons.arrow_back, color: Colors.black),
+          child: Icon(Icons.arrow_back, color: AppColors.textPrimary(context)),
         ),
         centerTitle: true,
-        title: const Text(
+        title: Text(
           'Configurações',
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w700,
-            color: Colors.black,
+            color: AppColors.textPrimary(context),
           ),
         ),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
-          child: Divider(height: 1, color: Colors.grey.shade200),
+          child: Divider(height: 1, color: AppColors.border(context)),
         ),
       ),
       body: SingleChildScrollView(
@@ -177,8 +172,8 @@ class _SettingsPageState extends State<SettingsPage> {
                   Container(
                     width: 90,
                     height: 90,
-                    decoration: const BoxDecoration(
-                      color: Colors.black,
+                    decoration: BoxDecoration(
+                      color: AppColors.textPrimary(context),
                       shape: BoxShape.circle,
                     ),
                     child: profile?.photoUrl != null
@@ -211,14 +206,14 @@ class _SettingsPageState extends State<SettingsPage> {
                         child: Container(
                           width: 28,
                           height: 28,
-                          decoration: const BoxDecoration(
-                            color: Colors.black,
+                          decoration: BoxDecoration(
+                            color: AppColors.textPrimary(context),
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.camera_alt,
                             size: 16,
-                            color: Colors.white,
+                            color: AppColors.surfaceColor(context),
                           ),
                         ),
                       ),
@@ -230,12 +225,12 @@ class _SettingsPageState extends State<SettingsPage> {
             const SizedBox(height: 32),
 
             // Name field.
-            const Text(
+            Text(
               'NOME COMPLETO',
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
-                color: Colors.black54,
+                color: AppColors.textSecondary(context),
                 letterSpacing: 0.5,
               ),
             ),
@@ -248,12 +243,12 @@ class _SettingsPageState extends State<SettingsPage> {
             const SizedBox(height: 16),
 
             // Phone field.
-            const Text(
+            Text(
               'TELEFONE',
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
-                color: Colors.black54,
+                color: AppColors.textSecondary(context),
                 letterSpacing: 0.5,
               ),
             ),
@@ -288,13 +283,15 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Widget _avatarInitial(String initial) {
-    return Center(
-      child: Text(
-        initial,
-        style: const TextStyle(
-          fontSize: 40,
-          fontWeight: FontWeight.w700,
-          color: Colors.white,
+    return Builder(
+      builder: (context) => Center(
+        child: Text(
+          initial,
+          style: TextStyle(
+            fontSize: 40,
+            fontWeight: FontWeight.w700,
+            color: AppColors.surfaceColor(context),
+          ),
         ),
       ),
     );
@@ -305,67 +302,75 @@ class _SettingsPageState extends State<SettingsPage> {
     TextInputType keyboardType = TextInputType.text,
     void Function(String)? onSubmitted,
   }) {
-    return TextField(
-      controller: controller,
-      keyboardType: keyboardType,
-      textInputAction: TextInputAction.done,
-      onSubmitted: onSubmitted,
-      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
-      decoration: InputDecoration(
-        filled: true,
-        fillColor: Colors.white,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 14,
+    return Builder(
+      builder: (context) => TextField(
+        controller: controller,
+        keyboardType: keyboardType,
+        textInputAction: TextInputAction.done,
+        onSubmitted: onSubmitted,
+        style: TextStyle(
+          fontSize: 15,
+          fontWeight: FontWeight.w600,
+          color: AppColors.textPrimary(context),
         ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(color: Colors.grey.shade200),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(color: Colors.grey.shade200),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: Colors.black),
+        decoration: InputDecoration(
+          filled: true,
+          fillColor: AppColors.surfaceColor(context),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 14,
+          ),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide(color: AppColors.border(context)),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide(color: AppColors.border(context)),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide(color: AppColors.textPrimary(context)),
+          ),
         ),
       ),
     );
   }
 
   Widget _infoField(String label, String value) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w700,
-            color: Colors.black54,
-            letterSpacing: 0.5,
-          ),
-        ),
-        const SizedBox(height: 6),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-          decoration: BoxDecoration(
-            color: Colors.grey.shade100,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.grey.shade200),
-          ),
-          child: Text(
-            value,
+    return Builder(
+      builder: (context) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
             style: TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w600,
-              color: Colors.black.withValues(alpha: 0.5),
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textSecondary(context),
+              letterSpacing: 0.5,
             ),
           ),
-        ),
-      ],
+          const SizedBox(height: 6),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceMuted(context),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppColors.border(context)),
+            ),
+            child: Text(
+              value,
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textSecondary(context),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

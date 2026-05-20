@@ -5,9 +5,12 @@
 // --- IMPORTS ---
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import 'package:mesclainvest/app/app_state.dart';
+import 'package:mesclainvest/app/theme/theme_controller.dart';
 import 'package:mesclainvest/core/models/user_profile.dart';
 import 'package:mesclainvest/pages/profile/controllers/profile_controller.dart';
+import 'package:mesclainvest/shared/styles/app_colors.dart';
 import 'package:mesclainvest/shared/widgets/app_button.dart';
 import 'package:mesclainvest/shared/widgets/bottom_nav.dart';
 
@@ -38,96 +41,44 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
-      animation: Listenable.merge([_controller, AppState.instance]),
+      animation: Listenable.merge([
+        _controller,
+        AppState.instance,
+        ThemeController.instance,
+      ]),
       builder: (context, child) {
         final profile = AppState.instance.profile;
 
         return Scaffold(
-          backgroundColor: Colors.grey.shade50,
+          backgroundColor: AppColors.pageBackground(context),
           body: SafeArea(
             bottom: false,
-            child: Column(
-              children: [
-                _header(),
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
-                    child: Column(
-                      children: [
-                        _avatar(profile),
-                        const SizedBox(height: 12),
-                        _nameAndEmail(profile),
-                        const SizedBox(height: 8),
-                        _verifiedBadge(),
-                        const SizedBox(height: 24),
-                        _twoFACard(profile),
-                        const SizedBox(height: 16),
-                        _menuCard(context),
-                        const SizedBox(height: 24),
-                        _signOutButton(context),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          bottomNavigationBar: const SafeArea(
-            child: BottomNav(currentIndex: 3),
-          ),
-        );
-      },
-    );
-  }
-
-  // ── Header ────────────────────────────────────────────────────────────────
-
-  Widget _header() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: Colors.black,
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: const Center(
-              child: Text(
-                'M',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w800,
-                  color: Colors.white,
-                ),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
+              child: Column(
+                children: [
+                  _avatar(profile),
+                  const SizedBox(height: 12),
+                  _nameAndEmail(profile),
+                  const SizedBox(height: 8),
+                  _verifiedBadge(),
+                  const SizedBox(height: 24),
+                  _statsCard(profile),
+                  const SizedBox(height: 16),
+                  _twoFACard(profile),
+                  const SizedBox(height: 16),
+                  _menuCard(context),
+                  const SizedBox(height: 24),
+                  _signOutButton(context),
+                ],
               ),
             ),
           ),
-          const SizedBox(width: 10),
-          const Text(
-            'Mescla Invest',
-            style: TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w700,
-              color: Colors.black,
-            ),
+          bottomNavigationBar: const SafeArea(
+            child: BottomNav(currentIndex: 4),
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -141,8 +92,8 @@ class _ProfilePageState extends State<ProfilePage> {
     return Container(
       width: 90,
       height: 90,
-      decoration: const BoxDecoration(
-        color: Colors.black,
+      decoration: BoxDecoration(
+        color: AppColors.textPrimary(context),
         shape: BoxShape.circle,
       ),
       child: profile?.photoUrl != null
@@ -162,10 +113,10 @@ class _ProfilePageState extends State<ProfilePage> {
     return Center(
       child: Text(
         initial,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 40,
           fontWeight: FontWeight.w700,
-          color: Colors.white,
+          color: AppColors.surfaceColor(context),
         ),
       ),
     );
@@ -178,10 +129,10 @@ class _ProfilePageState extends State<ProfilePage> {
       children: [
         Text(
           profile?.fullName ?? '—',
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w700,
-            color: Colors.black,
+            color: AppColors.textPrimary(context),
           ),
         ),
         const SizedBox(height: 2),
@@ -190,7 +141,7 @@ class _ProfilePageState extends State<ProfilePage> {
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,
-            color: Colors.black.withValues(alpha: 0.5),
+            color: AppColors.textSecondary(context),
           ),
         ),
       ],
@@ -201,7 +152,7 @@ class _ProfilePageState extends State<ProfilePage> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.black12,
+        color: AppColors.surfaceMuted(context),
         borderRadius: BorderRadius.circular(30),
       ),
       child: Row(
@@ -210,7 +161,7 @@ class _ProfilePageState extends State<ProfilePage> {
           Icon(
             Icons.verified_outlined,
             size: 14,
-            color: Colors.black.withValues(alpha: 0.4),
+            color: AppColors.textMuted(context),
           ),
           const SizedBox(width: 4),
           Text(
@@ -218,7 +169,7 @@ class _ProfilePageState extends State<ProfilePage> {
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w700,
-              color: Colors.black.withValues(alpha: 0.6),
+              color: AppColors.textSecondary(context),
             ),
           ),
         ],
@@ -230,18 +181,17 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Widget _statsCard(UserProfile? profile) {
     final loading = _controller.isLoadingStats;
+    final currency = NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$', decimalDigits: 2);
     final investimentos = loading ? '...' : '${_controller.totalInvestimentos}';
-    final aplicado = loading
-        ? '...'
-        : 'R\$${_controller.totalAplicado.toStringAsFixed(0)}';
+    final aplicado = loading ? '...' : currency.format(_controller.totalAplicado);
     final favoritas = loading ? '...' : '${_controller.totalFavoritas}';
 
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surfaceColor(context),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.black26),
+        border: Border.all(color: AppColors.border(context)),
       ),
       child: Row(
         children: [
@@ -260,10 +210,10 @@ class _ProfilePageState extends State<ProfilePage> {
       children: [
         Text(
           value,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.w700,
-            color: Colors.black,
+            color: AppColors.textPrimary(context),
           ),
         ),
         const SizedBox(height: 4),
@@ -272,7 +222,7 @@ class _ProfilePageState extends State<ProfilePage> {
           style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w700,
-            color: Colors.black.withValues(alpha: 0.4),
+            color: AppColors.textMuted(context),
           ),
         ),
       ],
@@ -283,7 +233,7 @@ class _ProfilePageState extends State<ProfilePage> {
     return Container(
       width: 1,
       height: 48,
-      color: Colors.black.withValues(alpha: 0.2),
+      color: AppColors.border(context),
     );
   }
 
@@ -296,9 +246,9 @@ class _ProfilePageState extends State<ProfilePage> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surfaceColor(context),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.black.withValues(alpha: 0.2)),
+        border: Border.all(color: AppColors.border(context)),
       ),
       child: Row(
         children: [
@@ -306,13 +256,13 @@ class _ProfilePageState extends State<ProfilePage> {
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: Colors.grey.shade100,
+              color: AppColors.surfaceMuted(context),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
               Icons.lock_outline,
               size: 22,
-              color: Colors.black.withValues(alpha: 0.5),
+              color: AppColors.textSecondary(context),
             ),
           ),
           const SizedBox(width: 14),
@@ -320,12 +270,12 @@ class _ProfilePageState extends State<ProfilePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Autenticação 2FA',
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
-                    color: Colors.black,
+                    color: AppColors.textPrimary(context),
                   ),
                 ),
                 const SizedBox(height: 3),
@@ -334,48 +284,22 @@ class _ProfilePageState extends State<ProfilePage> {
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
-                    color: Colors.black.withValues(alpha: 0.4),
+                    color: AppColors.textMuted(context),
                   ),
                 ),
               ],
             ),
           ),
           isToggling
-              ? const SizedBox(
+              ? SizedBox(
                   width: 28,
                   height: 28,
                   child: CircularProgressIndicator(
-                    color: Colors.black,
+                    color: AppColors.textPrimary(context),
                     strokeWidth: 2,
                   ),
                 )
-              : GestureDetector(
-                  onTap: _controller.toggle2FA,
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    width: 52,
-                    height: 28,
-                    decoration: BoxDecoration(
-                      color: enabled ? Colors.black : Colors.black38,
-                      borderRadius: BorderRadius.circular(50),
-                    ),
-                    child: AnimatedAlign(
-                      duration: const Duration(milliseconds: 200),
-                      alignment: enabled
-                          ? Alignment.centerRight
-                          : Alignment.centerLeft,
-                      child: Container(
-                        width: 22,
-                        height: 22,
-                        margin: const EdgeInsets.symmetric(horizontal: 3),
-                        decoration: const BoxDecoration(
-                          color: Colors.white,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
+              : _switch(value: enabled, onTap: _controller.toggle2FA),
         ],
       ),
     );
@@ -386,9 +310,9 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget _menuCard(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surfaceColor(context),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.black.withValues(alpha: 0.1)),
+        border: Border.all(color: AppColors.border(context)),
       ),
       child: Column(
         children: [
@@ -410,8 +334,10 @@ class _ProfilePageState extends State<ProfilePage> {
             onTap: () => context.push('/profile/help'),
           ),
           _menuDivider(),
+          _darkModeItem(context),
+          _menuDivider(),
           _menuItem(
-            icon: Icons.favorite_outline,
+            icon: Icons.star_border_rounded,
             label: 'Startups Favoritas',
             onTap: () => _comingSoon(context),
             isLast: true,
@@ -441,25 +367,29 @@ class _ProfilePageState extends State<ProfilePage> {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: Colors.black12,
+                color: AppColors.surfaceMuted(context),
                 borderRadius: BorderRadius.circular(14),
               ),
-              child: Icon(icon, size: 22, color: Colors.black87),
+              child: Icon(
+                icon,
+                size: 22,
+                color: AppColors.textPrimary(context),
+              ),
             ),
             const SizedBox(width: 14),
             Expanded(
               child: Text(
                 label,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
-                  color: Colors.black,
+                  color: AppColors.textPrimary(context),
                 ),
               ),
             ),
             Icon(
               Icons.chevron_right,
-              color: Colors.black.withValues(alpha: 0.4),
+              color: AppColors.textMuted(context),
               size: 20,
             ),
           ],
@@ -472,9 +402,88 @@ class _ProfilePageState extends State<ProfilePage> {
     return Divider(
       height: 1,
       thickness: 1,
-      color: Colors.black12,
+      color: AppColors.borderSoft(context),
       indent: 16,
       endIndent: 16,
+    );
+  }
+
+  // Pedro Henrique Medeiros dos Reis - 24801656
+  // Dark/light mode menu row. The icon swaps between sun (light active) and
+  // moon (dark active); tapping flips ThemeController and the whole app
+  // animates to the other theme. The switch widget is reused from the 2FA
+  // card so the on/off affordance is identical.
+  Widget _darkModeItem(BuildContext context) {
+    final isDark = ThemeController.instance.isDark;
+    final icon = isDark ? Icons.dark_mode_outlined : Icons.wb_sunny_outlined;
+
+    return InkWell(
+      onTap: () => ThemeController.instance.toggle(),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        child: Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: AppColors.surfaceMuted(context),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Icon(
+                icon,
+                size: 22,
+                color: AppColors.textPrimary(context),
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Text(
+                'Modo Escuro / Claro',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary(context),
+                ),
+              ),
+            ),
+            _switch(value: isDark, onTap: () => ThemeController.instance.toggle()),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Compact on/off switch shared by the 2FA card and the dark mode row.
+  Widget _switch({required bool value, required VoidCallback onTap}) {
+    final track = value
+        ? AppColors.textPrimary(context)
+        : AppColors.textPrimary(context).withValues(alpha: 0.3);
+
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        width: 52,
+        height: 28,
+        decoration: BoxDecoration(
+          color: track,
+          borderRadius: BorderRadius.circular(50),
+        ),
+        child: AnimatedAlign(
+          duration: const Duration(milliseconds: 200),
+          alignment: value ? Alignment.centerRight : Alignment.centerLeft,
+          child: Container(
+            width: 22,
+            height: 22,
+            margin: const EdgeInsets.symmetric(horizontal: 3),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceColor(context),
+              shape: BoxShape.circle,
+            ),
+          ),
+        ),
+      ),
     );
   }
 
@@ -497,7 +506,6 @@ class _ProfilePageState extends State<ProfilePage> {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Em breve!'),
-        backgroundColor: Colors.black,
         duration: Duration(seconds: 2),
       ),
     );
