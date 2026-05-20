@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:mesclainvest/pages/dashboard/controllers/dashboard_controller.dart';
 import 'package:mesclainvest/pages/dashboard/widgets/dashboard_skeleton.dart';
+import 'package:mesclainvest/pages/dashboard/widgets/deposit_prompt_card.dart';
 import 'package:mesclainvest/pages/dashboard/widgets/widgets.dart';
+import 'package:mesclainvest/shared/styles/app_colors.dart';
 import 'package:mesclainvest/shared/widgets/app_button.dart';
 import 'package:mesclainvest/shared/widgets/delayed_shimmer.dart';
 
@@ -34,7 +36,7 @@ class _PaginaDashboardState extends State<PaginaDashboard> {
       animation: _controller,
       builder: (context, _) {
         return Scaffold(
-          backgroundColor: Colors.white,
+          backgroundColor: AppColors.pageBackground(context),
           body: SafeArea(
             bottom: false,
             child: DelayedShimmer(
@@ -54,12 +56,19 @@ class _PaginaDashboardState extends State<PaginaDashboard> {
   }
 
   Widget _buildContent() {
+    // --- Pedro Henrique Medeiros dos Reis - 24801656 ---
+    // Show the "deposit to get started" card at the top whenever the wallet
+    // is empty — softens the empty dashboard for brand-new users.
+    final showDepositPrompt = (_controller.data?.saldoDisponivel ?? 0) <= 0;
+    // --- end Pedro ---
+
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           CabecalhoDashboard(controller: _controller),
           CartaoPatrimonio(controller: _controller),
+          if (showDepositPrompt) DepositPromptCard(controller: _controller),
           BotoesAcao(controller: _controller),
           StartupsEcossistema(controller: _controller),
           MeusInvestimentos(controller: _controller),
@@ -75,12 +84,12 @@ class _PaginaDashboardState extends State<PaginaDashboard> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.wifi_off_outlined, size: 48, color: Colors.black26),
+            Icon(Icons.wifi_off_outlined, size: 48, color: AppColors.textMuted(context)),
             const SizedBox(height: 16),
             Text(
               _controller.errorMessage!,
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 15, color: Colors.black54),
+              style: TextStyle(fontSize: 15, color: AppColors.textSecondary(context)),
             ),
             const SizedBox(height: 24),
             AppButton(

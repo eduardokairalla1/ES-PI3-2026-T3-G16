@@ -16,6 +16,7 @@ import 'package:go_router/go_router.dart';
 import 'package:mesclainvest/pages/catalog/widgets/startup_card.dart';
 import 'package:mesclainvest/pages/dashboard/controllers/dashboard_controller.dart';
 import 'package:mesclainvest/pages/dashboard/widgets/resumo_mercado.dart';
+import 'package:mesclainvest/shared/styles/app_colors.dart';
 
 /*
  * CODE
@@ -40,12 +41,12 @@ class StartupsEcossistema extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
+              Text(
                 'Startups do ecossistema',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
-                  color: Colors.black,
+                  color: AppColors.textPrimary(context),
                   letterSpacing: -0.5,
                 ),
               ),
@@ -96,8 +97,8 @@ class StartupsEcossistema extends StatelessWidget {
                 label: 'Favoritas',
                 isSelected: controller.selectedStartupFilter == 'Favoritas',
                 onTap: () => controller.filterStartups('Favoritas'),
-                icon: Icons.favorite,
-                iconColor: Colors.red.shade400,
+                icon: Icons.star_rounded,
+                iconColor: Colors.amber.shade600,
               ),
             ],
           ),
@@ -106,11 +107,11 @@ class StartupsEcossistema extends StatelessWidget {
         const SizedBox(height: 16),
 
         // --- Widgets de Resumo do Mercado (Injetado condicionalmente) ---
+        // ResumoMercado já aplica padding horizontal de 20 internamente, então
+        // não envolvemos aqui pra evitar dobrar o padding e deixar os boxes
+        // mais estreitos que os outros cards da tela.
         if (controller.data != null) ...[
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: ResumoMercado(controller: controller),
-          ),
+          ResumoMercado(controller: controller),
           const SizedBox(height: 16),
         ],
 
@@ -124,12 +125,12 @@ class StartupsEcossistema extends StatelessWidget {
                   Icon(
                     Icons.business_center_outlined,
                     size: 48,
-                    color: Colors.grey.shade300,
+                    color: AppColors.textMuted(context),
                   ),
                   const SizedBox(height: 16),
                   Text(
                     'Nenhuma startup encontrada.',
-                    style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+                    style: TextStyle(color: AppColors.textSecondary(context), fontSize: 14),
                   ),
                 ],
               ),
@@ -180,10 +181,14 @@ class _FilterChip extends StatelessWidget {
         margin: const EdgeInsets.symmetric(horizontal: 4),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.black : Colors.white,
+          color: isSelected
+              ? AppColors.textPrimary(context)
+              : AppColors.surfaceColor(context),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? Colors.black : Colors.grey.shade300,
+            color: isSelected
+                ? AppColors.textPrimary(context)
+                : AppColors.border(context),
           ),
           boxShadow: isSelected
               ? [
@@ -203,8 +208,8 @@ class _FilterChip extends StatelessWidget {
                 icon,
                 size: 14,
                 color: isSelected
-                    ? Colors.white
-                    : (iconColor ?? Colors.grey.shade600),
+                    ? AppColors.surfaceColor(context)
+                    : (iconColor ?? AppColors.textSecondary(context)),
               ),
               const SizedBox(width: 6),
             ],
@@ -213,7 +218,9 @@ class _FilterChip extends StatelessWidget {
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                color: isSelected ? Colors.white : Colors.grey.shade700,
+                color: isSelected
+                    ? AppColors.surfaceColor(context)
+                    : AppColors.textSecondary(context),
               ),
             ),
           ],

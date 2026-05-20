@@ -12,9 +12,11 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:mesclainvest/pages/dashboard/controllers/dashboard_controller.dart';
 import 'package:mesclainvest/pages/dashboard/models/transaction_model.dart';
+import 'package:mesclainvest/shared/styles/app_colors.dart';
 import 'package:mesclainvest/shared/widgets/app_button.dart';
 
 /*
@@ -141,8 +143,8 @@ class BotoesAcao extends StatelessWidget {
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(
-                                color: Colors.black,
+                              borderSide: BorderSide(
+                                color: AppColors.textPrimary(context),
                                 width: 2,
                               ),
                             ),
@@ -238,7 +240,10 @@ class BotoesAcao extends StatelessWidget {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Row(
           children: [
-            const Icon(Icons.receipt_long_outlined, color: Colors.black),
+            Icon(
+              Icons.receipt_long_outlined,
+              color: AppColors.textPrimary(context),
+            ),
             const SizedBox(width: 12),
             const Text(
               'Extrato Recente',
@@ -253,8 +258,10 @@ class BotoesAcao extends StatelessWidget {
             future: controller.getTransactions(),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(
-                  child: CircularProgressIndicator(color: Colors.black),
+                return Center(
+                  child: CircularProgressIndicator(
+                    color: AppColors.textPrimary(context),
+                  ),
                 );
               }
 
@@ -294,12 +301,12 @@ class BotoesAcao extends StatelessWidget {
                     Icon(
                       Icons.history_toggle_off,
                       size: 48,
-                      color: Colors.grey.shade300,
+                      color: AppColors.textMuted(context),
                     ),
                     const SizedBox(height: 16),
-                    const Text(
+                    Text(
                       'Nenhuma movimentação encontrada.',
-                      style: TextStyle(color: Colors.grey),
+                      style: TextStyle(color: AppColors.textSecondary(context)),
                     ),
                   ],
                 );
@@ -376,6 +383,13 @@ class BotoesAcao extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
+          // Botão: Carteira
+          _BotaoAcaoItem(
+            icon: Icons.wallet,
+            label: 'Carteira',
+            onTap: () => context.go('/carteira'),
+          ),
+
           // Botão: Depositar
           _BotaoAcaoItem(
             icon: Icons.add,
@@ -387,14 +401,16 @@ class BotoesAcao extends StatelessWidget {
           _BotaoAcaoItem(
             icon: Icons.trending_up,
             label: 'Comprar',
-            onTap: () {},
+            onTap: () => context.go('/catalog'),
           ),
 
           // Botão: Vender
+          // Pedro Henrique Medeiros dos Reis - 24801656 — routes to /balcao
+          // (P2P market) so users can put up sell offers.
           _BotaoAcaoItem(
             icon: Icons.account_balance_outlined,
             label: 'Vender',
-            onTap: () {},
+            onTap: () => context.go('/balcao'),
           ),
 
           // Botão: Extrato
@@ -452,7 +468,9 @@ class _BotaoAcaoItemState extends State<_BotaoAcaoItem> {
               width: 56,
               height: 56,
               decoration: BoxDecoration(
-                color: _isActive ? Colors.black : Colors.black12,
+                color: _isActive
+                    ? AppColors.textPrimary(context)
+                    : AppColors.surfaceMuted(context),
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: _isActive
                     ? [
@@ -466,7 +484,9 @@ class _BotaoAcaoItemState extends State<_BotaoAcaoItem> {
               ),
               child: Icon(
                 widget.icon,
-                color: _isActive ? Colors.white : Colors.black87,
+                color: _isActive
+                    ? AppColors.surfaceColor(context)
+                    : AppColors.textPrimary(context),
                 size: 24,
               ),
             ),
@@ -479,7 +499,9 @@ class _BotaoAcaoItemState extends State<_BotaoAcaoItem> {
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: _isActive ? FontWeight.w600 : FontWeight.w500,
-                color: _isActive ? Colors.black : Colors.grey.shade600,
+                color: _isActive
+                    ? AppColors.textPrimary(context)
+                    : AppColors.textSecondary(context),
               ),
               child: Text(widget.label),
             ),
