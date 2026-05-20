@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import 'package:mesclainvest/app/app_state.dart';
 import 'package:mesclainvest/pages/startup/controllers/startup_controller.dart';
 import 'package:mesclainvest/pages/startup/widgets/widgets.dart';
+import 'package:mesclainvest/shared/styles/app_colors.dart';
 import 'package:mesclainvest/shared/widgets/app_button.dart';
 
 // --- PAGE ---
@@ -42,15 +43,17 @@ class _StartupDetailPageState extends State<StartupDetailPage> {
       animation: _controller,
       builder: (context, child) {
         if (_controller.isLoading) {
-          return const Scaffold(
-            backgroundColor: Colors.white,
-            body: Center(child: CircularProgressIndicator(color: Colors.black)),
+          return Scaffold(
+            backgroundColor: AppColors.pageBackground(context),
+            body: Center(
+              child: CircularProgressIndicator(color: AppColors.textPrimary(context)),
+            ),
           );
         }
 
         if (_controller.errorMessage != null) {
           return Scaffold(
-            backgroundColor: Colors.grey.shade50,
+            backgroundColor: AppColors.pageBackground(context),
             body: Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -58,13 +61,13 @@ class _StartupDetailPageState extends State<StartupDetailPage> {
                   Icon(
                     Icons.error_outline,
                     size: 48,
-                    color: Colors.grey.shade400,
+                    color: AppColors.textMuted(context),
                   ),
                   const SizedBox(height: 16),
                   Text(
                     _controller.errorMessage!,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 15, color: Colors.black54),
+                    style: TextStyle(fontSize: 15, color: AppColors.textSecondary(context)),
                   ),
                   const SizedBox(height: 20),
                   AppButton(
@@ -85,7 +88,7 @@ class _StartupDetailPageState extends State<StartupDetailPage> {
         return DefaultTabController(
           length: 4,
           child: Scaffold(
-            backgroundColor: Colors.grey.shade50,
+            backgroundColor: AppColors.pageBackground(context),
             body: SafeArea(
               bottom: false,
               child: Column(
@@ -94,13 +97,13 @@ class _StartupDetailPageState extends State<StartupDetailPage> {
 
                   StartupInfoCard(startup: startup),
 
-                  Divider(height: 1, thickness: 1, color: Colors.grey.shade200),
+                  Divider(height: 1, thickness: 1, color: AppColors.border(context)),
 
                   Container(
-                    color: Colors.white,
+                    color: AppColors.surfaceColor(context),
                     child: TabBar(
-                      labelColor: Colors.black,
-                      unselectedLabelColor: Colors.black38,
+                      labelColor: AppColors.textPrimary(context),
+                      unselectedLabelColor: AppColors.textMuted(context),
                       labelStyle: const TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
@@ -109,9 +112,9 @@ class _StartupDetailPageState extends State<StartupDetailPage> {
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
                       ),
-                      indicator: const UnderlineTabIndicator(
-                        borderSide: BorderSide(color: Colors.black, width: 2.5),
-                        insets: EdgeInsets.symmetric(horizontal: 16),
+                      indicator: UnderlineTabIndicator(
+                        borderSide: BorderSide(color: AppColors.textPrimary(context), width: 2.5),
+                        insets: const EdgeInsets.symmetric(horizontal: 16),
                       ),
                       indicatorSize: TabBarIndicatorSize.tab,
                       tabs: const [
@@ -222,8 +225,8 @@ class _InvestPanel extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
       decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(top: BorderSide(color: Colors.grey.shade200)),
+        color: AppColors.surfaceColor(context),
+        border: Border(top: BorderSide(color: AppColors.border(context))),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -235,14 +238,18 @@ class _InvestPanel extends StatelessWidget {
             height: 4,
             margin: const EdgeInsets.only(bottom: 16),
             decoration: BoxDecoration(
-              color: Colors.grey.shade300,
+              color: AppColors.border(context),
               borderRadius: BorderRadius.circular(2),
             ),
           ),
 
           Text(
             'Investir em ${_controller.startup?.name ?? ''}',
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textPrimary(context),
+            ),
           ),
           const SizedBox(height: 20),
 
@@ -260,14 +267,15 @@ class _InvestPanel extends StatelessWidget {
                   children: [
                     Text(
                       '${_controller.orderQuantity}',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 36,
                         fontWeight: FontWeight.w800,
+                        color: AppColors.textPrimary(context),
                       ),
                     ),
                     Text(
                       'Qtd atual: ${_controller.orderQuantity}',
-                      style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+                      style: TextStyle(fontSize: 12, color: AppColors.textMuted(context)),
                     ),
                   ],
                 ),
@@ -285,7 +293,7 @@ class _InvestPanel extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             decoration: BoxDecoration(
-              color: Colors.grey.shade100,
+              color: AppColors.surfaceMuted(context),
               borderRadius: BorderRadius.circular(14),
             ),
             child: Row(
@@ -296,15 +304,15 @@ class _InvestPanel extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: Colors.grey.shade700,
+                    color: AppColors.textSecondary(context),
                   ),
                 ),
                 Text(
                   formatter.format(total),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
-                    color: Colors.black,
+                    color: AppColors.textPrimary(context),
                   ),
                 ),
               ],
@@ -354,17 +362,19 @@ class _InvestPanel extends StatelessWidget {
   }
 
   Widget _stepperButton({required IconData icon, required VoidCallback onTap}) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 44,
-        height: 44,
-        decoration: BoxDecoration(
-          color: Colors.grey.shade100,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey.shade300),
+    return Builder(
+      builder: (context) => GestureDetector(
+        onTap: onTap,
+        child: Container(
+          width: 44,
+          height: 44,
+          decoration: BoxDecoration(
+            color: AppColors.surfaceMuted(context),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.border(context)),
+          ),
+          child: Icon(icon, size: 20, color: AppColors.textPrimary(context)),
         ),
-        child: Icon(icon, size: 20),
       ),
     );
   }
