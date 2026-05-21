@@ -15,11 +15,12 @@ import {getUser} from '../../db/users/storage';
 import {getUserFavoriteIds} from '../../db/favorites/storage';
 import {getStartups} from '../../db/startups/storage';
 import {getWallet} from '../../db/wallets/storage';
-import {getOrdersByTypeAndStatus, countActiveInvestors} from '../../db/orders/storage';
+import {countActiveInvestors} from '../../db/orders/storage';
 import {getOldestSnapshotSince} from '../../db/price_history/storage';
-import {mapTotalTokensByStartup, calcWeeklyReturn} from '../../utils/walletUtils';
+import {computeWalletState} from '../../utils/walletUtils';
 import {logger} from '../../utils/logger';
 import {verifyAuth} from '../../utils/auth';
+
 
 
 /**
@@ -58,13 +59,12 @@ export async function handleOnGetDashboard(request: CallableRequest)
         // 2. Dispara consultas assíncronas em paralelo no Firestore para otimizar o tempo de resposta (latência)
         logger.info(`Buscando dados consolidados do dashboard para o usuário "${uid}"...`);
 
-        const [user, favorites, startups, activeInvestors, wallet, orders] = await Promise.all([
+        const [user, favorites, startups, activeInvestors, wallet] = await Promise.all([
             getUser(uid),
             getUserFavoriteIds(uid),
             getStartups(),
             countActiveInvestors(),
             getWallet(uid),
-            getOrdersByTypeAndStatus(uid, 'buy', 'completed'),
         ]);
 
         // Valida se o documento de perfil do usuário existe no banco de dados
@@ -82,24 +82,8 @@ export async function handleOnGetDashboard(request: CallableRequest)
             startupNameMap.set(s.id, {name: s.name, logoUrl: s.logo_url ?? ''});
         }
 
-        // 4. Calcula a custódia (holdings) atual do usuário com base no histórico de ordens de compra finalizadas
-        const holdingsByStartup = new Map<string, {quantity: number; totalCost: number}>();
-        for (const order of orders)
-        {
-            const existing = holdingsByStartup.get(order.startup_id);
-            if (existing)
-            {
-                existing.quantity  += order.quantity;
-                existing.totalCost += order.unit_price * order.quantity;
-            }
-            else
-            {
-                holdingsByStartup.set(order.startup_id, {
-                    quantity:  order.quantity,
-                    totalCost: order.unit_price * order.quantity,
-                });
-            }
-        }
+        // 4. Calcula a custódia (holdings) atual do usuário e o rendimento semanal utilizando a nova função com fluxo de caixa
+        const {holdingsByStartup, weeklyReturn, weeklyReturnPct} = await computeWalletState(uid, startupPriceMap);
 
         let patrimonioTotal = 0;
 
@@ -107,7 +91,7 @@ export async function handleOnGetDashboard(request: CallableRequest)
         const investimentosFormatted = Array.from(holdingsByStartup.entries()).map(([startupId, holding]) =>
         {
             const currentPrice = startupPriceMap.get(startupId) ?? 0;
-            const avgPrice     = holding.quantity > 0 ? holding.totalCost / holding.quantity : 0;
+            const avgPrice     = holding.buyQuantity > 0 ? holding.totalCost / holding.buyQuantity : 0;
             const currentValue = holding.quantity * currentPrice;
             
             // Calcula variação percentual do investimento
@@ -130,30 +114,7 @@ export async function handleOnGetDashboard(request: CallableRequest)
             };
         });
 
-        // 6. Calcula a rentabilidade semanal real do portfólio utilizando o histórico de preços (últimos 7 dias)
-        const weekAgo = new Date();
-        weekAgo.setDate(weekAgo.getDate() - 7);
-
-        const totalTokensByStartup = mapTotalTokensByStartup(orders);
-
-        const weeklyValues = await Promise.all(
-            Object.entries(totalTokensByStartup).map(async ([startupId, quantity]) =>
-            {
-                const currentPrice = startupPriceMap.get(startupId);
-                if (currentPrice === undefined) return {currentValue: 0, pastValue: 0};
-
-                // Recupera o snapshot de preço mais antigo dentro da janela de 7 dias
-                const snapshot = await getOldestSnapshotSince(startupId, weekAgo);
-                const pastPrice = snapshot?.price ?? currentPrice;
-                return {
-                    currentValue: quantity * currentPrice,
-                    pastValue: quantity * pastPrice,
-                };
-            }),
-        );
-
-        // Calcula a variação bruta e percentual do portfólio na semana
-        const {weeklyReturn, weeklyReturnPct} = calcWeeklyReturn(weeklyValues);
+        // 6. Calcula a variação bruta e percentual do portfólio na semana arredondando os valores
         const rendimentoDiarioValor = Math.round(weeklyReturn * 100) / 100;
         const rendimentoDiarioPorcentagem = Math.round(weeklyReturnPct * 100) / 100;
 

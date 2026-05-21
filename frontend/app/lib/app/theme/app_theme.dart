@@ -46,6 +46,10 @@ class AppTheme {
         backgroundColor: AppColors.black,
         contentTextStyle: TextStyle(color: AppColors.white),
       ),
+      dialogTheme: const DialogThemeData(
+        backgroundColor: AppColors.white,
+        surfaceTintColor: Colors.transparent,
+      ),
     );
   }
 
@@ -71,6 +75,10 @@ class AppTheme {
       snackBarTheme: const SnackBarThemeData(
         backgroundColor: AppColors.darkSurfaceMuted,
         contentTextStyle: TextStyle(color: AppColors.darkTextPrimary),
+      ),
+      dialogTheme: const DialogThemeData(
+        backgroundColor: AppColors.darkSurface,
+        surfaceTintColor: Colors.transparent,
       ),
     );
   }
