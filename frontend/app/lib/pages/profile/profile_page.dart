@@ -198,55 +198,47 @@ class _ProfilePageState extends State<ProfilePage> {
       ),
       child: Row(
         children: [
-          Expanded(
-            child: InkWell(
-              onTap: () => context.go('/carteira'),
-              borderRadius: BorderRadius.circular(8),
-              child: _statColumn(investimentos, 'Investimentos'),
-            ),
-          ),
+          Expanded(child: _statColumn(investimentos, 'Investimentos')),
           _verticalDivider(),
-          Expanded(
-            child: InkWell(
-              onTap: () => context.go('/carteira/investimentos'),
-              borderRadius: BorderRadius.circular(8),
-              child: _statColumn(aplicado, 'Aplicado'),
-            ),
-          ),
+          Expanded(child: _statColumn(aplicado, 'Aplicado')),
           _verticalDivider(),
-          Expanded(
-            child: InkWell(
-              onTap: () => context.go('/dashboard?filter=Favoritas'),
-              borderRadius: BorderRadius.circular(8),
-              child: _statColumn(favoritas, 'Favoritas'),
-            ),
-          ),
+          Expanded(child: _statColumn(favoritas, 'Favoritas')),
         ],
       ),
     );
   }
 
   Widget _statColumn(String value, String label) {
-    return Column(
-      children: [
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.w700,
-            color: AppColors.textPrimary(context),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              value,
+              maxLines: 1,
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+                color: AppColors.textPrimary(context),
+              ),
+            ),
           ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w700,
-            color: AppColors.textMuted(context),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textMuted(context),
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
