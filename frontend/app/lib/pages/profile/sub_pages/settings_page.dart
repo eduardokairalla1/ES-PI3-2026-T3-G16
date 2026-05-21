@@ -169,23 +169,26 @@ class _SettingsPageState extends State<SettingsPage> {
             Center(
               child: Stack(
                 children: [
-                  Container(
-                    width: 90,
-                    height: 90,
-                    decoration: BoxDecoration(
-                      color: AppColors.textPrimary(context),
-                      shape: BoxShape.circle,
+                  GestureDetector(
+                    onTap: () => context.go('/profile'),
+                    child: Container(
+                      width: 90,
+                      height: 90,
+                      decoration: BoxDecoration(
+                        color: AppColors.textPrimary(context),
+                        shape: BoxShape.circle,
+                      ),
+                      child: profile?.photoUrl != null
+                          ? ClipOval(
+                              child: Image.network(
+                                profile!.photoUrl!,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) =>
+                                    _avatarInitial(initial),
+                              ),
+                            )
+                          : _avatarInitial(initial),
                     ),
-                    child: profile?.photoUrl != null
-                        ? ClipOval(
-                            child: Image.network(
-                              profile!.photoUrl!,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) =>
-                                  _avatarInitial(initial),
-                            ),
-                          )
-                        : _avatarInitial(initial),
                   ),
                   if (_isUploadingPhoto)
                     const Positioned.fill(

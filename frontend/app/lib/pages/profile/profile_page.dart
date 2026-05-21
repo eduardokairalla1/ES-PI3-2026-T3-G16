@@ -89,23 +89,26 @@ class _ProfilePageState extends State<ProfilePage> {
         ? profile!.fullName[0].toUpperCase()
         : 'U';
 
-    return Container(
-      width: 90,
-      height: 90,
-      decoration: BoxDecoration(
-        color: AppColors.textPrimary(context),
-        shape: BoxShape.circle,
+    return GestureDetector(
+      onTap: () => context.go('/profile'),
+      child: Container(
+        width: 90,
+        height: 90,
+        decoration: BoxDecoration(
+          color: AppColors.textPrimary(context),
+          shape: BoxShape.circle,
+        ),
+        child: profile?.photoUrl != null
+            ? ClipOval(
+                child: Image.network(
+                  profile!.photoUrl!,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) =>
+                      _avatarInitial(initial),
+                ),
+              )
+            : _avatarInitial(initial),
       ),
-      child: profile?.photoUrl != null
-          ? ClipOval(
-              child: Image.network(
-                profile!.photoUrl!,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) =>
-                    _avatarInitial(initial),
-              ),
-            )
-          : _avatarInitial(initial),
     );
   }
 
