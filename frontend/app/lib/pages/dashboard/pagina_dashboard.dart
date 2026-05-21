@@ -5,7 +5,6 @@ import 'package:mesclainvest/pages/dashboard/widgets/widgets.dart';
 import 'package:mesclainvest/shared/widgets/delayed_shimmer.dart';
 
 class PaginaDashboard extends StatefulWidget {
-
   const PaginaDashboard({super.key});
 
   @override
@@ -58,14 +57,11 @@ class _PaginaDashboardState extends State<PaginaDashboard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const CabecalhoDashboard(),
+          CabecalhoDashboard(controller: _controller),
           CartaoPatrimonio(controller: _controller),
-          const BotoesAcao(),
-          AnimatedBuilder(
-            animation: _controller,
-            builder: (context, _) =>
-                StartupsEcossistema(startups: _controller.startups),
-          ),
+          BotoesAcao(controller: _controller),
+          StartupsEcossistema(controller: _controller),
+          MeusInvestimentos(controller: _controller),
         ],
       ),
     );

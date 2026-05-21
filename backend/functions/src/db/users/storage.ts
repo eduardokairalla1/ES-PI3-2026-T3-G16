@@ -82,8 +82,10 @@ export async function addUser(
     const user: userDocument = {
         'birth_date': birth_date,
         'cpf': cpf,
+
         'created_at': new Date(),
         'email': email,
+        'favorite_ids': [],
         'full_name': full_name,
         'phone': phone,
         'photo_url': null,
@@ -145,4 +147,96 @@ export async function toggleUserTwoFA(uid: string): Promise<boolean>
     await doc.ref.update({'two_fa_enabled': next, 'updated_at': new Date()});
 
     return next;
+}
+
+
+/**
+ * I get the Firestore document ID for a user by their Auth UID.
+ *
+ * @param uid Firebase Auth UID
+ *
+ * @returns Firestore document ID, or null if not found
+ */
+export async function getUserDocId(uid: string): Promise<string | null>
+{
+    const snapshot = await db.collection('users')
+        .where('uid', '==', uid)
+        .limit(1)
+        .get();
+
+    if (snapshot.empty) return null;
+
+    return snapshot.docs[0].id;
+}
+
+
+/**
+ * I get the total number of users in the system.
+ *
+ * @returns total user count
+ */
+export async function getUserCount(): Promise<number>
+{
+    const snapshot = await db.collection('users').count().get();
+    return snapshot.data().count;
+}
+
+
+import {FieldValue} from 'firebase-admin/firestore';
+
+
+/**
+ * I toggle a startup ID in the user's favorite_ids array.
+ * Returns true if now favorited, false if removed.
+ *
+ * @param uid       Firebase Auth UID
+ * @param startupId startup document ID
+ */
+export async function toggleFavoriteId(uid: string, startupId: string): Promise<boolean>
+{
+    const snapshot = await db.collection('users')
+        .where('uid', '==', uid)
+        .limit(1)
+        .get();
+
+    if (snapshot.empty) throw new Error(`User "${uid}" not found.`);
+
+    const doc = snapshot.docs[0];
+    const current = (doc.data() as userDocument).favorite_ids ?? [];
+    const isFavorited = current.includes(startupId);
+
+    if (isFavorited)
+    {
+        await doc.ref.update({
+            'favorite_ids': FieldValue.arrayRemove(startupId),
+            'updated_at': new Date(),
+        });
+        return false;
+    }
+
+    await doc.ref.update({
+        'favorite_ids': FieldValue.arrayUnion(startupId),
+        'updated_at': new Date(),
+    });
+    return true;
+}
+
+
+/**
+ * I return the favorite startup IDs for a user.
+ *
+ * @param uid Firebase Auth UID
+ *
+ * @returns array of startup IDs
+ */
+export async function getFavoriteIds(uid: string): Promise<string[]>
+{
+    const snapshot = await db.collection('users')
+        .where('uid', '==', uid)
+        .limit(1)
+        .get();
+
+    if (snapshot.empty) return [];
+
+    return (snapshot.docs[0].data() as userDocument).favorite_ids ?? [];
 }

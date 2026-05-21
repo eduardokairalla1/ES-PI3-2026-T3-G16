@@ -14,6 +14,7 @@ import {getOrdersByTypeAndStatus} from '../../db/orders/storage';
 import {getWallet, createWallet} from '../../db/wallets/storage';
 import {verifyAuth} from '../../utils/auth';
 import {logger} from '../../utils/logger';
+import {mapTotalTokensByStartup, calcWeeklyReturn} from '../../utils/walletUtils';
 
 
 /**
@@ -27,52 +28,12 @@ import {InternalError} from '../../errors/internalError';
  * TYPES
  */
 import type {CallableRequest} from 'firebase-functions/v2/https';
-import type {OrderDocument} from '../../db/orders/model';
 import type {walletDocument} from '../../db/wallets/model';
 
 
 /**
  * CODE
  */
-
-/**
- * I group total token quantities by startup from a list of orders.
- *
- * @param orders list of completed buy orders
- *
- * @returns map of startupId → total quantity held
- */
-function mapTotalTokensByStartup(orders: OrderDocument[]): Record<string, number>
-{
-    const totalTokensByStartup: Record<string, number> = {};
-
-    for (const {startup_id, quantity} of orders)
-    {
-        totalTokensByStartup[startup_id] = (totalTokensByStartup[startup_id] ?? 0) + quantity;
-    }
-
-    return totalTokensByStartup;
-}
-
-
-/**
- * I compute weekly return in BRL and percentage from current and past values.
- *
- * @param values list of { currentValue, pastValue } per startup
- *
- * @returns weeklyReturn (BRL) and weeklyReturnPct (%)
- */
-function calcWeeklyReturn(
-    values: {currentValue: number; pastValue: number}[],
-): {weeklyReturn: number; weeklyReturnPct: number}
-{
-    const totalCurrent = values.reduce((s, v) => s + v.currentValue, 0);
-    const totalPast = values.reduce((s, v) => s + v.pastValue, 0);
-    const weeklyReturn = totalCurrent - totalPast;
-    const weeklyReturnPct = totalPast > 0 ? (weeklyReturn / totalPast) * 100 : 0;
-    return {weeklyReturn, weeklyReturnPct};
-}
-
 
 /**
  * I handle the onGetWallet callable.

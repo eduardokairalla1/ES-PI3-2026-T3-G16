@@ -1,17 +1,15 @@
-/// Eduardo Kairalla - 24024241
+// Eduardo Kairalla - 24024241
 
-/// Header for the startup detail screen.
+// Header for the startup detail screen.
 
 // --- IMPORTS ---
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mesclainvest/pages/startup/models/startup_model.dart';
 
-
 // --- WIDGET ---
 
 class StartupHeader extends StatelessWidget {
-
   final StartupModel startup;
   final String userName;
 
@@ -40,9 +38,9 @@ class StartupHeader extends StatelessWidget {
       ),
       child: Row(
         children: [
-
           GestureDetector(
-            onTap: () => context.canPop() ? context.pop() : context.go('/dashboard'),
+            onTap: () =>
+                context.canPop() ? context.pop() : context.go('/dashboard'),
             child: Container(
               width: 38,
               height: 38,
@@ -50,7 +48,11 @@ class StartupHeader extends StatelessWidget {
                 color: Colors.grey.shade100,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.arrow_back, size: 20, color: Colors.black87),
+              child: const Icon(
+                Icons.arrow_back,
+                size: 20,
+                color: Colors.black87,
+              ),
             ),
           ),
 
@@ -105,7 +107,6 @@ class StartupHeader extends StatelessWidget {
               ),
             ),
           ),
-
         ],
       ),
     );

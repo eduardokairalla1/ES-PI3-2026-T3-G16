@@ -1,6 +1,6 @@
-/// Eduardo Kairalla - 24024241
+// Eduardo Kairalla - 24024241
 
-/// Barrel export for startup detail widgets.
+// Barrel export for startup detail widgets.
 
 export 'about_tab.dart';
 export 'partners_tab.dart';

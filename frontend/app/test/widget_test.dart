@@ -1,30 +1,59 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
-import 'package:mesclainvest/app/app.dart';
+import 'package:mesclainvest/pages/dashboard/models/dashboard_data.dart';
+import 'package:mesclainvest/pages/dashboard/models/transaction_model.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MesclaInvestApp());
+  group('DashboardData', () {
+    test('normaliza o payload consolidado do backend', () {
+      final data = DashboardData.fromMap({
+        'favoriteIds': ['startup-1', 42],
+        'investimentos': [
+          {
+            'currentPrice': 2.5,
+            'startupId': 'startup-1',
+            'startupLogoUrl': '',
+            'startupName': 'Mescla Labs',
+            'tokenQuantity': 10,
+            'variation': 5.25,
+          },
+        ],
+        'nomeUsuario': 'Ana Investidora',
+        'patrimonioTotal': 1500,
+        'rendimentoDiarioPorcentagem': 0.82,
+        'rendimentoDiarioValor': 12.3,
+        'rentabilidadeMediaMercado': 4.5,
+        'saldoDisponivel': 500,
+        'totalInvestidoresMercado': 100,
+        'totalStartupsMercado': 8,
+      });
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+      expect(data.nomeUsuario, 'Ana Investidora');
+      expect(data.patrimonioTotal, 2000);
+      expect(data.saldoDisponivel, 500);
+      expect(data.favoriteIds, ['startup-1', '42']);
+      expect(data.investimentos.single.startupName, 'Mescla Labs');
+      expect(data.investimentos.single.tokenQuantity, 10);
+    });
+  });
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+  group('TransactionModel', () {
+    test('interpreta timestamps serializados pelo Firebase callable', () {
+      final transaction = TransactionModel.fromMap({
+        'amount': 250,
+        'created_at': {'_seconds': 1700000000},
+        'description': 'Depósito em conta',
+        'id': 'tx-1',
+        'status': 'completed',
+        'type': 'deposit',
+      });
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+      expect(transaction.id, 'tx-1');
+      expect(transaction.amount, 250);
+      expect(
+        transaction.createdAt,
+        DateTime.fromMillisecondsSinceEpoch(1700000000 * 1000),
+      );
+      expect(transaction.type, 'deposit');
+    });
   });
 }

@@ -1,6 +1,6 @@
-/// --- App routes ---
+// --- App routes ---
 
-/// --- IMPORTS ---
+// --- IMPORTS ---
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -18,19 +18,17 @@ import 'package:mesclainvest/pages/profile/sub_pages/settings_page.dart';
 import 'package:mesclainvest/pages/startup/startup_detail_page.dart';
 import 'package:mesclainvest/pages/startup/valorizacao_page.dart';
 
-
 /// --- GLOBAIS ---
 
 // inicializa o roteador do app
 final router = GoRouter(
   initialLocation: '/',
   redirect: (context, state) {
-
     // verifica se o usuário está logado
     final isLoggedIn = FirebaseAuth.instance.currentUser != null;
 
     // verifica se o usuário está tentando acessar uma rota protegida
-    final protectedPaths = ['/dashboard', '/catalog', '/balcao', '/profile'];
+    final protectedPaths = ['/dashboard', '/catalog', '/balcao', '/profile', '/startup'];
     final isProtected = protectedPaths.any((p) => state.matchedLocation.startsWith(p));
 
     // usuário não está logado e tentando acessar rota protegida: redireciona para login
@@ -38,18 +36,16 @@ final router = GoRouter(
 
     // usuário está logado e tentando acessar login ou registro: redireciona para
     // o dashboard
-    return null;
+    final authPaths = ['/login', '/register'];
+    if (isLoggedIn && authPaths.contains(state.matchedLocation)) {
+      return '/dashboard';
+    }
 
+    return null;
   },
   routes: [
-    GoRoute(
-      path: '/',
-      builder: (context, state) => const HomePage(),
-    ),
-    GoRoute(
-      path: '/login',
-      builder: (context, state) => const LoginPage(),
-    ),
+    GoRoute(path: '/', builder: (context, state) => const HomePage()),
+    GoRoute(path: '/login', builder: (context, state) => const LoginPage()),
     GoRoute(
       path: '/register',
       builder: (context, state) => const RegisterPage(),

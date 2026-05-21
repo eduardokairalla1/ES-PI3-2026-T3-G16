@@ -1,16 +1,14 @@
-/// Eduardo Kairalla - 24024241
+// Eduardo Kairalla - 24024241
 
-/// Service for startup catalog Cloud Function calls.
+// Service for startup catalog Cloud Function calls.
 
 // --- IMPORTS ---
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:mesclainvest/pages/startup/models/startup_model.dart';
 
-
 // --- SERVICE ---
 
 class CatalogService {
-
   final _functions = FirebaseFunctions.instance;
 
   /// I fetch all startups, optionally filtered by stage.

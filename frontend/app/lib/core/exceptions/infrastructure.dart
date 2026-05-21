@@ -1,12 +1,11 @@
-/// --- Eduardo Kairalla - 24024241 ---
+// --- Eduardo Kairalla - 24024241 ---
 
-/// --- Custom exceptions for Infrastructure ---
+// --- Custom exceptions for Infrastructure ---
 
-/// --- CODE ---
+// --- CODE ---
 
-/// I represent an infrastructure exception.
+// I represent an infrastructure exception.
 class InfrastructureException implements Exception {
-
   // attributes
   final String message;
   final Object? originalError;
@@ -19,13 +18,11 @@ class InfrastructureException implements Exception {
     this.stackTrace,
   });
 
-
   /// I override the toString method to provide a better error message.
-  /// 
+  ///
   /// :returns: a string representation of this exception
   @override
-  String toString() => (
-    'InfrastructureException(message: $message, '
-    'originalError: $originalError, stackTrace: $stackTrace)'
-  );
+  String toString() =>
+      ('InfrastructureException(message: $message, '
+      'originalError: $originalError, stackTrace: $stackTrace)');
 }

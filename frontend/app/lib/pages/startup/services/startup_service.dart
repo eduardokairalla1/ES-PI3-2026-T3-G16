@@ -1,17 +1,15 @@
-/// --- Startup service ---
-///
-/// Eduardo Kairalla - 24024241
+// --- Startup service ---
+//
+// Eduardo Kairalla - 24024241
 
 // --- IMPORTS ---
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:mesclainvest/pages/startup/models/startup_model.dart';
 
-
 // --- SERVICE ---
 
 /// I handle all Firebase Cloud Function calls related to startups.
 class StartupService {
-
   final _functions = FirebaseFunctions.instance;
 
   /// I fetch a single startup by ID.
@@ -36,12 +34,14 @@ class StartupService {
   }
 
   /// I send a question to a startup.
-  Future<void> sendQuestion(String startupId, String text, bool isPrivate) async {
-    await _functions.httpsCallable('onSendQuestion').call<Map<String, dynamic>>({
-      'isPrivate': isPrivate,
-      'startupId': startupId,
-      'text':      text,
-    });
+  Future<void> sendQuestion(
+    String startupId,
+    String text,
+    bool isPrivate,
+  ) async {
+    await _functions.httpsCallable('onSendQuestion').call<Map<String, dynamic>>(
+      {'isPrivate': isPrivate, 'startupId': startupId, 'text': text},
+    );
   }
 
   /// I create a buy order for a startup and return the order ID.

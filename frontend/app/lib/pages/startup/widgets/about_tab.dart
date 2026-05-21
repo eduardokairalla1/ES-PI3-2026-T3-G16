@@ -1,17 +1,15 @@
-/// Eduardo Kairalla - 24024241
+// Eduardo Kairalla - 24024241
 
-/// Content of the "About" tab on the startup detail screen.
+// Content of the "About" tab on the startup detail screen.
 
 // --- IMPORTS ---
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:mesclainvest/pages/startup/models/startup_model.dart';
 
-
 // --- WIDGET ---
 
 class AboutTab extends StatelessWidget {
-
   final StartupModel startup;
 
   const AboutTab({super.key, required this.startup});
@@ -23,7 +21,6 @@ class AboutTab extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-
           _sectionTitle('Sumário Executivo'),
           const SizedBox(height: 10),
           Text(
@@ -40,21 +37,28 @@ class AboutTab extends StatelessWidget {
 
           Row(
             children: [
-              Expanded(child: _statCard(
-                label: 'CAPITAL CAPTADO',
-                value: NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$')
-                    .format(startup.capitalRaised),
-                icon:  Icons.monetization_on_outlined,
-                color: Colors.green,
-              )),
+              Expanded(
+                child: _statCard(
+                  label: 'CAPITAL CAPTADO',
+                  value: NumberFormat.currency(
+                    locale: 'pt_BR',
+                    symbol: 'R\$',
+                  ).format(startup.capitalRaised),
+                  icon: Icons.monetization_on_outlined,
+                  color: Colors.green,
+                ),
+              ),
               const SizedBox(width: 12),
-              Expanded(child: _statCard(
-                label: 'TOKENS EMITIDOS',
-                value: NumberFormat.compact(locale: 'pt_BR')
-                    .format(startup.totalTokens),
-                icon:  Icons.token_outlined,
-                color: Colors.blue,
-              )),
+              Expanded(
+                child: _statCard(
+                  label: 'TOKENS EMITIDOS',
+                  value: NumberFormat.compact(
+                    locale: 'pt_BR',
+                  ).format(startup.totalTokens),
+                  icon: Icons.token_outlined,
+                  color: Colors.blue,
+                ),
+              ),
             ],
           ),
 
@@ -77,14 +81,13 @@ class AboutTab extends StatelessWidget {
           _sectionTitle('Documentos'),
           const SizedBox(height: 10),
           _documentItem(
-            icon:      Icons.picture_as_pdf_outlined,
-            title:     'Plano de Negócios',
-            subtitle:  'Em breve',
+            icon: Icons.picture_as_pdf_outlined,
+            title: 'Plano de Negócios',
+            subtitle: 'Em breve',
             available: false,
           ),
 
           const SizedBox(height: 32),
-
         ],
       ),
     );
@@ -105,7 +108,7 @@ class AboutTab extends StatelessWidget {
     required String label,
     required String value,
     required IconData icon,
-    required Color color,
+    required dynamic color,
   }) {
     return Container(
       padding: const EdgeInsets.all(16),

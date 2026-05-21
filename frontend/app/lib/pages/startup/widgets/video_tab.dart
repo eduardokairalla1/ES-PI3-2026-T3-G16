@@ -1,16 +1,14 @@
-/// Eduardo Kairalla - 24024241
+// Eduardo Kairalla - 24024241
 
-/// Content of the "Video" tab on the startup detail screen.
+// Content of the "Video" tab on the startup detail screen.
 
 // --- IMPORTS ---
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-
 // --- WIDGET ---
 
 class VideoTab extends StatelessWidget {
-
   final String? videoUrl;
 
   const VideoTab({super.key, this.videoUrl});
@@ -35,7 +33,11 @@ class VideoTab extends StatelessWidget {
               color: Colors.grey.shade100,
               shape: BoxShape.circle,
             ),
-            child: Icon(Icons.videocam_off_outlined, size: 38, color: Colors.grey.shade400),
+            child: Icon(
+              Icons.videocam_off_outlined,
+              size: 38,
+              color: Colors.grey.shade400,
+            ),
           ),
           const SizedBox(height: 16),
           const Text(
@@ -67,7 +69,6 @@ class VideoTab extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-
           Container(
             height: 200,
             width: double.infinity,
@@ -78,19 +79,30 @@ class VideoTab extends StatelessWidget {
             child: Stack(
               alignment: Alignment.center,
               children: [
-                Icon(Icons.play_circle_fill, size: 64, color: Colors.white.withValues(alpha: 0.9)),
+                Icon(
+                  Icons.play_circle_fill,
+                  size: 64,
+                  color: Colors.white.withValues(alpha: 0.9),
+                ),
                 Positioned(
                   bottom: 14,
                   left: 14,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.black.withValues(alpha: 0.6),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: const Text(
                       'Vídeo de apresentação',
-                      style: TextStyle(fontSize: 12, color: Colors.white, fontWeight: FontWeight.w600),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ),
@@ -147,7 +159,11 @@ class VideoTab extends StatelessWidget {
                       color: Colors.grey.shade100,
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Icon(Icons.copy_outlined, size: 16, color: Colors.black54),
+                    child: const Icon(
+                      Icons.copy_outlined,
+                      size: 16,
+                      color: Colors.black54,
+                    ),
                   ),
                 ),
               ],
@@ -155,7 +171,6 @@ class VideoTab extends StatelessWidget {
           ),
 
           const SizedBox(height: 32),
-
         ],
       ),
     );

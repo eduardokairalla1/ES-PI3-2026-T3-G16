@@ -66,7 +66,11 @@ export async function handleOnGetQuestions(request: CallableRequest)
             getUserPrivateQuestions(parsed.startupId, uid),
         ]);
 
-        const toMs = (d: any) => d?.toMillis ? d.toMillis() : new Date(d).getTime();
+        type DateLike = {toMillis: () => number} | Date | number | string;
+        const toMs = (d: DateLike): number =>
+            typeof d === 'object' && d !== null && 'toMillis' in d
+                ? d.toMillis()
+                : new Date(d).getTime();
         const questions = [...publicQs, ...privateQs]
             .sort((a, b) => toMs(b.created_at) - toMs(a.created_at));
 

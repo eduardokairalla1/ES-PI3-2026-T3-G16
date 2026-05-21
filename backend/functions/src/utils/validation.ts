@@ -41,12 +41,13 @@ export function parseRequest<T extends z.ZodTypeAny>(
     {
         if (error instanceof z.ZodError)
         {
+            const flat = error.flatten();
             logger.error(
                 'Validation error',
                 error,
                 {
-                    fieldErrors: z.flattenError(error).fieldErrors,
-                    formErrors: z.flattenError(error).formErrors,
+                    fieldErrors: flat.fieldErrors,
+                    formErrors: flat.formErrors,
                 },
             );
         }

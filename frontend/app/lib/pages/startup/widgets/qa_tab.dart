@@ -1,6 +1,6 @@
-/// Eduardo Kairalla - 24024241
+// Eduardo Kairalla - 24024241
 
-/// Content of the "Q&A" tab on the startup detail screen.
+// Content of the "Q&A" tab on the startup detail screen.
 
 // --- IMPORTS ---
 import 'package:flutter/material.dart';
@@ -8,26 +8,19 @@ import 'package:intl/intl.dart';
 import 'package:mesclainvest/pages/startup/controllers/startup_controller.dart';
 import 'package:mesclainvest/pages/startup/models/startup_model.dart';
 
-
 // --- WIDGET ---
 
 class QATab extends StatefulWidget {
-
   final StartupController controller;
   final String startupId;
 
-  const QATab({
-    super.key,
-    required this.controller,
-    required this.startupId,
-  });
+  const QATab({super.key, required this.controller, required this.startupId});
 
   @override
   State<QATab> createState() => _QATabState();
 }
 
 class _QATabState extends State<QATab> {
-
   final _textController = TextEditingController();
   bool _isPrivate = false;
 
@@ -74,20 +67,19 @@ class _QATabState extends State<QATab> {
 
     return Column(
       children: [
-
         Expanded(
           child: questions.isEmpty
               ? _emptyState()
               : ListView.separated(
                   padding: const EdgeInsets.all(20),
                   itemCount: questions.length,
-                  separatorBuilder: (context, index) => const SizedBox(height: 12),
+                  separatorBuilder: (context, index) =>
+                      const SizedBox(height: 12),
                   itemBuilder: (context, i) => _questionCard(questions[i]),
                 ),
         ),
 
         _inputField(isSending),
-
       ],
     );
   }
@@ -97,7 +89,11 @@ class _QATabState extends State<QATab> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.chat_bubble_outline, size: 48, color: Colors.grey.shade300),
+          Icon(
+            Icons.chat_bubble_outline,
+            size: 48,
+            color: Colors.grey.shade300,
+          ),
           const SizedBox(height: 12),
           Text(
             'Nenhuma pergunta ainda.',
@@ -140,7 +136,6 @@ class _QATabState extends State<QATab> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-
           Row(
             children: [
               Container(
@@ -152,7 +147,9 @@ class _QATabState extends State<QATab> {
                 ),
                 child: Center(
                   child: Text(
-                    q.authorName.isNotEmpty ? q.authorName[0].toUpperCase() : '?',
+                    q.authorName.isNotEmpty
+                        ? q.authorName[0].toUpperCase()
+                        : '?',
                     style: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
@@ -173,9 +170,12 @@ class _QATabState extends State<QATab> {
               const Spacer(),
               if (q.isPrivate) ...[
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 7,
+                    vertical: 3,
+                  ),
                   decoration: BoxDecoration(
-                    color: Colors.orange.withValues(alpha: 0.12),
+                    color: Colors.orange.shade700.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: const Text(
@@ -257,7 +257,6 @@ class _QATabState extends State<QATab> {
               ),
             ),
           ],
-
         ],
       ),
     );
@@ -280,7 +279,6 @@ class _QATabState extends State<QATab> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-
           Row(
             children: [
               GestureDetector(
@@ -295,11 +293,17 @@ class _QATabState extends State<QATab> {
                         color: _isPrivate ? Colors.black : Colors.transparent,
                         borderRadius: BorderRadius.circular(4),
                         border: Border.all(
-                          color: _isPrivate ? Colors.black : Colors.grey.shade400,
+                          color: _isPrivate
+                              ? Colors.black
+                              : Colors.grey.shade400,
                         ),
                       ),
                       child: _isPrivate
-                          ? const Icon(Icons.check, size: 12, color: Colors.white)
+                          ? const Icon(
+                              Icons.check,
+                              size: 12,
+                              color: Colors.white,
+                            )
                           : null,
                     ),
                     const SizedBox(width: 6),
@@ -335,7 +339,10 @@ class _QATabState extends State<QATab> {
                     ),
                     filled: true,
                     fillColor: Colors.grey.shade100,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(14),
                       borderSide: BorderSide.none,
@@ -361,12 +368,15 @@ class _QATabState extends State<QATab> {
                             strokeWidth: 2,
                           ),
                         )
-                      : const Icon(Icons.send_rounded, color: Colors.white, size: 20),
+                      : const Icon(
+                          Icons.send_rounded,
+                          color: Colors.white,
+                          size: 20,
+                        ),
                 ),
               ),
             ],
           ),
-
         ],
       ),
     );

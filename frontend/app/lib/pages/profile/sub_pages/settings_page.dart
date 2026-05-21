@@ -1,6 +1,6 @@
-/// Eduardo Kairalla - 24024241
+// Eduardo Kairalla - 24024241
 
-/// Profile settings screen — edit name and avatar.
+// Profile settings screen — edit name and avatar.
 
 // --- IMPORTS ---
 import 'package:firebase_storage/firebase_storage.dart';
@@ -10,11 +10,9 @@ import 'package:image_picker/image_picker.dart';
 import 'package:mesclainvest/app/app_state.dart';
 import 'package:mesclainvest/pages/profile/services/profile_service.dart';
 
-
 // --- PAGE ---
 
 class SettingsPage extends StatefulWidget {
-
   const SettingsPage({super.key});
 
   @override
@@ -22,21 +20,20 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-
-  final ProfileService        _service    = ProfileService();
-  final ImagePicker           _picker     = ImagePicker();
+  final ProfileService _service = ProfileService();
+  final ImagePicker _picker = ImagePicker();
   late final TextEditingController _nameCtrl;
   late final TextEditingController _phoneCtrl;
 
-  bool _isSaving         = false;
+  bool _isSaving = false;
   bool _isUploadingPhoto = false;
 
   @override
   void initState() {
     super.initState();
     final profile = AppState.instance.profile;
-    _nameCtrl  = TextEditingController(text: profile?.fullName ?? '');
-    _phoneCtrl = TextEditingController(text: profile?.phone    ?? '');
+    _nameCtrl = TextEditingController(text: profile?.fullName ?? '');
+    _phoneCtrl = TextEditingController(text: profile?.phone ?? '');
   }
 
   @override
@@ -61,7 +58,7 @@ class _SettingsPageState extends State<SettingsPage> {
     setState(() => _isUploadingPhoto = true);
 
     try {
-      final ref  = FirebaseStorage.instance.ref('users/$uid/avatar');
+      final ref = FirebaseStorage.instance.ref('users/$uid/avatar');
       final bytes = await file.readAsBytes();
       await ref.putData(bytes, SettableMetadata(contentType: 'image/jpeg'));
       final url = await ref.getDownloadURL();
@@ -71,14 +68,20 @@ class _SettingsPageState extends State<SettingsPage> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Foto atualizada!'), backgroundColor: Colors.black),
+          const SnackBar(
+            content: Text('Foto atualizada!'),
+            backgroundColor: Colors.black,
+          ),
         );
       }
     } catch (e, stack) {
       debugPrint('Erro ao atualizar foto: $e\n$stack');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro ao atualizar foto: $e'), backgroundColor: Colors.red.shade700),
+          SnackBar(
+            content: Text('Erro ao atualizar foto: $e'),
+            backgroundColor: Colors.red.shade700,
+          ),
         );
       }
     } finally {
@@ -87,11 +90,11 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Future<void> _saveProfile() async {
-    final profile  = AppState.instance.profile;
-    final newName  = _nameCtrl.text.trim();
+    final profile = AppState.instance.profile;
+    final newName = _nameCtrl.text.trim();
     final newPhone = _phoneCtrl.text.trim();
 
-    final nameChanged  = newName.isNotEmpty  && newName  != profile?.fullName;
+    final nameChanged = newName.isNotEmpty && newName != profile?.fullName;
     final phoneChanged = newPhone.isNotEmpty && newPhone != profile?.phone;
 
     if (!nameChanged && !phoneChanged) return;
@@ -100,23 +103,29 @@ class _SettingsPageState extends State<SettingsPage> {
 
     try {
       await _service.updateProfile(
-        fullName: nameChanged  ? newName  : null,
-        phone:    phoneChanged ? newPhone : null,
+        fullName: nameChanged ? newName : null,
+        phone: phoneChanged ? newPhone : null,
       );
       AppState.instance.updateProfileLocally(
-        fullName: nameChanged  ? newName  : null,
-        phone:    phoneChanged ? newPhone : null,
+        fullName: nameChanged ? newName : null,
+        phone: phoneChanged ? newPhone : null,
       );
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Perfil atualizado!'), backgroundColor: Colors.black),
+          const SnackBar(
+            content: Text('Perfil atualizado!'),
+            backgroundColor: Colors.black,
+          ),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro ao salvar: $e'), backgroundColor: Colors.red.shade700),
+          SnackBar(
+            content: Text('Erro ao salvar: $e'),
+            backgroundColor: Colors.red.shade700,
+          ),
         );
       }
     } finally {
@@ -132,12 +141,13 @@ class _SettingsPageState extends State<SettingsPage> {
         : 'U';
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F8F8),
+      backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
         leading: GestureDetector(
-          onTap: () => context.canPop() ? context.pop() : context.go('/profile'),
+          onTap: () =>
+              context.canPop() ? context.pop() : context.go('/profile'),
           child: const Icon(Icons.arrow_back, color: Colors.black),
         ),
         centerTitle: true,
@@ -159,7 +169,6 @@ class _SettingsPageState extends State<SettingsPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-
             // Avatar edit.
             Center(
               child: Stack(
@@ -186,7 +195,10 @@ class _SettingsPageState extends State<SettingsPage> {
                     const Positioned.fill(
                       child: CircleAvatar(
                         backgroundColor: Colors.black54,
-                        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
                       ),
                     )
                   else
@@ -202,7 +214,11 @@ class _SettingsPageState extends State<SettingsPage> {
                             color: Colors.black,
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(Icons.camera_alt, size: 16, color: Colors.white),
+                          child: const Icon(
+                            Icons.camera_alt,
+                            size: 16,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                     ),
@@ -223,7 +239,10 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
             ),
             const SizedBox(height: 8),
-            _editableField(controller: _nameCtrl, onSubmitted: (_) => _saveProfile()),
+            _editableField(
+              controller: _nameCtrl,
+              onSubmitted: (_) => _saveProfile(),
+            ),
 
             const SizedBox(height: 16),
 
@@ -265,21 +284,28 @@ class _SettingsPageState extends State<SettingsPage> {
                   backgroundColor: Colors.black,
                   foregroundColor: Colors.white,
                   elevation: 0,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                 ),
                 child: _isSaving
                     ? const SizedBox(
                         width: 22,
                         height: 22,
-                        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
                       )
                     : const Text(
                         'Salvar',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
               ),
             ),
-
           ],
         ),
       ),
@@ -313,7 +339,10 @@ class _SettingsPageState extends State<SettingsPage> {
       decoration: InputDecoration(
         filled: true,
         fillColor: Colors.white,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
           borderSide: BorderSide(color: Colors.grey.shade200),

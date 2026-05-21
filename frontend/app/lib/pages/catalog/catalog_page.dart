@@ -1,6 +1,6 @@
-/// Eduardo Kairalla - 24024241
+// Eduardo Kairalla - 24024241
 
-/// Startup catalog listing page.
+// Startup catalog listing page.
 
 // --- IMPORTS ---
 import 'package:flutter/material.dart';
@@ -8,21 +8,18 @@ import 'package:mesclainvest/pages/catalog/controllers/catalog_controller.dart';
 import 'package:mesclainvest/pages/catalog/widgets/startup_card.dart';
 import 'package:mesclainvest/shared/widgets/bottom_nav.dart';
 
-
 // --- CONSTANTS ---
 
 const _kStages = [
-  (label: 'Todas',        value: null),
-  (label: 'Nova',         value: 'new'),
-  (label: 'Em operação',  value: 'operating'),
-  (label: 'Em expansão',  value: 'expanding'),
+  (label: 'Todas', value: null),
+  (label: 'Nova', value: 'new'),
+  (label: 'Em operação', value: 'operating'),
+  (label: 'Em expansão', value: 'expanding'),
 ];
-
 
 // --- PAGE ---
 
 class CatalogPage extends StatefulWidget {
-
   const CatalogPage({super.key});
 
   @override
@@ -30,7 +27,6 @@ class CatalogPage extends StatefulWidget {
 }
 
 class _CatalogPageState extends State<CatalogPage> {
-
   final CatalogController _controller = CatalogController();
 
   @override
@@ -51,13 +47,12 @@ class _CatalogPageState extends State<CatalogPage> {
       animation: _controller,
       builder: (context, _) {
         return Scaffold(
-          backgroundColor: const Color(0xFFF8F8F8),
+          backgroundColor: Colors.grey.shade50,
           body: SafeArea(
             bottom: false,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-
                 // --- header ---
                 Padding(
                   padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
@@ -93,10 +88,10 @@ class _CatalogPageState extends State<CatalogPage> {
                   child: ListView.separated(
                     scrollDirection: Axis.horizontal,
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    separatorBuilder: (_, __) => const SizedBox(width: 8),
+                    separatorBuilder: (_, _) => const SizedBox(width: 8),
                     itemCount: _kStages.length,
                     itemBuilder: (context, i) {
-                      final stage    = _kStages[i];
+                      final stage = _kStages[i];
                       final isActive = _controller.selectedStage == stage.value;
 
                       return GestureDetector(
@@ -104,13 +99,16 @@ class _CatalogPageState extends State<CatalogPage> {
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 180),
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 8,
+                            horizontal: 16,
+                            vertical: 8,
                           ),
                           decoration: BoxDecoration(
                             color: isActive ? Colors.black : Colors.white,
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(
-                              color: isActive ? Colors.black : Colors.grey.shade300,
+                              color: isActive
+                                  ? Colors.black
+                                  : Colors.grey.shade300,
                             ),
                           ),
                           child: Text(
@@ -118,7 +116,9 @@ class _CatalogPageState extends State<CatalogPage> {
                             style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
-                              color: isActive ? Colors.white : Colors.grey.shade700,
+                              color: isActive
+                                  ? Colors.white
+                                  : Colors.grey.shade700,
                             ),
                           ),
                         ),
@@ -130,10 +130,7 @@ class _CatalogPageState extends State<CatalogPage> {
                 const SizedBox(height: 12),
 
                 // --- content ---
-                Expanded(
-                  child: _buildContent(),
-                ),
-
+                Expanded(child: _buildContent()),
               ],
             ),
           ),
@@ -159,21 +156,25 @@ class _CatalogPageState extends State<CatalogPage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.wifi_off_outlined, size: 48, color: Colors.black26),
+              const Icon(
+                Icons.wifi_off_outlined,
+                size: 48,
+                color: Colors.black26,
+              ),
               const SizedBox(height: 16),
               Text(
                 _controller.errorMessage!,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 15,
-                  color: Colors.black54,
-                ),
+                style: const TextStyle(fontSize: 15, color: Colors.black54),
               ),
               const SizedBox(height: 24),
               GestureDetector(
                 onTap: _controller.load,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 12,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.black,
                     borderRadius: BorderRadius.circular(12),
@@ -198,7 +199,11 @@ class _CatalogPageState extends State<CatalogPage> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.rocket_launch_outlined, size: 48, color: Colors.black26),
+            const Icon(
+              Icons.rocket_launch_outlined,
+              size: 48,
+              color: Colors.black26,
+            ),
             const SizedBox(height: 16),
             Text(
               'Nenhuma startup encontrada\nnesta categoria.',
@@ -216,7 +221,8 @@ class _CatalogPageState extends State<CatalogPage> {
       child: ListView.builder(
         padding: const EdgeInsets.only(top: 4, bottom: 16),
         itemCount: _controller.startups.length,
-        itemBuilder: (context, i) => StartupCard(startup: _controller.startups[i]),
+        itemBuilder: (context, i) =>
+            StartupCard(startup: _controller.startups[i]),
       ),
     );
   }
