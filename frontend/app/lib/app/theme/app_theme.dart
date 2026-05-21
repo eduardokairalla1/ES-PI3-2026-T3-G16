@@ -27,16 +27,49 @@ class AppTheme {
 
   /// Light [ThemeData] used by [MaterialApp] in light mode.
   static ThemeData get light {
+    // Build the seed-based scheme, then override every surface variant so
+    // Material 3 never bleeds its auto-generated purple/pink tints into
+    // Scaffold, Dialog, Card, AppBar, BottomSheet, etc.
+    final seedScheme = ColorScheme.fromSeed(
+      seedColor: AppColors.black,
+      brightness: Brightness.light,
+      surface: AppColors.white,
+    ).copyWith(
+      primary: AppColors.black,
+      onPrimary: AppColors.white,
+      primaryContainer: AppColors.grey100,
+      onPrimaryContainer: AppColors.black,
+      secondary: AppColors.black,
+      onSecondary: AppColors.white,
+      secondaryContainer: AppColors.grey100,
+      onSecondaryContainer: AppColors.black,
+      tertiary: AppColors.black,
+      onTertiary: AppColors.white,
+      tertiaryContainer: AppColors.grey100,
+      onTertiaryContainer: AppColors.black,
+      error: const Color(0xFFB00020),
+      onError: AppColors.white,
+      errorContainer: const Color(0xFFFDE8E8),
+      onErrorContainer: const Color(0xFF9B1C1C),
+      surfaceTint: Colors.transparent,
+      surfaceContainerLowest: AppColors.white,
+      surfaceContainerLow: AppColors.grey50,
+      surfaceContainer: AppColors.grey50,
+      surfaceContainerHigh: AppColors.grey100,
+      surfaceContainerHighest: AppColors.grey200,
+    );
+
     final base = ThemeData(
       brightness: Brightness.light,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: AppColors.black,
-        brightness: Brightness.light,
-        surface: AppColors.white,
-      ),
+      colorScheme: seedScheme,
       scaffoldBackgroundColor: AppColors.grey50,
       textTheme: GoogleFonts.interTextTheme(),
       useMaterial3: true,
+      textSelectionTheme: const TextSelectionThemeData(
+        cursorColor: AppColors.black,
+        selectionColor: AppColors.black12,
+        selectionHandleColor: AppColors.black,
+      ),
     );
 
     return base.copyWith(
@@ -50,6 +83,22 @@ class AppTheme {
         backgroundColor: AppColors.white,
         surfaceTintColor: Colors.transparent,
       ),
+      appBarTheme: const AppBarTheme(
+        backgroundColor: AppColors.white,
+        surfaceTintColor: Colors.transparent,
+      ),
+      cardTheme: const CardThemeData(
+        color: AppColors.white,
+        surfaceTintColor: Colors.transparent,
+      ),
+      bottomSheetTheme: const BottomSheetThemeData(
+        backgroundColor: AppColors.white,
+        surfaceTintColor: Colors.transparent,
+      ),
+      popupMenuTheme: const PopupMenuThemeData(
+        color: AppColors.white,
+        surfaceTintColor: Colors.transparent,
+      ),
     );
   }
 
@@ -57,16 +106,46 @@ class AppTheme {
 
   /// Dark [ThemeData] used by [MaterialApp] in dark mode.
   static ThemeData get dark {
+    final seedScheme = ColorScheme.fromSeed(
+      seedColor: AppColors.white,
+      brightness: Brightness.dark,
+      surface: AppColors.darkSurface,
+    ).copyWith(
+      primary: AppColors.white,
+      onPrimary: AppColors.black,
+      primaryContainer: AppColors.darkSurfaceMuted,
+      onPrimaryContainer: AppColors.white,
+      secondary: AppColors.white,
+      onSecondary: AppColors.black,
+      secondaryContainer: AppColors.darkSurfaceMuted,
+      onSecondaryContainer: AppColors.white,
+      tertiary: AppColors.white,
+      onTertiary: AppColors.black,
+      tertiaryContainer: AppColors.darkSurfaceMuted,
+      onTertiaryContainer: AppColors.white,
+      error: const Color(0xFFCF6679),
+      onError: AppColors.black,
+      errorContainer: const Color(0xFF4C1D24),
+      onErrorContainer: const Color(0xFFFFAEAE),
+      surfaceTint: Colors.transparent,
+      surfaceContainerLowest: AppColors.darkBackground,
+      surfaceContainerLow: AppColors.darkBackground,
+      surfaceContainer: AppColors.darkSurface,
+      surfaceContainerHigh: AppColors.darkSurfaceMuted,
+      surfaceContainerHighest: AppColors.darkSurfaceMuted,
+    );
+
     final base = ThemeData(
       brightness: Brightness.dark,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: AppColors.white,
-        brightness: Brightness.dark,
-        surface: AppColors.darkSurface,
-      ),
+      colorScheme: seedScheme,
       scaffoldBackgroundColor: AppColors.darkBackground,
       textTheme: GoogleFonts.interTextTheme(ThemeData.dark().textTheme),
       useMaterial3: true,
+      textSelectionTheme: const TextSelectionThemeData(
+        cursorColor: AppColors.white,
+        selectionColor: AppColors.darkBorderSoft,
+        selectionHandleColor: AppColors.white,
+      ),
     );
 
     return base.copyWith(
@@ -78,6 +157,22 @@ class AppTheme {
       ),
       dialogTheme: const DialogThemeData(
         backgroundColor: AppColors.darkSurface,
+        surfaceTintColor: Colors.transparent,
+      ),
+      appBarTheme: const AppBarTheme(
+        backgroundColor: AppColors.darkSurface,
+        surfaceTintColor: Colors.transparent,
+      ),
+      cardTheme: const CardThemeData(
+        color: AppColors.darkSurface,
+        surfaceTintColor: Colors.transparent,
+      ),
+      bottomSheetTheme: const BottomSheetThemeData(
+        backgroundColor: AppColors.darkSurface,
+        surfaceTintColor: Colors.transparent,
+      ),
+      popupMenuTheme: const PopupMenuThemeData(
+        color: AppColors.darkSurface,
         surfaceTintColor: Colors.transparent,
       ),
     );

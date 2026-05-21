@@ -97,17 +97,18 @@ class BotoesAcao extends StatelessWidget {
       barrierDismissible: !isProcessando,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) {
+          final bool noPassoConfirmacao = mostrarConfirmacao;
           return AlertDialog(
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),
             ),
             title: Text(
-              mostrarConfirmacao ? 'Confirmar Depósito' : 'Depositar Saldo',
+              noPassoConfirmacao ? 'Confirmar Depósito' : 'Depositar Saldo',
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             content: AnimatedSwitcher(
               duration: const Duration(milliseconds: 300),
-              child: mostrarConfirmacao
+              child: noPassoConfirmacao
                   ? Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -173,13 +174,13 @@ class BotoesAcao extends StatelessWidget {
                 onPressed: isProcessando ? null : () => Navigator.pop(context),
               ),
               AppButton(
-                label: mostrarConfirmacao ? 'Confirmar' : 'Continuar',
+                label: noPassoConfirmacao ? 'Confirmar' : 'Continuar',
                 size: AppButtonSize.small,
                 fullWidth: false,
                 isLoading: isProcessando,
                 onPressed: isProcessando ? null : () async {
                   if (isProcessando) return;
-                  if (!mostrarConfirmacao) {
+                  if (!noPassoConfirmacao) {
                     final raw = valorController.text
                         .replaceAll('.', '')
                         .replaceAll(',', '.');

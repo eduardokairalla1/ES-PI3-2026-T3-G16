@@ -198,11 +198,29 @@ class _ProfilePageState extends State<ProfilePage> {
       ),
       child: Row(
         children: [
-          Expanded(child: _statColumn(investimentos, 'Investimentos')),
+          Expanded(
+            child: InkWell(
+              onTap: () => context.go('/carteira'),
+              borderRadius: BorderRadius.circular(8),
+              child: _statColumn(investimentos, 'Investimentos'),
+            ),
+          ),
           _verticalDivider(),
-          Expanded(child: _statColumn(aplicado, 'Aplicado')),
+          Expanded(
+            child: InkWell(
+              onTap: () => context.go('/carteira/investimentos'),
+              borderRadius: BorderRadius.circular(8),
+              child: _statColumn(aplicado, 'Aplicado'),
+            ),
+          ),
           _verticalDivider(),
-          Expanded(child: _statColumn(favoritas, 'Favoritas')),
+          Expanded(
+            child: InkWell(
+              onTap: () => context.go('/dashboard?filter=Favoritas'),
+              borderRadius: BorderRadius.circular(8),
+              child: _statColumn(favoritas, 'Favoritas'),
+            ),
+          ),
         ],
       ),
     );
@@ -322,7 +340,7 @@ class _ProfilePageState extends State<ProfilePage> {
           _menuItem(
             icon: Icons.account_balance_wallet_outlined,
             label: 'Minha Carteira',
-            onTap: () => _comingSoon(context),
+            onTap: () => context.go('/carteira'),
           ),
           _menuDivider(),
           _menuItem(
@@ -342,7 +360,7 @@ class _ProfilePageState extends State<ProfilePage> {
           _menuItem(
             icon: Icons.star_border_rounded,
             label: 'Startups Favoritas',
-            onTap: () => _comingSoon(context),
+            onTap: () => context.go('/dashboard?filter=Favoritas'),
             isLast: true,
           ),
         ],

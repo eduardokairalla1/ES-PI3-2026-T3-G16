@@ -73,7 +73,12 @@ final router = GoRouter(
     ),
     GoRoute(
       path: '/dashboard',
-      pageBuilder: (context, state) => const NoTransitionPage(child: PaginaDashboard()),
+      pageBuilder: (context, state) {
+        final filter = state.uri.queryParameters['filter'];
+        return NoTransitionPage(
+          child: PaginaDashboard(initialFilter: filter),
+        );
+      },
     ),
     GoRoute(
       path: '/catalog',

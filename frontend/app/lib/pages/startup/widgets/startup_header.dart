@@ -5,6 +5,7 @@
 // --- IMPORTS ---
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mesclainvest/app/app_state.dart';
 import 'package:mesclainvest/pages/startup/models/startup_model.dart';
 import 'package:mesclainvest/shared/styles/app_colors.dart';
 
@@ -22,7 +23,10 @@ class StartupHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final initial = userName.isNotEmpty ? userName[0].toUpperCase() : 'U';
+    final profile = AppState.instance.profile;
+    final name = profile?.fullName ?? userName;
+    final initial = name.isNotEmpty ? name[0].toUpperCase() : 'U';
+    final photoUrl = profile?.photoUrl;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
@@ -90,25 +94,41 @@ class StartupHeader extends StatelessWidget {
 
           const SizedBox(width: 12),
 
-          Container(
-            width: 38,
-            height: 38,
-            decoration: BoxDecoration(
-              color: AppColors.textPrimary(context),
-              shape: BoxShape.circle,
-            ),
-            child: Center(
-              child: Text(
-                initial,
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.surfaceColor(context),
-                ),
+          GestureDetector(
+            onTap: () => context.go('/profile'),
+            child: Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                color: AppColors.textPrimary(context),
+                shape: BoxShape.circle,
+              ),
+              child: ClipOval(
+                child: photoUrl != null
+                    ? Image.network(
+                        photoUrl,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) =>
+                            _initial(context, initial),
+                      )
+                    : _initial(context, initial),
               ),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _initial(BuildContext context, String letter) {
+    return Center(
+      child: Text(
+        letter,
+        style: TextStyle(
+          fontSize: 15,
+          fontWeight: FontWeight.w700,
+          color: AppColors.surfaceColor(context),
+        ),
       ),
     );
   }

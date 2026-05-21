@@ -19,7 +19,8 @@ import 'package:mesclainvest/shared/widgets/delayed_shimmer.dart';
 /// o patrimônio total, saldo disponível, atalhos de ações (depósito/saque/hub)
 /// e listando os investimentos do investidor bem como as startups em destaque no ecossistema.
 class PaginaDashboard extends StatefulWidget {
-  const PaginaDashboard({super.key});
+  final String? initialFilter;
+  const PaginaDashboard({super.key, this.initialFilter});
 
   @override
   State<PaginaDashboard> createState() => _PaginaDashboardState();
@@ -32,8 +33,19 @@ class _PaginaDashboardState extends State<PaginaDashboard> {
   @override
   void initState() {
     super.initState();
+    if (widget.initialFilter != null) {
+      _controller.filterStartups(widget.initialFilter);
+    }
     // Inicializa a carga assíncrona dos dados do painel do usuário
     _controller.loadDashboard();
+  }
+
+  @override
+  void didUpdateWidget(covariant PaginaDashboard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.initialFilter != oldWidget.initialFilter) {
+      _controller.filterStartups(widget.initialFilter);
+    }
   }
 
   @override

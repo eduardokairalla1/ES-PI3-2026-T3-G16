@@ -211,8 +211,14 @@ class _CatalogPageState extends State<CatalogPage> {
       child: ListView.builder(
         padding: const EdgeInsets.only(top: 4, bottom: 16),
         itemCount: _controller.startups.length,
-        itemBuilder: (context, i) =>
-            StartupCard(startup: _controller.startups[i]),
+        itemBuilder: (context, i) {
+          final startup = _controller.startups[i];
+          return StartupCard(
+            startup: startup,
+            isFavorite: _controller.isFavorite(startup.id),
+            onFavoriteTap: () => _controller.toggleFavorite(startup.id),
+          );
+        },
       ),
     );
   }
