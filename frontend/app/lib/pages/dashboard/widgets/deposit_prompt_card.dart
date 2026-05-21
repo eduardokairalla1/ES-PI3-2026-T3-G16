@@ -1,13 +1,14 @@
-// --- Deposit prompt card ---
+// --- Deposit prompt card / Card de Estímulo a Depósito ---
 // Pedro Henrique Medeiros dos Reis - 24801656
 // Alex Gabriel Soares Sousa - 24802449
 //
-// Shown on the dashboard when the user has zero balance — a friendly nudge
-// to deposit something so they can start using the app.
+// Este widget é exibido no Dashboard quando o usuário possui saldo disponível igual a zero.
+// Funciona como um atalho visual amigável (nudge) sugerindo que o usuário realize um depósito
+// simulado para poder usufruir das funcionalidades da plataforma, como compra de ativos
+// e publicação de ofertas no Balcão (P2P).
 //
-// Tapping the button opens a simple deposit dialog right here (this file is
-// self-contained so the card can be reused without depending on the action
-// row that lives in botoes_acao.dart).
+// O clique no botão abre um modal de depósito autossuficiente (evitando acoplamentos externos
+// desnecessários, permitindo sua fácil reutilização em outras partes do app).
 
 // --- IMPORTS ---
 import 'package:flutter/material.dart';
@@ -17,10 +18,11 @@ import 'package:mesclainvest/pages/dashboard/controllers/dashboard_controller.da
 import 'package:mesclainvest/shared/styles/app_colors.dart';
 import 'package:mesclainvest/shared/widgets/app_button.dart';
 
-// --- HELPERS ---
+// --- FORMATADORES / AUXILIARES ---
 
-/// I format raw digits into BRL currency as the user types
-/// (cashier-style entry — newest digit goes into the cents).
+/// Formatador de entrada que converte caracteres numéricos em tempo real
+/// em representação monetária BRL (R$ X.XXX,XX) de forma regressiva
+/// (estilo caixa registradora - os novos números entram nos centavos).
 class _CurrencyInputFormatter extends TextInputFormatter {
   final _fmt = NumberFormat.currency(
     locale: 'pt_BR',
@@ -51,17 +53,17 @@ class _CurrencyInputFormatter extends TextInputFormatter {
 
 // --- WIDGET ---
 
-/// Friendly nudge shown on the dashboard when the wallet balance is zero.
+/// Card amigável exibido no dashboard quando a carteira do usuário está vazia (saldo zero).
 ///
-/// Renders a card with a wallet icon, a short pitch and a "Depositar" CTA
-/// that opens [showDepositDialog]. The card delegates the actual deposit
-/// call to the same [DashboardController] used by the rest of the dashboard
-/// so the balance refreshes everywhere once the deposit completes.
+/// Apresenta um ícone de carteira, um texto explicativo e um botão de ação "Depositar"
+/// que abre o [showDepositDialog]. Este card delega a operação de depósito diretamente
+/// para o [DashboardController] associado, garantindo que o saldo seja atualizado de forma
+/// reativa em todos os componentes após a finalização da transação.
 class DepositPromptCard extends StatelessWidget {
-  /// Controller that owns the user's wallet state and performs the deposit.
+  /// Controller proprietário do estado financeiro da conta do usuário.
   final DashboardController controller;
 
-  /// Builds the prompt card bound to [controller].
+  /// Inicializa o card de estímulo acoplado ao [controller].
   const DepositPromptCard({super.key, required this.controller});
 
   @override
@@ -138,16 +140,16 @@ class DepositPromptCard extends StatelessWidget {
 
 // --- PUBLIC DIALOG ---
 
-/// Opens the deposit dialog. Reusable from any page that has a way to credit
-/// the wallet — pass the deposit action as [onDeposit].
+/// Abre o diálogo/modal de depósito na tela atual de forma genérica e reusável.
 ///
-/// The dialog shows a single BRL-formatted amount field (cashier-style input,
-/// max R$ 100.000,00), calls [onDeposit] with the parsed value on submit and
-/// shows a success or error snackbar afterwards.
+/// Renderiza uma caixa de diálogo contendo um campo formatado para inserção de valores monetários.
+/// Ao submeter, valida se o valor digitado é maior que zero, chama a função de callback
+/// assíncrona [onDeposit], gerencia estados locais de processamento (para exibir indicadores de loading)
+/// e notifica o usuário via Snackbars sobre o sucesso ou falha da simulação de depósito.
 ///
-/// [context]   a [BuildContext] under the active [Navigator] / [ScaffoldMessenger].
-/// [onDeposit] invoked with the parsed amount when the user submits. Must
-///   throw on failure so the dialog can display the error.
+/// Parâmetros:
+/// - [context]: O contexto da árvore de widgets sob o [Navigator] ativo.
+/// - [onDeposit]: Callback disparado com o valor numérico convertido ao salvar. Deve disparar erro caso falhe.
 Future<void> showDepositDialog({
   required BuildContext context,
   required Future<void> Function(double amount) onDeposit,

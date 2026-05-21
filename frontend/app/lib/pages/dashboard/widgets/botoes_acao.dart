@@ -1,6 +1,14 @@
 /*
  * Widgets para os botões de ação do Dashboard (Depositar, Comprar, Vender, Extrato).
  *
+ * Este arquivo reúne a barra de atalhos rápidos do usuário na tela principal.
+ * Ele provê botões funcionais para:
+ * 1. Carteira: Abre o painel de custódia consolidada.
+ * 2. Depositar: Abre um modal interativo de dois passos (Digitação -> Confirmação) para injetar saldo na conta fictícia.
+ * 3. Comprar: Redireciona para o catálogo de startups disponíveis para receber aportes.
+ * 4. Vender: Abre o mercado secundário descentralizado (Balcão P2P) para cadastrar ordens de venda.
+ * 5. Extrato: Exibe o histórico recente de depósitos, compras e vendas utilizando consultas assíncronas.
+ *
  * Alex Gabriel Soares Sousa - 24802449
  */
 
@@ -24,7 +32,8 @@ import 'package:mesclainvest/shared/widgets/app_button.dart';
  */
 
 /// Formata a entrada do usuário em tempo real como moeda brasileira (R$ X.XXX,XX).
-/// Os dígitos entram da direita para a esquerda (estilo caixa registradora).
+/// Os dígitos entram da direita para a esquerda (estilo caixa registradora - centavos primeiro).
+/// Utilizado para mascarar a digitação do valor de depósito.
 class _CurrencyInputFormatter extends TextInputFormatter {
   final _fmt = NumberFormat.currency(
     locale: 'pt_BR',
@@ -61,20 +70,22 @@ class _CurrencyInputFormatter extends TextInputFormatter {
  * CODE
  */
 
-/// Widget principal que agrupa os botões de atalho da dashboard.
+/// Widget principal que agrupa os botões de atalho da dashboard em uma linha horizontal rolável/ajustável.
 class BotoesAcao extends StatelessWidget {
-  // Atributos
+  /// Controlador do Dashboard para disparar ações financeiras globais e ler estados de saldo.
   final DashboardController controller;
 
-  // Construtor
+  /// Construtor injetando o controller.
   const BotoesAcao({super.key, required this.controller});
 
   /**
    * MÉTODOS PRIVADOS
    */
 
-  /// Abre o pop-up de depósito (Simulação bancária).
-  /// Possui fluxo de dois passos: Entrada de Valor e Confirmação.
+  /// Abre o pop-up de depósito (Simulação bancária de entrada de recursos na carteira).
+  /// Possui fluxo de dois passos usando um [StatefulBuilder] interno para gerenciar a transição:
+  /// - Passo 1: Digitação do valor com máscara de moeda e validações de teto (limite R$ 100k).
+  /// - Passo 2: Tela de confirmação e processamento de chamada assíncrona ao backend com feedback visual.
   void _mostrarDialogoDeposito(BuildContext context) {
     final TextEditingController valorController = TextEditingController();
     bool isProcessando = false;
@@ -232,7 +243,9 @@ class BotoesAcao extends StatelessWidget {
     );
   }
 
-  /// Abre o pop-up de extrato das movimentações recentes do usuário.
+  /// Abre o pop-up de extrato contendo as movimentações recentes do usuário.
+  /// Consome a lista assíncrona obtida pelo controller através de um [FutureBuilder].
+  /// Trata estados de carregamento (shimmer/progress), erro na comunicação e lista vazia de forma amigável.
   void _mostrarDialogoExtrato(BuildContext context) {
     showDialog(
       context: context,
@@ -425,15 +438,21 @@ class BotoesAcao extends StatelessWidget {
   }
 }
 
-/// Widget interno para representar cada item de ação individual.
-/// Todos os botões são cinza por padrão e ficam pretos ao toque/hover.
+/// Widget interno para representar cada item de ação individual com feedbacks visuais de foco e toque.
+/// 
+/// Todos os botões iniciam com cores discretas e mudam de cor dinamicamente quando focados
+/// pelo ponteiro do mouse (no Desktop) ou pressionados (no Mobile/Web), gerando uma experiência interativa rica.
 class _BotaoAcaoItem extends StatefulWidget {
-  // Atributos
+  /// Ícone que ilustra a ação a ser executada.
   final IconData icon;
+  
+  /// Texto exibido logo abaixo do ícone.
   final String label;
+  
+  /// Callback de navegação ou abertura de diálogos disparado ao clicar no botão.
   final VoidCallback onTap;
 
-  // Construtor
+  /// Construtor com propriedades obrigatórias.
   const _BotaoAcaoItem({
     required this.icon,
     required this.label,

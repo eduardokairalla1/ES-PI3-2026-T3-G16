@@ -19,12 +19,15 @@ import 'package:mesclainvest/pages/dashboard/controllers/dashboard_controller.da
  * CODE
  */
 
-/// Seção horizontal com indicadores de performance do ecossistema MesclaInvest.
+/// Seção horizontal que apresenta os principais indicadores de performance do ecossistema Mescla.
+/// Contém 3 blocos informativos:
+/// 1. Quantidade de startups listadas.
+/// 2. Rentabilidade média ponderada das cotações de tokens.
+/// 3. Contagem consolidada de investidores ativos (com abreviação matemática ex: "1,5k").
 class ResumoMercado extends StatelessWidget {
-  // Atributos
+  /// Instância do controlador do Dashboard fornecendo os dados estatísticos.
   final DashboardController controller;
 
-  // Construtor
   const ResumoMercado({super.key, required this.controller});
 
   @override
@@ -32,13 +35,13 @@ class ResumoMercado extends StatelessWidget {
     final data = controller.data;
     if (data == null) return const SizedBox.shrink();
 
-    // --- Formatação: Rentabilidade Média ---
+    // --- Formatação da string de Rentabilidade Média (ex: +12,4% ou -2,5%) ---
     final rentabilidade = data.rentabilidadeMediaMercado;
     final sinal = rentabilidade > 0 ? '+' : '';
     final rentabilidadeStr =
         '$sinal${rentabilidade.toStringAsFixed(1).replaceAll('.', ',')}%';
 
-    // --- Formatação: Volume de Investidores (Abreviado ex: 1,5k) ---
+    // --- Formatação do Volume de Investidores (Abrevia milhares com "k" ex: 1500 -> 1,5k) ---
     final investidores = data.totalInvestidoresMercado;
     final investidoresStr = investidores >= 1000
         ? '${(investidores / 1000).toStringAsFixed(1).replaceAll('.', ',')}k'
@@ -46,24 +49,24 @@ class ResumoMercado extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-      // Grade horizontal de indicadores (StatsBox)
+      // Alinha os cartões estatísticos horizontalmente de forma expandida e uniforme
       child: Row(
         children: [
-          // Total de startups listadas
+          // Bloco 1: Total de startups cadastradas
           StatsBox(
             primaryText: data.totalStartupsMercado.toString(),
             secondaryText: 'Startups\ndisponíveis',
           ),
           const SizedBox(width: 12),
 
-          // Rentabilidade acumulada do mercado no mês
+          // Bloco 2: Média de variação/lucro no mercado
           StatsBox(
             primaryText: rentabilidadeStr,
             secondaryText: 'Rentabilidade\neste mês',
           ),
           const SizedBox(width: 12),
 
-          // Quantidade de usuários ativos na plataforma
+          // Bloco 3: Número de investidores ativos
           StatsBox(
             primaryText: investidoresStr,
             secondaryText: 'Investidores\nativos',

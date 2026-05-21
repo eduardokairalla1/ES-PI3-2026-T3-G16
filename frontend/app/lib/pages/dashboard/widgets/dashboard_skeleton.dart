@@ -1,5 +1,13 @@
 /*
- * Skeleton screen / loading state for the Dashboard page.
+ * Tela de carregamento (Skeleton screen / shimmer effect) para a página do Dashboard.
+ *
+ * Este widget fornece uma interface de transição visual (placeholder animado) durante
+ * a chamada assíncrona inicial de dados do Dashboard (carregamento de saldos, startups
+ * e investimentos). Melhora significativamente a percepção de performance (UX) ao desenhar
+ * contornos cinzas pulsantes que mimetizam exatamente a estrutura do conteúdo real da página.
+ *
+ * Utiliza o componente customizado [ShimmerBox] para criar formas circulares e retangulares
+ * proporcionais às dimensões finais dos cards reais do Dashboard.
  *
  * Alex Gabriel Soares Sousa - 24802449
  */
@@ -8,8 +16,10 @@ import 'package:flutter/material.dart';
 import 'package:mesclainvest/shared/styles/app_colors.dart';
 import 'package:mesclainvest/shared/widgets/shimmer_box.dart';
 
+/// Componente que desenha o esqueleto visual do dashboard em estado de carregamento.
 class DashboardSkeleton extends StatelessWidget {
 
+  /// Construtor padrão da tela de carregamento.
   const DashboardSkeleton({super.key});
 
   @override

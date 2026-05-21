@@ -17,11 +17,14 @@ import 'package:mesclainvest/pages/dashboard/models/dashboard_data.dart';
  * CODE
  */
 
-/// Integração de dados do Dashboard com APIs e Firebase.
+/// Serviço que encapsula a integração com o Firebase Cloud Functions para a tela de Dashboard.
+/// Realiza chamadas remotas de funções callable no backend para ler e modificar dados do usuário.
 class DashboardService {
+  // Instância do Firebase Functions configurada no aplicativo
   final _functions = FirebaseFunctions.instance;
 
-  /// Consulta dados consolidados do usuário.
+  /// Consulta os dados consolidados do painel do usuário através da Cloud Function `onGetDashboard`.
+  /// Retorna uma instância de [DashboardData] com saldos, patrimônio e listas associadas.
   Future<DashboardData> fetchUserDashboardData() async {
     final result = await _functions
         .httpsCallable('onGetDashboard')
@@ -30,7 +33,8 @@ class DashboardService {
     return DashboardData.fromMap(Map<String, dynamic>.from(result.data));
   }
 
-  /// Alterna o status de favorito para uma startup.
+  /// Alterna a marcação de favorita de uma startup através da Cloud Function `onToggleFavorite`.
+  /// Retorna o novo estado lógico de favorito (`true` se marcada, `false` se desmarcada).
   Future<bool> toggleFavorite(String startupId) async {
     final result = await _functions
         .httpsCallable('onToggleFavorite')
@@ -39,7 +43,8 @@ class DashboardService {
     return (result.data as Map)['isFavorited'] as bool;
   }
 
-  /// Realiza um depósito simulado.
+  /// Realiza uma requisição de depósito simulado por meio da Cloud Function `onDeposit`.
+  /// Retorna o saldo da carteira atualizado.
   Future<double> deposit(double amount) async {
     final result = await _functions
         .httpsCallable('onDeposit')
@@ -48,7 +53,8 @@ class DashboardService {
     return (result.data['newBalance'] as num).toDouble();
   }
 
-  /// Busca o histórico de transações.
+  /// Busca o histórico consolidado de transações da carteira do usuário pela Cloud Function `onGetTransactions`.
+  /// Retorna uma lista contendo mapas de dados representando cada transação (depósitos, compras e vendas de tokens).
   Future<List<Map<String, dynamic>>> getTransactions({int limit = 20}) async {
     final result = await _functions
         .httpsCallable('onGetTransactions')

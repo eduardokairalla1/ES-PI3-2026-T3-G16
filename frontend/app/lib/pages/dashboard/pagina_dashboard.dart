@@ -14,6 +14,10 @@ import 'package:mesclainvest/shared/styles/app_colors.dart';
 import 'package:mesclainvest/shared/widgets/app_button.dart';
 import 'package:mesclainvest/shared/widgets/delayed_shimmer.dart';
 
+/// Componente de página (Widget com estado) do Dashboard.
+/// Esta tela serve como hub principal para os investidores do Mescla, exibindo
+/// o patrimônio total, saldo disponível, atalhos de ações (depósito/saque/hub)
+/// e listando os investimentos do investidor bem como as startups em destaque no ecossistema.
 class PaginaDashboard extends StatefulWidget {
   const PaginaDashboard({super.key});
 
@@ -22,23 +26,26 @@ class PaginaDashboard extends StatefulWidget {
 }
 
 class _PaginaDashboardState extends State<PaginaDashboard> {
-
+  // Controlador responsável pela lógica de negócios da página (MVVM)
   final DashboardController _controller = DashboardController();
 
   @override
   void initState() {
     super.initState();
+    // Inicializa a carga assíncrona dos dados do painel do usuário
     _controller.loadDashboard();
   }
 
   @override
   void dispose() {
+    // Libera os recursos alocados pelo controlador ao descartar a página
     _controller.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    // Reconstrói a UI dinamicamente sempre que o estado do controlador mudar (ex: carregamento finalizado)
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, _) {
@@ -62,6 +69,7 @@ class _PaginaDashboardState extends State<PaginaDashboard> {
     );
   }
 
+  /// Constrói o corpo principal da página com todos os componentes/seções do Dashboard.
   Widget _buildContent() {
     // --- Pedro Henrique Medeiros dos Reis - 24801656 ---
     // Show the "deposit to get started" card at the top whenever the wallet
@@ -84,6 +92,7 @@ class _PaginaDashboardState extends State<PaginaDashboard> {
     );
   }
 
+  /// Constrói a UI para exibição de mensagens de erro amigáveis (ex: falhas de conectividade).
   Widget _buildError() {
     return Center(
       child: Padding(

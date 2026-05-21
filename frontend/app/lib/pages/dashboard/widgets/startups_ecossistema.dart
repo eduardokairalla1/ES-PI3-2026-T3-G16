@@ -22,12 +22,13 @@ import 'package:mesclainvest/shared/styles/app_colors.dart';
  * CODE
  */
 
-/// Seção principal que exibe o catálogo resumido de startups e filtros de navegação.
+/// Componente que exibe a seção de startups recomendadas e os chips de filtragem no Dashboard.
+/// Permite filtrar a exibição entre todas, novas (em captação), operando e as favoritas do investidor.
+/// Limita a exibição prévia a 3 startups, oferecendo um link direto ("Ver todas") para o catálogo completo.
 class StartupsEcossistema extends StatelessWidget {
-  // Atributos
+  /// Instância do controlador do Dashboard que fornece o estado de filtros e a lista de startups.
   final DashboardController controller;
 
-  // Construtor
   const StartupsEcossistema({super.key, required this.controller});
 
   @override
@@ -35,7 +36,7 @@ class StartupsEcossistema extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // --- Cabeçalho da Seção ---
+        // --- Cabeçalho da Seção (Título e Link para Catálogo) ---
         Padding(
           padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
           child: Row(
@@ -50,7 +51,7 @@ class StartupsEcossistema extends StatelessWidget {
                   letterSpacing: -0.5,
                 ),
               ),
-              // Botão para ver o catálogo completo
+              // Botão para ver o catálogo completo via GoRouter
               GestureDetector(
                 onTap: () => context.push('/catalog'),
                 child: Row(
@@ -72,7 +73,7 @@ class StartupsEcossistema extends StatelessWidget {
           ),
         ),
 
-        // --- Barra de Filtros (Chips Horizontais) ---
+        // --- Barra de Filtros (Chips Horizontais com Efeito de Rolagem) ---
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -107,9 +108,7 @@ class StartupsEcossistema extends StatelessWidget {
         const SizedBox(height: 16),
 
         // --- Widgets de Resumo do Mercado (Injetado condicionalmente) ---
-        // ResumoMercado já aplica padding horizontal de 20 internamente, então
-        // não envolvemos aqui pra evitar dobrar o padding e deixar os boxes
-        // mais estreitos que os outros cards da tela.
+        // Exibe o painel de estatísticas gerais se os dados do dashboard já tiverem sido carregados.
         if (controller.data != null) ...[
           ResumoMercado(controller: controller),
           const SizedBox(height: 16),
@@ -137,7 +136,7 @@ class StartupsEcossistema extends StatelessWidget {
             ),
           )
         else
-          // Exibe apenas as 3 primeiras startups no dashboard (resumo)
+          // Exibe no máximo as 3 primeiras startups filtradas no dashboard principal
           ...controller.filteredStartups
               .take(3)
               .map(
@@ -154,16 +153,24 @@ class StartupsEcossistema extends StatelessWidget {
   }
 }
 
-/// Widget interno para representar cada chip de filtro individual.
+/// Widget interno privado para representar cada botão de chip de filtro individual da lista.
+/// Implementa animações de transição de cor de fundo e sombra ao ser selecionado.
 class _FilterChip extends StatelessWidget {
-  // Atributos
+  /// Rótulo de texto do chip.
   final String label;
+  
+  /// Indica se este chip de filtro está ativo/selecionado no momento.
   final bool isSelected;
+  
+  /// Callback de clique do chip.
   final VoidCallback onTap;
+  
+  /// Ícone opcional a ser exibido no início do chip.
   final IconData? icon;
+  
+  /// Cor do ícone opcional.
   final dynamic iconColor;
 
-  // Construtor
   const _FilterChip({
     required this.label,
     required this.isSelected,

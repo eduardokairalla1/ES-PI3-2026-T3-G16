@@ -11,32 +11,38 @@ import 'package:mesclainvest/pages/dashboard/services/dashboard_service.dart';
 import 'package:mesclainvest/pages/dashboard/models/transaction_model.dart';
 import 'package:mesclainvest/pages/startup/models/startup_model.dart';
 
+/// Controlador que gerencia o estado e a lógica de negócios da UI do Dashboard.
+/// Estende [ChangeNotifier] para notificar a View sobre atualizações de dados.
 class DashboardController extends ChangeNotifier {
 
+  // Instâncias dos serviços utilizados para buscar informações da API
   final DashboardService  _dashboardService  = DashboardService();
   final CatalogService    _catalogService    = CatalogService();
 
-  bool isLoading     = true;
-  bool exibirValores = true;
-  DashboardData? data;
-  String? errorMessage;
+  // Estados fundamentais de exibição
+  bool isLoading     = true; // Flag indicando se há requisições assíncronas em andamento
+  bool exibirValores = true; // Controla a visibilidade dos valores monetários (modo de privacidade)
+  DashboardData? data;       // Dados consolidados do painel do investidor
+  String? errorMessage;      // Mensagem de erro caso a requisição falhe
 
   List<StartupModel>       startups  = [];
 
-  // Estado de favoritos (gerenciado separadamente do modelo).
+  // Estado de favoritos (gerenciado localmente para resposta imediata/otimista).
   final Set<String> _favoriteIds = {};
 
-  // Estado de Startups
+  // Coleção completa de startups e filtro selecionado para exibição
   List<StartupModel> allStartups = [];
-  String? selectedStartupFilter; // null = Todas, 'Favoritas' = Favoritas, ou stage (ex: 'new', 'operating')
+  String? selectedStartupFilter; // null = Todas, 'Favoritas' = Favoritas, ou estágio (ex: 'new', 'operating')
 
-  /// Carrega dados do dashboard e startups em paralelo.
+  /// Carrega os dados consolidados do dashboard do usuário e a lista de startups em paralelo.
+  /// Atualiza os estados de carregamento e notifica os ouvintes da View.
   Future<void> loadDashboard() async {
     isLoading    = true;
     errorMessage = null;
     notifyListeners();
 
     try {
+      // Dispara as consultas da API em paralelo para diminuir a latência do app
       final results = await Future.wait([
         _dashboardService.fetchUserDashboardData(),
         _catalogService.fetchStartups(),
@@ -45,6 +51,7 @@ class DashboardController extends ChangeNotifier {
       data        = results[0] as DashboardData;
       allStartups = results[1] as List<StartupModel>;
 
+      // Sincroniza o conjunto local de favoritos
       _favoriteIds
         ..clear()
         ..addAll(data!.favoriteIds);
@@ -56,19 +63,20 @@ class DashboardController extends ChangeNotifier {
     }
   }
 
+  /// Alterna a visibilidade dos valores monetários na tela (olho aberto/fechado).
   void toggleVisibility() {
     exibirValores = !exibirValores;
     notifyListeners();
   }
 
-  /// Alterna o filtro ativo de startups.
+  /// Alterna o filtro ativo de exibição de startups (ex: Favoritas, Novas, Operação).
   void filterStartups(String? filter) {
     if (selectedStartupFilter == filter) return;
     selectedStartupFilter = filter;
     notifyListeners();
   }
 
-  /// Retorna as startups filtradas.
+  /// Retorna a lista de startups pós-aplicação do filtro selecionado (`selectedStartupFilter`).
   List<StartupModel> get filteredStartups {
     if (selectedStartupFilter == null) return allStartups;
 
@@ -79,19 +87,20 @@ class DashboardController extends ChangeNotifier {
     return allStartups.where((s) => s.stage == selectedStartupFilter).toList();
   }
 
-  /// IDs de startups favoritas (leitura).
+  /// IDs de todas as startups marcadas como favoritas pelo usuário.
   Set<String> get favoriteIds => _favoriteIds;
 
-  /// Verifica se uma startup é favorita.
+  /// Retorna se a startup correspondente ao ID informado está favoritada.
   bool isFavorite(String startupId) {
     return _favoriteIds.contains(startupId);
   }
 
-  /// Alterna o status de favorito e recarrega.
+  /// Adiciona ou remove uma startup dos favoritos do usuário.
+  /// Utiliza uma **atualização otimista** na interface antes do retorno da API para melhor responsividade.
   Future<void> toggleFavorite(String startupId) async {
     if (data == null) return;
 
-    // Atualização otimista
+    // 1. Atualização otimista imediata na UI
     final wasFav = _favoriteIds.contains(startupId);
     if (wasFav) {
       _favoriteIds.remove(startupId);
@@ -101,9 +110,10 @@ class DashboardController extends ChangeNotifier {
     notifyListeners();
 
     try {
+      // 2. Envia a requisição para o servidor backend
       final newStatus = await _dashboardService.toggleFavorite(startupId);
 
-      // Sincroniza com servidor (caso tenha divergido)
+      // Sincroniza o conjunto local com o status retornado para certificar consistência
       if (newStatus) {
         _favoriteIds.add(startupId);
       } else {
@@ -111,7 +121,7 @@ class DashboardController extends ChangeNotifier {
       }
       notifyListeners();
     } catch (_) {
-      // Reverte em caso de erro
+      // 3. Reverte o estado local em caso de erro na requisição
       if (wasFav) {
         _favoriteIds.add(startupId);
       } else {
@@ -121,17 +131,19 @@ class DashboardController extends ChangeNotifier {
     }
   }
 
-  /// Realiza um depósito e atualiza o estado.
+  /// Executa uma simulação de depósito virtual na conta do investidor.
+  /// Atualiza o saldo local e ajusta o patrimônio total de forma proporcional.
   Future<void> deposit(double amount) async {
     if (data == null) return;
 
     try {
+      // Envia requisição para incrementar o saldo do usuário
       final newBalance = await _dashboardService.deposit(amount);
 
-      // O valor depositado é a diferença entre o novo saldo e o saldo anterior.
+      // Calcula a variação exata para atualizar o patrimônio proporcionalmente
       final double depositedAmount = newBalance - data!.saldoDisponivel;
 
-      // Atualiza o objeto data com o novo saldo e soma no patrimônio
+      // Imuta e atualiza a instância dos dados locais do dashboard
       data = DashboardData(
         nomeUsuario: data!.nomeUsuario,
         patrimonioTotal: data!.patrimonioTotal + depositedAmount,
@@ -153,7 +165,7 @@ class DashboardController extends ChangeNotifier {
     }
   }
 
-  /// Busca o histórico de transações recente.
+  /// Retorna o histórico consolidado recente de movimentações (extrato unificado) do investidor.
   Future<List<TransactionModel>> getTransactions() async {
     try {
       final list = await _dashboardService.getTransactions();

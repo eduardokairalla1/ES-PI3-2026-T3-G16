@@ -2,6 +2,11 @@
  * Widget de listagem dos investimentos do usuário (Minha Carteira).
  * Exibe a quantidade de tokens e valorização acumulada por cada startup.
  *
+ * Este componente apresenta ao investidor um sumário rápido da sua carteira de ativos
+ * (startups investidas) diretamente na Home. Se o usuário possuir ativos, exibe
+ * a quantidade de tokens ("STX"), o valor financeiro consolidado e a oscilação percentual.
+ * Se não possuir nenhum token comprado, exibe uma mensagem amigável instruindo-o a começar.
+ *
  * Alex Gabriel Soares Sousa - 24802449
  */
 
@@ -32,15 +37,18 @@ final _currencyFmt = NumberFormat.currency(
  */
 
 /// Seção principal que lista as startups nas quais o usuário possui tokens.
+/// Recebe o [DashboardController] para escutar o estado de exibição de valores (visibilidade/máscara)
+/// e recuperar a lista de ativos consolidados do backend.
 class MeusInvestimentos extends StatelessWidget {
-  // Atributos
+  // Atributos contendo a lógica de negócios da tela principal
   final DashboardController controller;
 
-  // Construtor
+  // Construtor padrão exigindo o controller associado
   const MeusInvestimentos({super.key, required this.controller});
 
   @override
   Widget build(BuildContext context) {
+    // Obtém a lista de investimentos do resumo do Dashboard, evitando falhas com lista vazia por padrão
     final investimentos = controller.data?.investimentos ?? [];
 
     return Column(
@@ -125,12 +133,16 @@ class MeusInvestimentos extends StatelessWidget {
 }
 
 /// Widget interno para exibir cada card de investimento na lista.
+/// Controla individualmente a formatação, cor da variação de rentabilidade
+/// e suporta o modo de ocultação de saldos (modo de privacidade).
 class InvestimentoCard extends StatelessWidget {
-  // Atributos
+  // Dados do investimento (Startup, quantidade de tokens, preço atual e variação)
   final InvestimentoResumo investimento;
+  
+  // Sinalizador que determina se o saldo e a porcentagem devem ser exibidos ou mascarados com '•••••'
   final bool exibirValores;
 
-  // Construtor
+  // Construtor com as propriedades obrigatórias para renderização do card
   const InvestimentoCard({
     super.key,
     required this.investimento,
@@ -139,8 +151,10 @@ class InvestimentoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Cálculos de valorização e saldo
+    // Cálculo em tempo real do patrimônio alocado na startup (Preço Unitário Atual * Quantidade de Tokens)
     final valorTotal = investimento.tokenQuantity * investimento.currentPrice;
+    
+    // Determina se a variação percentual é positiva (lucro) ou negativa (prejuízo)
     final isPositive = investimento.variation >= 0;
 
     return GestureDetector(

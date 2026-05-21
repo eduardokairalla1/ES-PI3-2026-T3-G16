@@ -18,13 +18,16 @@ import 'package:mesclainvest/shared/styles/app_colors.dart';
  * CODE
  */
 
-/// Componente visual base para indicadores numéricos/estatísticos no Dashboard.
+/// Componente visual base para exibição de blocos de indicadores numéricos/estatísticos no Dashboard.
+/// Renderiza uma caixa (card) estilizada com cantos arredondados, borda fina, sombra sutil
+/// e alinhamento centralizado para destacar métricas chaves como "Rentabilidade Média" ou "Total de Startups".
 class StatsBox extends StatelessWidget {
-  // Atributos
-  final String primaryText; // Texto em destaque (ex: valor numérico)
-  final String secondaryText; // Descrição/Rótulo do indicador
+  /// O texto principal em destaque (ex: "12%", "R$ 4.500", "28").
+  final String primaryText;
+  
+  /// O texto secundário descritivo ou rótulo do indicador (ex: "Total de investidores", "Startups ativas").
+  final String secondaryText;
 
-  // Construtor
   const StatsBox({
     super.key,
     required this.primaryText,
@@ -52,7 +55,7 @@ class StatsBox extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // --- Texto Primário (Destaque) ---
+            // --- Texto Primário (Destaque principal da estatística) ---
             Text(
               primaryText,
               textAlign: TextAlign.center,
@@ -65,7 +68,7 @@ class StatsBox extends StatelessWidget {
             ),
             const SizedBox(height: 4),
 
-            // --- Texto Secundário (Rótulo) ---
+            // --- Texto Secundário (Rótulo/descrição secundária) ---
             Text(
               secondaryText,
               textAlign: TextAlign.center,

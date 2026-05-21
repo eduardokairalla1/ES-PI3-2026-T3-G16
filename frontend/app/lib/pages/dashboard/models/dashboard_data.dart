@@ -10,13 +10,24 @@ library;
  * TYPES
  */
 
-/// Resumo de uma posição do usuário em uma startup.
+/// Modelo que representa o resumo da posição de investimentos de um investidor em uma startup específica.
 class InvestimentoResumo {
+  /// Identificador único da startup (Doc ID do Firestore).
   final String startupId;
+  
+  /// Nome de exibição da startup.
   final String startupName;
+  
+  /// URL contendo a imagem do logotipo da startup.
   final String startupLogoUrl;
+  
+  /// Quantidade total de tokens em custódia.
   final int tokenQuantity;
+  
+  /// Cotação/Preço atual do token no mercado.
   final double currentPrice;
+  
+  /// Variação percentual ponderada de valorização/desvalorização do ativo (com base no preço médio).
   final double variation;
 
   InvestimentoResumo({
@@ -28,7 +39,7 @@ class InvestimentoResumo {
     required this.variation,
   });
 
-  /// Cria um resumo de investimento a partir do payload retornado pelo backend.
+  /// Cria um resumo de investimento a partir de um mapa de chaves/valores (`Map<String, dynamic>`) retornado pelo backend.
   factory InvestimentoResumo.fromMap(Map<String, dynamic> map) {
     return InvestimentoResumo(
       startupId: map['startupId'] as String? ?? '',
@@ -41,17 +52,36 @@ class InvestimentoResumo {
   }
 }
 
-/// Dados consolidados usados para renderizar a tela principal do Dashboard.
+/// Dados consolidados do Dashboard consumidos pela interface gráfica para renderização do painel principal.
 class DashboardData {
+  /// Nome completo do investidor logado.
   final String nomeUsuario;
+  
+  /// Patrimônio total do investidor (Soma dos ativos em custódia + saldo disponível líquido).
   final double patrimonioTotal;
+  
+  /// Saldo líquido disponível em conta para novos investimentos e saques.
   final double saldoDisponivel;
+  
+  /// Rendimento bruto em valor monetário acumulado no portfólio do usuário na última semana.
   final double rendimentoDiarioValor;
+  
+  /// Variação percentual de rendimento do portfólio na última semana.
   final double rendimentoDiarioPorcentagem;
+  
+  /// Número total de startups ativas registradas e disponíveis para investimento no ecossistema.
   final int totalStartupsMercado;
+  
+  /// Rentabilidade média geral calculada das startups do ecossistema nos últimos 30 dias.
   final double rentabilidadeMediaMercado;
+  
+  /// Contagem total de investidores ativos (que possuem ordens de compra completadas) no ecossistema.
   final int totalInvestidoresMercado;
+  
+  /// Lista contendo as posições de investimento ativas do usuário.
   final List<InvestimentoResumo> investimentos;
+  
+  /// Lista contendo os identificadores de startups favoritadas pelo investidor.
   final List<String> favoriteIds;
 
   DashboardData({
@@ -67,7 +97,8 @@ class DashboardData {
     required this.favoriteIds,
   });
 
-  /// Cria o agregado do Dashboard a partir do payload da callable onGetDashboard.
+  /// Cria a entidade de visualização consolidada a partir do mapa gerado pela chamada à Cloud Function `onGetDashboard`.
+  /// Agrega o patrimônio total combinando o valor de custódia com o saldo líquido em carteira.
   factory DashboardData.fromMap(Map<String, dynamic> map) {
     final rawInvestimentos = (map['investimentos'] as List<dynamic>?) ?? [];
     final rawFavorites = (map['favoriteIds'] as List<dynamic>?) ?? [];
@@ -98,7 +129,7 @@ class DashboardData {
     );
   }
 
-  /// Mock para fallback.
+  /// Instância auxiliar estática para fallback ou estados iniciais de carregamento vazio.
   factory DashboardData.mock() {
     return DashboardData(
       nomeUsuario: 'Usuário',

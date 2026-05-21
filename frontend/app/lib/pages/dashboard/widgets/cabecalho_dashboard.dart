@@ -1,6 +1,11 @@
 /*
  * Widget de cabeçalho do Dashboard, exibindo informações do perfil do usuário.
  *
+ * Renderiza o cabeçalho superior da página principal, contendo o avatar do investidor,
+ * o nome completo de perfil e o sino de alertas/notificações com badge indicador.
+ * Sincroniza-se com o singleton global [AppState] para refletir instantaneamente
+ * alterações de foto ou nome feitas na tela de Perfil.
+ *
  * Alex Gabriel Soares Sousa - 24802449
  */
 
@@ -22,20 +27,24 @@ import 'package:mesclainvest/pages/dashboard/controllers/dashboard_controller.da
  */
 
 /// Barra superior com dados do usuário (Avatar e Nome) e botão de notificações.
+/// Reage reativamente às atualizações do perfil através do controlador de estado.
 class CabecalhoDashboard extends StatelessWidget {
-  // Atributos
+  /// Controlador do Dashboard fornecendo os dados e fluxo da página principal.
   final DashboardController controller;
 
-  // Construtor
+  /// Construtor contendo a injeção do controller associado.
   const CabecalhoDashboard({super.key, required this.controller});
 
   @override
   Widget build(BuildContext context) {
-    // Busca dados do perfil global
+    // Busca dados atualizados do perfil no singleton global (persistência temporária em RAM)
     final profile = AppState.instance.profile;
-    // Se o perfil for null (ex: usuário deu F5 e limpou a RAM), usa o nomeUsuario do DashboardData
-    final userName =
-        profile?.fullName ?? controller.data?.nomeUsuario ?? 'Usuário';
+    
+    // Fallback inteligente: se o perfil global estiver nulo (ex: refresh na página web),
+    // tenta usar o nome retornado pela chamada do Dashboard no backend. Senão, mostra 'Usuário'.
+    final userName = profile?.fullName ?? controller.data?.nomeUsuario ?? 'Usuário';
+    
+    // Obtém a primeira letra do nome do usuário para compor o avatar textual caso não haja foto definida
     final initial = userName.isNotEmpty ? userName[0].toUpperCase() : 'U';
     final photoUrl = profile?.photoUrl;
 

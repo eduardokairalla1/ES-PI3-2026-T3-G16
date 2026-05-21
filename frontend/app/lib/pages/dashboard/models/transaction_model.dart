@@ -10,13 +10,25 @@ library;
  * TYPES
  */
 
-/// Representa uma movimentação recente da carteira simulada do usuário.
+/// Entidade que representa uma transação unificada no extrato da conta do investidor.
+/// Normaliza depósitos de carteira e negociações de ativos (compra/venda).
 class TransactionModel {
+  /// Identificador único da transação (Doc ID do Firestore).
   final String id;
+  
+  /// Valor financeiro total envolvido na transação.
   final double amount;
+  
+  /// Descrição amigável legível da transação (ex: "Depósito em conta", "Compra de tokens — StartupX").
   final String description;
+  
+  /// Data e hora do registro/efetivação da movimentação.
   final DateTime createdAt;
+  
+  /// Tipo de transação (ex: 'deposit' para depósitos, 'buy' para compras de token, 'sell' para vendas).
   final String type;
+  
+  /// Status atual do processamento da transação (ex: 'completed', 'pending').
   final String status;
 
   TransactionModel({
@@ -28,13 +40,14 @@ class TransactionModel {
     required this.status,
   });
 
-  /// Cria uma transação a partir de diferentes formatos serializados pelo Firebase.
+  /// Cria uma instância de [TransactionModel] decodificando um mapa de atributos vindo da Cloud Function.
+  /// Implementa tratamento robusto para conversão de datas vindas do Firebase (Timestamps, milissegundos ou strings ISO).
   factory TransactionModel.fromMap(Map<String, dynamic> map) {
-    // Parse created_at handling all possible Firebase serialization formats:
-    // - Map with '_seconds' (callable via web SDK)
-    // - int (milliseconds since epoch)
-    // - String (ISO 8601 format)
-    // - Fallback: DateTime.now()
+    // Parse de data tratando diferentes formatos de serialização do Firebase:
+    // - Mapa com '_seconds' (comum em chamadas HTTP/SDK Web)
+    // - Inteiro representando timestamp em milissegundos
+    // - String em formato ISO 8601
+    // - Fallback padrão para DateTime.now() em caso de ausência ou falha no parse
     DateTime date;
     try {
       final raw = map['created_at'];
