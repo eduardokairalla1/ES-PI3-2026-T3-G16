@@ -10,9 +10,10 @@
 import {HttpsError} from 'firebase-functions/v2/https';
 import {getOldestSnapshotSince} from '../../db/price_history/storage';
 import {getStartup} from '../../db/startups/storage';
+import {getOrdersByTypeAndStatus} from '../../db/orders/storage';
 import {getWallet, createWallet} from '../../db/wallets/storage';
+import {verifyAuth} from '../../utils/auth';
 import {logger} from '../../utils/logger';
-import db from '../../configs';
 
 
 /**
@@ -26,6 +27,7 @@ import {InternalError} from '../../errors/internalError';
  * TYPES
  */
 import type {CallableRequest} from 'firebase-functions/v2/https';
+import type {OrderDocument} from '../../db/orders/model';
 import type {walletDocument} from '../../db/wallets/model';
 
 
@@ -34,88 +36,92 @@ import type {walletDocument} from '../../db/wallets/model';
  */
 
 /**
+ * I group total token quantities by startup from a list of orders.
+ *
+ * @param orders list of completed buy orders
+ *
+ * @returns map of startupId → total quantity held
+ */
+function mapTotalTokensByStartup(orders: OrderDocument[]): Record<string, number>
+{
+    const totalTokensByStartup: Record<string, number> = {};
+
+    for (const {startup_id, quantity} of orders)
+    {
+        totalTokensByStartup[startup_id] = (totalTokensByStartup[startup_id] ?? 0) + quantity;
+    }
+
+    return totalTokensByStartup;
+}
+
+
+/**
+ * I compute weekly return in BRL and percentage from current and past values.
+ *
+ * @param values list of { currentValue, pastValue } per startup
+ *
+ * @returns weeklyReturn (BRL) and weeklyReturnPct (%)
+ */
+function calcWeeklyReturn(
+    values: {currentValue: number; pastValue: number}[],
+): {weeklyReturn: number; weeklyReturnPct: number}
+{
+    const totalCurrent = values.reduce((s, v) => s + v.currentValue, 0);
+    const totalPast = values.reduce((s, v) => s + v.pastValue, 0);
+    const weeklyReturn = totalCurrent - totalPast;
+    const weeklyReturnPct = totalPast > 0 ? (weeklyReturn / totalPast) * 100 : 0;
+    return {weeklyReturn, weeklyReturnPct};
+}
+
+
+/**
  * I handle the onGetWallet callable.
  *
  * @param request callable request
  *
- * @returns the authenticated user's wallet balance and daily return
+ * @returns the authenticated user's wallet balance and weekly return
  */
 export async function handleOnGetWallet(request: CallableRequest)
 {
     try
     {
-        // verify authentication
-        if (request.auth === null || request.auth === undefined)
-        {
-            throw new AuthError('User must be authenticated.');
-        }
+        const uid = verifyAuth(request);
 
-        const {uid} = request.auth;
-
-        // fetch wallet — auto-provision if missing (handles users created before this feature)
-        logger.info(`Fetching wallet for user "${uid}"...`, {data: {uid}});
+        logger.info(`Fetching wallet for user "${uid}"...`);
         let wallet = await getWallet(uid);
 
-        // wallet not found: create one and fetch again
         if (wallet === null)
         {
-            logger.info(`Wallet not found for "${uid}", creating one.`, {data: {uid}});
+            logger.info(`Wallet not found for user "${uid}", creating one...`);
             await createWallet(uid);
             wallet = await getWallet(uid) as walletDocument;
         }
 
-        logger.info(`Wallet for user "${uid}" fetched successfully.`);
+        const orders = await getOrdersByTypeAndStatus(uid, 'buy', 'completed');
+        const totalTokensByStartup = mapTotalTokensByStartup(orders);
 
-        // compute 7-day portfolio return
         const weekAgo = new Date();
         weekAgo.setDate(weekAgo.getDate() - 7);
 
-        const ordersSnap = await db
-            .collection('orders')
-            .where('uid', '==', uid)
-            .where('type', '==', 'buy')
-            .where('status', '==', 'completed')
-            .get();
-
-        let weeklyReturn    = 0;
-        let weeklyReturnPct = 0;
-
-        if (!ordersSnap.empty)
-        {
-            // group quantities by startup
-            const byStartup = new Map<string, number>();
-            for (const doc of ordersSnap.docs)
-            {
-                const data      = doc.data();
-                const startupId = data.startup_id as string;
-                const quantity  = data.quantity   as number;
-                byStartup.set(startupId, (byStartup.get(startupId) ?? 0) + quantity);
-            }
-
-            // fetch current price and 7-day-ago price for each startup in parallel
-            const entries = Array.from(byStartup.entries());
-            const results = await Promise.all(entries.map(async ([startupId, quantity]) =>
+        const values = await Promise.all(
+            Object.entries(totalTokensByStartup).map(async ([startupId, quantity]) =>
             {
                 const [startup, snapshot] = await Promise.all([
                     getStartup(startupId),
                     getOldestSnapshotSince(startupId, weekAgo),
                 ]);
                 if (startup === null) return {currentValue: 0, pastValue: 0};
+                const pastPrice = snapshot?.price ?? startup.token_price;
+                return {
+                    currentValue: quantity * startup.token_price,
+                    pastValue: quantity * pastPrice,
+                };
+            }),
+        );
 
-                const currentValue = quantity * startup.token_price;
-                const pastPrice    = snapshot?.price ?? startup.token_price;
-                const pastValue    = quantity * pastPrice;
-                return {currentValue, pastValue};
-            }));
+        const {weeklyReturn, weeklyReturnPct} = calcWeeklyReturn(values);
 
-            const totalCurrent = results.reduce((s, r) => s + r.currentValue, 0);
-            const totalPast    = results.reduce((s, r) => s + r.pastValue,    0);
-
-            weeklyReturn    = totalCurrent - totalPast;
-            weeklyReturnPct = totalPast > 0
-                ? (weeklyReturn / totalPast) * 100
-                : 0;
-        }
+        logger.info(`Wallet for user "${uid}" fetched successfully.`);
 
         return {
             patrimonioTotal: wallet.balance,
@@ -124,7 +130,6 @@ export async function handleOnGetWallet(request: CallableRequest)
         };
     }
 
-    // handle errors
     catch (error: unknown)
     {
         if (error instanceof AuthError)

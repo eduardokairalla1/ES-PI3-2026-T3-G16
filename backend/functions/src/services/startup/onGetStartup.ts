@@ -9,6 +9,7 @@
  */
 import {HttpsError} from 'firebase-functions/v2/https';
 import {getStartup} from '../../db/startups/storage';
+import {verifyAuth} from '../../utils/auth';
 import {logger} from '../../utils/logger';
 
 
@@ -46,10 +47,7 @@ export async function handleOnGetStartup(request: CallableRequest)
     try
     {
         // verify authentication
-        if (request.auth === null || request.auth === undefined)
-        {
-            throw new AuthError('User must be authenticated.');
-        }
+        verifyAuth(request);
 
         // validate request data
         const parsed = parseRequest(GetStartupRequest, request.data);
