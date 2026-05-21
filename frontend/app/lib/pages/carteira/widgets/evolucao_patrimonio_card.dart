@@ -2,12 +2,11 @@
 // Pedro Henrique Medeiros dos Reis - 24801656
 //
 // Line chart that visualizes how the user's total patrimônio has moved over
-// the selected period. The backend does NOT store historical patrimônio
-// snapshots yet, so the curve here is *illustrative*: we anchor the right
-// edge to the real current patrimônio and project the rest of the curve
-// backwards using the current daily-variation as a smooth trend. Once the
-// backend exposes real snapshots, only the [_syntheticSeries] helper needs
-// to change — the chart layout itself stays the same.
+// the selected period. The curve here is real: the backend queries historical
+// snapshots, wallet transactions, and asset valuation retroactively, and we
+// dynamically render the exact data points fetched from the API with support
+// for caching, loading state indicators, and error handling.
+//
 
 // --- IMPORTS ---
 import 'dart:math';
@@ -69,17 +68,72 @@ class EvolucaoPatrimonioCard extends StatefulWidget {
 
 class _EvolucaoPatrimonioCardState extends State<EvolucaoPatrimonioCard> {
   _Period _period = _Period.m1;
+  final Map<_Period, List<FlSpot>> _spotsCache = {};
+  bool _loading = false;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadHistoryForPeriod(_period);
+  }
+
+  @override
+  void didUpdateWidget(covariant EvolucaoPatrimonioCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.controller.data != oldWidget.controller.data && widget.controller.data != null) {
+      _spotsCache.clear();
+      _loadHistoryForPeriod(_period);
+    }
+  }
+
+  Future<void> _loadHistoryForPeriod(_Period period) async {
+    if (widget.controller.data == null) return;
+    if (_spotsCache.containsKey(period)) {
+      setState(() {
+        _period = period;
+        _error = null;
+        _loading = false;
+      });
+      return;
+    }
+
+    setState(() {
+      _period = period;
+      _loading = true;
+      _error = null;
+    });
+
+    try {
+      final periodStr = period.name;
+      final history = await widget.controller.fetchPatrimonyHistory(periodStr);
+      final List<FlSpot> spots = [];
+      for (int i = 0; i < history.length; i++) {
+        final double val = (history[i]['patrimony'] as num).toDouble();
+        spots.add(FlSpot(i.toDouble(), val));
+      }
+      _spotsCache[period] = spots;
+      if (mounted && _period == period) {
+        setState(() {
+          _loading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted && _period == period) {
+        setState(() {
+          _loading = false;
+          _error = 'Falha ao carregar histórico.';
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final data = widget.controller.data;
     if (data == null) return const SizedBox.shrink();
 
-    final spots = _syntheticSeries(
-      currentValue:   data.patrimonioTotal,
-      dailyVariation: data.rendimentoDiarioPorcentagem,
-      sampleCount:    _period.samples,
-    );
+    final spots = _spotsCache[_period];
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
@@ -119,12 +173,39 @@ class _EvolucaoPatrimonioCardState extends State<EvolucaoPatrimonioCard> {
               ),
               _PeriodDropdown(
                 current:  _period,
-                onChange: (p) => setState(() => _period = p),
+                onChange: _loadHistoryForPeriod,
               ),
             ],
           ),
           const SizedBox(height: 8),
-          SizedBox(height: 180, child: _Chart(spots: spots, period: _period)),
+          SizedBox(
+            height: 180,
+            child: _loading
+                ? const Center(
+                    child: CircularProgressIndicator(),
+                  )
+                : _error != null
+                    ? Center(
+                        child: Text(
+                          _error!,
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: AppColors.textMuted(context),
+                          ),
+                        ),
+                      )
+                    : (spots == null || spots.isEmpty)
+                        ? Center(
+                            child: Text(
+                              'Carregando histórico...',
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: AppColors.textMuted(context),
+                              ),
+                            ),
+                          )
+                        : _Chart(spots: spots, period: _period),
+          ),
         ],
       ),
     );
@@ -309,39 +390,4 @@ class _PeriodDropdown extends StatelessWidget {
   }
 }
 
-// --- HELPERS ---
 
-/// Builds a synthetic time-series anchored at [currentValue] (right edge)
-/// and projected backwards using [dailyVariation] as the per-step trend.
-/// A small deterministic sinusoidal wobble is added so the curve looks
-/// organic instead of a straight line.
-///
-/// Returns [sampleCount] points where the last one is exactly the current
-/// patrimônio. When [currentValue] is zero (brand-new user) the series is
-/// flat at zero so the chart still renders without a divide-by-zero.
-List<FlSpot> _syntheticSeries({
-  required double currentValue,
-  required double dailyVariation,
-  required int sampleCount,
-}) {
-  if (currentValue <= 0 || sampleCount < 2) {
-    return List.generate(sampleCount, (i) => FlSpot(i.toDouble(), currentValue));
-  }
-
-  // Per-step growth derived from the daily variation. We compress the daily
-  // % across the whole window so the curve does not balloon into unrealistic
-  // values for long periods.
-  final perStepGrowth = (dailyVariation / 100.0) / max(sampleCount - 1, 1);
-
-  final spots = <FlSpot>[];
-  // Start by walking back from [currentValue] step by step.
-  double v = currentValue;
-  for (int i = sampleCount - 1; i >= 0; i--) {
-    // Small sine wobble (deterministic, no Random()) for an organic shape.
-    final wobble = sin(i * 0.85) * currentValue * 0.01;
-    spots.add(FlSpot(i.toDouble(), max(v + wobble, currentValue * 0.5)));
-    v = v / (1 + perStepGrowth);
-  }
-  // We walked backwards, so reverse to get ascending X order.
-  return spots.reversed.toList();
-}

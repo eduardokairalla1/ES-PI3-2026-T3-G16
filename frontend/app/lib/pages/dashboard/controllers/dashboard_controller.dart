@@ -176,4 +176,9 @@ class DashboardController extends ChangeNotifier {
       return [];
     }
   }
+
+  /// Busca o histórico de evolução patrimonial real do usuário para o período especificado.
+  Future<List<Map<String, dynamic>>> fetchPatrimonyHistory(String period) async {
+    return _dashboardService.fetchPatrimonyHistory(period);
+  }
 }

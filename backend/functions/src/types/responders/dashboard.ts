@@ -31,6 +31,19 @@ export const ToggleFavoriteRequest = z.object(
     },
 );
 
+/**
+ * Esquema de validação Zod para a requisição de histórico de evolução patrimonial.
+ * Garante que o período fornecido esteja em conformidade com as opções suportadas.
+ */
+export const GetPatrimonyHistoryRequest = z.object(
+    {
+        /**
+         * Janela de período selecionada (d7, m1, m3, m6 ou y1).
+         */
+        period: z.enum(['d7', 'm1', 'm3', 'm6', 'y1']),
+    },
+);
+
 
 /**
  * EXPORTS
@@ -40,3 +53,8 @@ export const ToggleFavoriteRequest = z.object(
  * Tipo TypeScript gerado a partir do esquema Zod para a requisição de alternar favorito.
  */
 export type ToggleFavoriteRequest = z.infer<typeof ToggleFavoriteRequest>;
+
+/**
+ * Tipo TypeScript gerado para a requisição de histórico patrimonial.
+ */
+export type GetPatrimonyHistoryRequest = z.infer<typeof GetPatrimonyHistoryRequest>;

@@ -29,6 +29,7 @@ import {handleOnGetTokenHistory} from '../services/startup/onGetTokenHistory';
 import {handleOnSendQuestion} from '../services/startup/onSendQuestion';
 import {handleOnGetDashboard} from '../services/dashboard/onGetDashboard';
 import {handleOnToggleFavorite} from '../services/dashboard/onToggleFavorite';
+import {handleOnGetPatrimonyHistory} from '../services/dashboard/onGetPatrimonyHistory';
 
 
 /**
@@ -59,5 +60,6 @@ export const onGetQuestions        = onCall({cors: true}, handleOnGetQuestions);
 export const onGetTokenHistory     = onCall({cors: true}, handleOnGetTokenHistory);
 
 // dashboard functions
-export const onGetDashboard    = onCall({cors: true}, handleOnGetDashboard);
-export const onToggleFavorite  = onCall({cors: true}, handleOnToggleFavorite);
+export const onGetDashboard        = onCall({cors: true}, handleOnGetDashboard);
+export const onToggleFavorite      = onCall({cors: true}, handleOnToggleFavorite);
+export const onGetPatrimonyHistory = onCall({cors: true}, handleOnGetPatrimonyHistory);

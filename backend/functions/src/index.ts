@@ -17,4 +17,4 @@ export {onUserCreated, onGetProfile, onGetWallet, onCreateOrder, onGetPortfolio,
 export {onBuyFromStartup, onCancelOrder, onGetMyOrders} from './responders/index';
 export {onDeposit, onGetTransactions} from './responders/index';
 export {onGetStartups, onGetStartup, onGetStartupOrderBook, onSendQuestion, onGetQuestions} from './responders/index';
-export {onGetDashboard, onToggleFavorite} from './responders/index';
+export {onGetDashboard, onToggleFavorite, onGetPatrimonyHistory} from './responders/index';

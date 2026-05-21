@@ -59,7 +59,7 @@ export function calcWeeklyReturn(
 /**
  * Helper to safely convert Firestore Timestamp or string to JS Date
  */
-function toJsDate(val: any): Date {
+export function toJsDate(val: any): Date {
     if (!val) return new Date(0);
     if (typeof val.toDate === 'function') {
         return val.toDate();
@@ -70,7 +70,7 @@ function toJsDate(val: any): Date {
 /**
  * Helper to determine the effective event date of an order (completed or cancelled)
  */
-function getOrderEventDate(order: OrderDocument): Date {
+export function getOrderEventDate(order: OrderDocument): Date {
     if (order.status === 'completed' && order.completed_at) {
         return toJsDate(order.completed_at);
     }

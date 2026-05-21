@@ -63,4 +63,15 @@ class DashboardService {
     final List<dynamic> list = result.data['transactions'] ?? [];
     return list.map((e) => Map<String, dynamic>.from(e as Map)).toList();
   }
+
+  /// Busca o histórico de evolução patrimonial real do usuário pela Cloud Function `onGetPatrimonyHistory`.
+  /// Retorna os pontos do histórico do patrimônio do usuário.
+  Future<List<Map<String, dynamic>>> fetchPatrimonyHistory(String period) async {
+    final result = await _functions
+        .httpsCallable('onGetPatrimonyHistory')
+        .call<Map<String, dynamic>>({'period': period});
+
+    final List<dynamic> list = result.data['history'] ?? [];
+    return list.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+  }
 }
