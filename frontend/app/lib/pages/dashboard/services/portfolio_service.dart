@@ -1,4 +1,8 @@
-/// Serviço de portfolio do usuário.
+/*
+ * Serviço de portfolio do usuário.
+ *
+ * Alex Gabriel Soares Sousa - 24802449
+ */
 
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:mesclainvest/pages/dashboard/models/portfolio_item_model.dart';

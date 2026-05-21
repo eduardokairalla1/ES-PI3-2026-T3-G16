@@ -1,4 +1,8 @@
-/// Serviço de histórico de preços de tokens.
+/*
+ * Serviço de histórico de preços de tokens.
+ *
+ * Alex Gabriel Soares Sousa - 24802449
+ */
 
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:mesclainvest/pages/dashboard/models/price_snapshot_model.dart';

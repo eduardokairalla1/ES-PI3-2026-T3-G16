@@ -1,3 +1,9 @@
+/*
+ * Skeleton screen / loading state for the Dashboard page.
+ *
+ * Alex Gabriel Soares Sousa - 24802449
+ */
+
 import 'package:flutter/material.dart';
 import 'package:mesclainvest/shared/styles/app_colors.dart';
 import 'package:mesclainvest/shared/widgets/shimmer_box.dart';

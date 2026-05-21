@@ -1,3 +1,10 @@
+/*
+ * Página principal do Dashboard do usuário.
+ * Centraliza o acesso às principais funcionalidades e resumos da conta.
+ *
+ * Alex Gabriel Soares Sousa - 24802449
+ */
+
 import 'package:flutter/material.dart';
 import 'package:mesclainvest/pages/dashboard/controllers/dashboard_controller.dart';
 import 'package:mesclainvest/pages/dashboard/widgets/dashboard_skeleton.dart';

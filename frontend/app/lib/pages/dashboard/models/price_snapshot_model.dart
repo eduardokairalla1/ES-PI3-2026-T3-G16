@@ -1,4 +1,8 @@
-/// Modelo de snapshot de preço de token.
+/*
+ * Modelo de snapshot de preço de token.
+ *
+ * Alex Gabriel Soares Sousa - 24802449
+ */
 
 class PriceSnapshotModel {
   final double   price;

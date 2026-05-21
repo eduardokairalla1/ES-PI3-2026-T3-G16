@@ -1,4 +1,8 @@
-/// Gerencia o estado e lógica da UI do Dashboard.
+/*
+ * Gerencia o estado e lógica da UI do Dashboard.
+ *
+ * Alex Gabriel Soares Sousa - 24802449
+ */
 
 import 'package:flutter/material.dart';
 import 'package:mesclainvest/pages/catalog/services/catalog_service.dart';

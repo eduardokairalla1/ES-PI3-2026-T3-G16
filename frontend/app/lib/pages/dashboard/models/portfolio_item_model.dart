@@ -1,4 +1,8 @@
-/// Modelo de um item do portfolio do usuário.
+/*
+ * Modelo de um item do portfolio do usuário.
+ *
+ * Alex Gabriel Soares Sousa - 24802449
+ */
 
 class PortfolioItemModel {
   final String  startupId;

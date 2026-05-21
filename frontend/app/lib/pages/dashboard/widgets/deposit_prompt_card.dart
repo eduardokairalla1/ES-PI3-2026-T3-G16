@@ -1,5 +1,6 @@
 // --- Deposit prompt card ---
 // Pedro Henrique Medeiros dos Reis - 24801656
+// Alex Gabriel Soares Sousa - 24802449
 //
 // Shown on the dashboard when the user has zero balance — a friendly nudge
 // to deposit something so they can start using the app.
