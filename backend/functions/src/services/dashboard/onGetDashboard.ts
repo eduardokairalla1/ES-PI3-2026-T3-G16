@@ -1,5 +1,8 @@
 /**
  * Function callable onGetDashboard.
+ * Serviço responsável por consolidar e retornar todas as informações do Dashboard do usuário.
+ * Realiza consultas agregadas para obter dados de perfil, carteira, investimentos,
+ * startups favoritas e estatísticas gerais do mercado em uma única chamada.
  *
  * Alex Gabriel Soares Sousa - 24802449
  */
@@ -37,23 +40,23 @@ import type {CallableRequest} from 'firebase-functions/v2/https';
  */
 
 /**
- * I handle the onGetDashboard callable.
- * Returns consolidated dashboard data: user info, portfolio, market stats,
- * investments, and favorite IDs.
+ * Manipula a requisição da Cloud Function Callable 'onGetDashboard'.
+ * Consolida as informações de perfil do usuário, saldo da carteira digital, investimentos
+ * em startups (calculados a partir do histórico de ordens executadas) e indicadores gerais
+ * do mercado inovador do Mescla.
  *
- * @param request callable request (no body params, uses auth context)
- *
- * @returns consolidated dashboard data
+ * @param request Objeto da requisição contendo o contexto de autenticação do usuário.
+ * @returns Um objeto com dados consolidados do dashboard do investidor.
  */
 export async function handleOnGetDashboard(request: CallableRequest)
 {
     try
     {
-        // verify authentication
+        // 1. Valida se a requisição provém de um usuário devidamente autenticado
         const uid = verifyAuth(request);
 
-        // fetch all data in parallel for performance
-        logger.info(`Fetching dashboard data for user "${uid}"...`);
+        // 2. Dispara consultas assíncronas em paralelo no Firestore para otimizar o tempo de resposta (latência)
+        logger.info(`Buscando dados consolidados do dashboard para o usuário "${uid}"...`);
 
         const [user, favorites, startups, activeInvestors, wallet, orders] = await Promise.all([
             getUser(uid),
@@ -64,13 +67,13 @@ export async function handleOnGetDashboard(request: CallableRequest)
             getOrdersByTypeAndStatus(uid, 'buy', 'completed'),
         ]);
 
-        // user not found
+        // Valida se o documento de perfil do usuário existe no banco de dados
         if (user === null)
         {
-            throw new AuthError(`Profile not found for user "${uid}".`);
+            throw new AuthError(`Perfil do usuário "${uid}" não foi encontrado no banco de dados.`);
         }
 
-        // build startup lookup maps (price + details)
+        // 3. Constrói mapas de busca (lookup maps) para otimizar a associação de startups por ID (complexidade O(1))
         const startupPriceMap = new Map<string, number>();
         const startupNameMap  = new Map<string, {name: string; logoUrl: string}>();
         for (const s of startups)
@@ -79,7 +82,7 @@ export async function handleOnGetDashboard(request: CallableRequest)
             startupNameMap.set(s.id, {name: s.name, logoUrl: s.logo_url ?? ''});
         }
 
-        // derive portfolio from completed buy orders
+        // 4. Calcula a custódia (holdings) atual do usuário com base no histórico de ordens de compra finalizadas
         const holdingsByStartup = new Map<string, {quantity: number; totalCost: number}>();
         for (const order of orders)
         {
@@ -100,15 +103,19 @@ export async function handleOnGetDashboard(request: CallableRequest)
 
         let patrimonioTotal = 0;
 
+        // 5. Formata os investimentos ativos calculando o preço médio de aquisição, valor de mercado atual e variação percentual
         const investimentosFormatted = Array.from(holdingsByStartup.entries()).map(([startupId, holding]) =>
         {
             const currentPrice = startupPriceMap.get(startupId) ?? 0;
             const avgPrice     = holding.quantity > 0 ? holding.totalCost / holding.quantity : 0;
             const currentValue = holding.quantity * currentPrice;
+            
+            // Calcula variação percentual do investimento
             const variation    = avgPrice > 0
                 ? ((currentPrice - avgPrice) / avgPrice) * 100
                 : 0;
 
+            // Incrementa o patrimônio total investido em ativos
             patrimonioTotal += currentValue;
 
             const details = startupNameMap.get(startupId) ?? {name: '', logoUrl: ''};
@@ -119,11 +126,11 @@ export async function handleOnGetDashboard(request: CallableRequest)
                 startupLogoUrl: details.logoUrl,
                 startupName:    details.name,
                 tokenQuantity:  holding.quantity,
-                variation:      Math.round(variation * 100) / 100,
+                variation:      Math.round(variation * 100) / 100, // Arredonda para 2 casas decimais
             };
         });
 
-        // calculate real weekly return using price history (from onGetWallet logic)
+        // 6. Calcula a rentabilidade semanal real do portfólio utilizando o histórico de preços (últimos 7 dias)
         const weekAgo = new Date();
         weekAgo.setDate(weekAgo.getDate() - 7);
 
@@ -135,6 +142,7 @@ export async function handleOnGetDashboard(request: CallableRequest)
                 const currentPrice = startupPriceMap.get(startupId);
                 if (currentPrice === undefined) return {currentValue: 0, pastValue: 0};
 
+                // Recupera o snapshot de preço mais antigo dentro da janela de 7 dias
                 const snapshot = await getOldestSnapshotSince(startupId, weekAgo);
                 const pastPrice = snapshot?.price ?? currentPrice;
                 return {
@@ -144,18 +152,17 @@ export async function handleOnGetDashboard(request: CallableRequest)
             }),
         );
 
+        // Calcula a variação bruta e percentual do portfólio na semana
         const {weeklyReturn, weeklyReturnPct} = calcWeeklyReturn(weeklyValues);
         const rendimentoDiarioValor = Math.round(weeklyReturn * 100) / 100;
         const rendimentoDiarioPorcentagem = Math.round(weeklyReturnPct * 100) / 100;
 
-        // market stats
+        // 7. Estatísticas gerais do ecossistema Mescla
         const totalStartups = startups.length;
 
         // --- Pedro Henrique Medeiros dos Reis - 24801656 ---
-        // Real monthly return: average % variation across all startups,
-        // comparing today's price to the price from ~30 days ago in the
-        // price_history snapshots. If a startup has no snapshot in the
-        // window (newer than 30 days), we treat it as 0% (no contribution).
+        // Rentabilidade mensal real: calcula a variação média de preço de todas as startups do ecossistema,
+        // comparando o preço atual com o valor de ~30 dias atrás nos históricos.
         const monthAgo = new Date();
         monthAgo.setDate(monthAgo.getDate() - 30);
 
@@ -175,11 +182,12 @@ export async function handleOnGetDashboard(request: CallableRequest)
             : 0;
         // --- end Pedro ---
 
-        // extract favorite startup IDs
-        const favoriteIds = favorites; // already string[]
+        // Recupera a lista de IDs de startups favoritas do usuário
+        const favoriteIds = favorites;
 
-        logger.info(`Dashboard data for user "${uid}" fetched successfully.`);
+        logger.info(`Dados do dashboard compilados com sucesso para o usuário "${uid}".`);
 
+        // Retorna todos os dados prontos para consumo na UI do aplicativo
         return {
             favoriteIds,
             investimentos: investimentosFormatted,
@@ -194,16 +202,16 @@ export async function handleOnGetDashboard(request: CallableRequest)
         };
     }
 
-    // handle errors
+    // Tratamento unificado de erros
     catch (error: unknown)
     {
         if (error instanceof AuthError)
         {
-            logger.error(error.message);
+            logger.error(`Erro de autenticação ao obter dashboard: ${error.message}`);
             throw new HttpsError('unauthenticated', error.message);
         }
 
-        const internal = new InternalError('Failed to fetch dashboard data.', error);
+        const internal = new InternalError('Falha interna ao compilar dados do dashboard.', error);
         logger.error(internal.message, internal.cause);
         throw new HttpsError('internal', internal.message);
     }

@@ -1,4 +1,5 @@
 /* Function callable onDeposit.
+ * Serviço para realização de depósitos virtuais na carteira digital do usuário.
  *
  * Alex Gabriel Soares Sousa - 24802449
  */
@@ -30,39 +31,42 @@ import type {CallableRequest} from 'firebase-functions/v2/https';
  */
 
 /**
- * I handle the onDeposit callable.
- * Increments user balance and returns the new value.
+ * Manipula a requisição da Cloud Function Callable 'onDeposit'.
+ * Adiciona fundos à carteira digital do investidor autenticado e registra um histórico de depósito.
  *
- * @param request Body: { amount: number }
+ * @param request Objeto da requisição contendo o payload `{ amount: number }` indicando o valor do depósito.
+ * @returns Um objeto contendo o novo saldo da carteira (`newBalance`) e uma mensagem de confirmação de sucesso.
  */
 export async function handleOnDeposit(request: CallableRequest)
 {
     try
     {
-        // verify authentication
+        // 1. Valida se a requisição provém de um usuário autenticado no Firebase
         const uid = verifyAuth(request);
         let {amount} = request.data;
 
-        // validation
+        // 2. Validação de regras de negócio para o valor de depósito
+        // Garante que o valor informado é numérico e estritamente positivo
         if (typeof amount !== 'number' || amount <= 0)
         {
-            throw new HttpsError('invalid-argument', 'Amount must be a positive number.');
+            throw new HttpsError('invalid-argument', 'O valor do depósito deve ser um número positivo.');
         }
 
+        // Impõe um limite de teto para depósitos individuais no ecossistema (R$ 100.000,00)
         if (amount > 100000)
         {
-            throw new HttpsError('out-of-range', 'Maximum deposit amount is R$ 100.000,00.');
+            throw new HttpsError('out-of-range', 'O valor máximo para cada depósito é de R$ 100.000,00.');
         }
 
-        // enforce 2 decimal places precision
+        // 3. Arredonda o valor para garantir precisão exata de duas casas decimais (centavos)
         amount = Math.round(amount * 100) / 100;
 
-        logger.info(`Processing deposit of R$ ${amount} for user "${uid}"...`);
+        logger.info(`Processando depósito de R$ ${amount} para o usuário "${uid}"...`);
 
-
+        // 4. Incrementa o saldo do usuário na carteira digital (Firestore)
         await depositToWallet(uid, amount);
 
-        // Record in transaction history
+        // 5. Registra o depósito no histórico geral de transações do usuário
         await recordTransaction(uid, {
             amount: amount,
             description: 'Depósito em conta',
@@ -70,25 +74,28 @@ export async function handleOnDeposit(request: CallableRequest)
             type: 'deposit',
         });
 
-        // Fetch updated balance
+        // 6. Consulta o saldo atualizado pós-transação para retorno da interface
         const newBalance = await getWalletBalance(uid);
 
         return {
             newBalance,
-            message: `Deposit of R$ ${amount} completed successfully.`,
+            message: `Depósito de R$ ${amount} realizado com sucesso.`,
         };
 
     }
     catch (error: unknown)
     {
+        // Tratamento específico para erros de autenticação (ex: token expirado/ausente)
         if (error instanceof AuthError)
         {
             throw new HttpsError('unauthenticated', error.message);
         }
 
+        // Erros de argumento/teto já validados são repassados diretamente
         if (error instanceof HttpsError) throw error;
 
-        logger.error('Deposit failed:', error);
-        throw new HttpsError('internal', 'Failed to process deposit.');
+        // Loga falhas inesperadas e retorna um erro genérico
+        logger.error('Falha ao processar o depósito:', error);
+        throw new HttpsError('internal', 'Falha interna ao processar o depósito.');
     }
 }
