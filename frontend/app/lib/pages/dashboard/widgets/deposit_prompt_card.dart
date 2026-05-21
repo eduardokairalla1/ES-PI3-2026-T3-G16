@@ -155,14 +155,15 @@ Future<void> showDepositDialog({
   required Future<void> Function(double amount) onDeposit,
 }) async {
   final valorController = TextEditingController();
+  bool isProcessing = false;
 
   return showDialog<void>(
     context: context,
     builder: (dialogCtx) => StatefulBuilder(
       builder: (dialogCtx, setState) {
-        bool isProcessing = false;
-
         Future<void> submit() async {
+          if (isProcessing) return;
+
           // parse the BRL-formatted text back into a double
           final raw = valorController.text
               .replaceAll('.', '')
@@ -247,7 +248,7 @@ Future<void> showDepositDialog({
               size: AppButtonSize.small,
               fullWidth: false,
               isLoading: isProcessing,
-              onPressed: submit,
+              onPressed: isProcessing ? null : submit,
             ),
           ],
         );

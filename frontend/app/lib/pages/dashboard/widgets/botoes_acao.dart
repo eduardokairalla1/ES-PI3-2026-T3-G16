@@ -177,7 +177,8 @@ class BotoesAcao extends StatelessWidget {
                 size: AppButtonSize.small,
                 fullWidth: false,
                 isLoading: isProcessando,
-                onPressed: () async {
+                onPressed: isProcessando ? null : () async {
+                  if (isProcessando) return;
                   if (!mostrarConfirmacao) {
                     final raw = valorController.text
                         .replaceAll('.', '')
