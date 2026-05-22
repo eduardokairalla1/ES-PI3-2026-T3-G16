@@ -575,33 +575,19 @@ Write-Host "[OK] Backend dependencias instaladas" -ForegroundColor $cSuccess
 Write-Host "[Backend] Verificando firebase-tools..." -ForegroundColor $cStep
 $fbVer = $null
 
-# 1. Tentar npx com versão pinada
+# 1. Tentar rodar versão já instalada local/globalmente sem baixar (evita hang do npx)
 try {
-    $fbVer = npx --yes $firebaseToolsNpx --version 2>$null | Out-String
+    $fbVer = npx --no-install firebase-tools --version 2>$null | Out-String
     if ($LASTEXITCODE -eq 0 -and $fbVer) {
         $fbVer = $fbVer.Trim()
+        $firebaseCmd = "npx firebase-tools"
     } else {
         $fbVer = $null
     }
 } catch {}
 
-# 2. Se falhar, tentar npx sem versão pinada (usando cache local)
+# 2. Se falhar, tentar comando global 'firebase'
 if (-not $fbVer) {
-    Write-Host "       Nao foi possivel rodar $firebaseToolsNpx via npx. Tentando sem pin de versao..." -ForegroundColor $cWarning
-    try {
-        $fbVer = npx firebase-tools --version 2>$null | Out-String
-        if ($LASTEXITCODE -eq 0 -and $fbVer) {
-            $fbVer = $fbVer.Trim()
-            $firebaseCmd = "npx firebase-tools"
-        } else {
-            $fbVer = $null
-        }
-    } catch {}
-}
-
-# 3. Se falhar, tentar comando global 'firebase'
-if (-not $fbVer) {
-    Write-Host "       Tentando 'firebase' global..." -ForegroundColor $cWarning
     try {
         $fbVer = firebase --version 2>$null | Out-String
         if ($LASTEXITCODE -eq 0 -and $fbVer) {
@@ -613,14 +599,28 @@ if (-not $fbVer) {
     } catch {}
 }
 
-# 4. Se falhar, tentar instalar localmente como devDependency no backend
+# 3. Se falhar, tentar npx com versão pinada (usando --yes para não travar)
+if (-not $fbVer) {
+    Write-Host "       Nao detectado local/globalmente. Tentando rodar $firebaseToolsNpx via npx..." -ForegroundColor $cWarning
+    try {
+        $fbVer = npx --yes $firebaseToolsNpx --version 2>$null | Out-String
+        if ($LASTEXITCODE -eq 0 -and $fbVer) {
+            $fbVer = $fbVer.Trim()
+            $firebaseCmd = "npx --yes $firebaseToolsNpx"
+        } else {
+            $fbVer = $null
+        }
+    } catch {}
+}
+
+# 4. Se falhar (por exemplo, erro de modulo no Node 24), instalar localmente no backend
 if (-not $fbVer) {
     Write-Host "       Ainda nao foi possivel rodar firebase-tools. Instalando localmente no backend..." -ForegroundColor $cWarning
     Set-Location $backendDir
     $installLocalOk = Invoke-WithRetry -Name "npm install --save-dev firebase-tools" -Script { npm install --save-dev firebase-tools }
     if ($installLocalOk) {
         try {
-            $fbVer = npx firebase-tools --version 2>$null | Out-String
+            $fbVer = npx --no-install firebase-tools --version 2>$null | Out-String
             if ($LASTEXITCODE -eq 0 -and $fbVer) {
                 $fbVer = $fbVer.Trim()
                 $firebaseCmd = "npx firebase-tools"
