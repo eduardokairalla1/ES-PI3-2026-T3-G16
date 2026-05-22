@@ -19,6 +19,8 @@ import 'package:mesclainvest/pages/profile/sub_pages/settings_page.dart';
 import 'package:mesclainvest/pages/startup/startup_balcao_page.dart';
 import 'package:mesclainvest/pages/startup/startup_detail_page.dart';
 import 'package:mesclainvest/pages/startup/valorizacao_page.dart';
+import 'package:flutter/material.dart';
+import 'package:mesclainvest/shared/widgets/bottom_nav.dart';
 import 'package:mesclainvest/shared/widgets/light_theme_scope.dart';
 
 /// --- GLOBAIS ---
@@ -71,26 +73,70 @@ final router = GoRouter(
         ),
       ),
     ),
-    GoRoute(
-      path: '/dashboard',
-      pageBuilder: (context, state) {
-        final filter = state.uri.queryParameters['filter'];
-        return NoTransitionPage(
-          child: PaginaDashboard(initialFilter: filter),
+    StatefulShellRoute.indexedStack(
+      builder: (context, state, navigationShell) {
+        return Scaffold(
+          body: navigationShell,
+          bottomNavigationBar: SafeArea(
+            child: BottomNav(
+              currentIndex: navigationShell.currentIndex,
+              onTap: (index) {
+                navigationShell.goBranch(
+                  index,
+                  initialLocation: index == navigationShell.currentIndex,
+                );
+              },
+            ),
+          ),
         );
       },
-    ),
-    GoRoute(
-      path: '/catalog',
-      pageBuilder: (context, state) => const NoTransitionPage(child: CatalogPage()),
-    ),
-    GoRoute(
-      path: '/balcao',
-      pageBuilder: (context, state) => const NoTransitionPage(child: BalcaoPage()),
-    ),
-    GoRoute(
-      path: '/carteira',
-      pageBuilder: (context, state) => const NoTransitionPage(child: CarteiraPage()),
+      branches: [
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: '/dashboard',
+              pageBuilder: (context, state) {
+                final filter = state.uri.queryParameters['filter'];
+                return NoTransitionPage(
+                  child: PaginaDashboard(initialFilter: filter),
+                );
+              },
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: '/catalog',
+              pageBuilder: (context, state) => const NoTransitionPage(child: CatalogPage()),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: '/carteira',
+              pageBuilder: (context, state) => const NoTransitionPage(child: CarteiraPage()),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: '/balcao',
+              pageBuilder: (context, state) => const NoTransitionPage(child: BalcaoPage()),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: '/profile',
+              pageBuilder: (context, state) => const NoTransitionPage(child: ProfilePage()),
+            ),
+          ],
+        ),
+      ],
     ),
     GoRoute(
       path: '/carteira/investimentos',
@@ -113,10 +159,6 @@ final router = GoRouter(
       builder: (context, state) => ValorizacaoPage(
         startupId: state.pathParameters['id']!,
       ),
-    ),
-    GoRoute(
-      path: '/profile',
-      pageBuilder: (context, state) => const NoTransitionPage(child: ProfilePage()),
     ),
     GoRoute(
       path: '/profile/settings',

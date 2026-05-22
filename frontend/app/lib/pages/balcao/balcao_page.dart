@@ -20,7 +20,6 @@ import 'package:mesclainvest/pages/dashboard/widgets/deposit_prompt_card.dart';
 import 'package:mesclainvest/pages/startup/models/startup_model.dart';
 import 'package:mesclainvest/shared/styles/app_colors.dart';
 import 'package:mesclainvest/shared/widgets/app_button.dart';
-import 'package:mesclainvest/shared/widgets/bottom_nav.dart';
 
 // --- CONSTANTS ---
 
@@ -139,9 +138,6 @@ class _BalcaoPageState extends State<BalcaoPage> {
                 ),
               ],
             ),
-          ),
-          bottomNavigationBar: const SafeArea(
-            child: BottomNav(currentIndex: 3),
           ),
         );
       },

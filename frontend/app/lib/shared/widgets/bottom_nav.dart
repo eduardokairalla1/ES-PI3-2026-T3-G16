@@ -11,8 +11,9 @@ import 'package:mesclainvest/shared/styles/app_colors.dart';
 class BottomNav extends StatelessWidget {
 
   final int currentIndex;
+  final ValueChanged<int>? onTap;
 
-  const BottomNav({super.key, required this.currentIndex});
+  const BottomNav({super.key, required this.currentIndex, this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -33,11 +34,11 @@ class BottomNav extends StatelessWidget {
       ),
       child: Row(
         children: [
-          _NavItem(index: 0, current: currentIndex, iconOutlined: Icons.home_outlined,          iconFilled: Icons.home,           label: 'Home',     route: '/dashboard'),
-          _NavItem(index: 1, current: currentIndex, iconOutlined: Icons.rocket_launch_outlined, iconFilled: Icons.rocket_launch,  label: 'Startups', route: '/catalog'),
-          _NavItem(index: 2, current: currentIndex, iconOutlined: Icons.wallet_outlined,        iconFilled: Icons.wallet,         label: 'Carteira', route: '/carteira'),
-          _NavItem(index: 3, current: currentIndex, iconOutlined: Icons.storefront_outlined,    iconFilled: Icons.storefront,     label: 'Balcão',   route: '/balcao'),
-          _NavItem(index: 4, current: currentIndex, iconOutlined: Icons.person_outline,         iconFilled: Icons.person,         label: 'Perfil',   route: '/profile'),
+          _NavItem(index: 0, current: currentIndex, iconOutlined: Icons.home_outlined,          iconFilled: Icons.home,           label: 'Home',     route: '/dashboard', onTap: onTap),
+          _NavItem(index: 1, current: currentIndex, iconOutlined: Icons.rocket_launch_outlined, iconFilled: Icons.rocket_launch,  label: 'Startups', route: '/catalog',   onTap: onTap),
+          _NavItem(index: 2, current: currentIndex, iconOutlined: Icons.wallet_outlined,        iconFilled: Icons.wallet,         label: 'Carteira', route: '/carteira',  onTap: onTap),
+          _NavItem(index: 3, current: currentIndex, iconOutlined: Icons.storefront_outlined,    iconFilled: Icons.storefront,     label: 'Balcão',   route: '/balcao',    onTap: onTap),
+          _NavItem(index: 4, current: currentIndex, iconOutlined: Icons.person_outline,         iconFilled: Icons.person,         label: 'Perfil',   route: '/profile',   onTap: onTap),
         ],
       ),
     );
@@ -53,6 +54,7 @@ class _NavItem extends StatefulWidget {
   final IconData iconFilled;
   final String label;
   final String route;
+  final ValueChanged<int>? onTap;
 
   const _NavItem({
     required this.index,
@@ -61,6 +63,7 @@ class _NavItem extends StatefulWidget {
     required this.iconFilled,
     required this.label,
     required this.route,
+    this.onTap,
   });
 
   @override
@@ -81,7 +84,11 @@ class _NavItemState extends State<_NavItem> {
 
   void _onTap(BuildContext context) {
     if (_isActive) return;
-    context.go(widget.route);
+    if (widget.onTap != null) {
+      widget.onTap!(widget.index);
+    } else {
+      context.go(widget.route);
+    }
   }
 
   @override

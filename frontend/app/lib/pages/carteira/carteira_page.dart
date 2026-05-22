@@ -27,7 +27,6 @@ import 'package:mesclainvest/pages/dashboard/widgets/dashboard_skeleton.dart';
 import 'package:mesclainvest/pages/dashboard/widgets/meus_investimentos.dart';
 import 'package:mesclainvest/shared/styles/app_colors.dart';
 import 'package:mesclainvest/shared/widgets/app_button.dart';
-import 'package:mesclainvest/shared/widgets/bottom_nav.dart';
 import 'package:mesclainvest/shared/widgets/delayed_shimmer.dart';
 
 // --- PAGE ---
@@ -78,9 +77,6 @@ class _CarteiraPageState extends State<CarteiraPage> {
                   ? _buildError()
                   : _buildContent(),
             ),
-          ),
-          bottomNavigationBar: const SafeArea(
-            child: BottomNav(currentIndex: 2),
           ),
         );
       },

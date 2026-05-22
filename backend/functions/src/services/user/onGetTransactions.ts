@@ -78,9 +78,13 @@ export async function handleOnGetTransactions(request: CallableRequest)
             };
         });
 
-        // 5. Mescla a lista de depósitos e a lista de ordens em um único array
+        // 5. Filtra a lista de transações para incluir apenas depósitos e saques (excluindo compras/vendas)
+        // e mescla com o histórico de ordens concluídas obtidas da coleção de ordens.
+        // Isso evita duplicação de dados no extrato, já que compras/vendas são gravadas em ambas as coleções.
+        const depositsOnly = deposits.filter(t => t.type !== 'buy' && t.type !== 'sell');
+
         // E ordena as transações pela data de criação em ordem decrescente (mais recente primeiro)
-        const all = [...deposits, ...orderTransactions].sort((a, b) =>
+        const all = [...depositsOnly, ...orderTransactions].sort((a, b) =>
         {
             const dateA = a.created_at instanceof Date ? a.created_at : new Date(a.created_at as string);
             const dateB = b.created_at instanceof Date ? b.created_at : new Date(b.created_at as string);

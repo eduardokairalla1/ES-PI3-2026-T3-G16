@@ -12,7 +12,6 @@ import 'package:mesclainvest/core/models/user_profile.dart';
 import 'package:mesclainvest/pages/profile/controllers/profile_controller.dart';
 import 'package:mesclainvest/shared/styles/app_colors.dart';
 import 'package:mesclainvest/shared/widgets/app_button.dart';
-import 'package:mesclainvest/shared/widgets/bottom_nav.dart';
 
 // --- PAGE ---
 
@@ -73,9 +72,6 @@ class _ProfilePageState extends State<ProfilePage> {
                 ],
               ),
             ),
-          ),
-          bottomNavigationBar: const SafeArea(
-            child: BottomNav(currentIndex: 4),
           ),
         );
       },

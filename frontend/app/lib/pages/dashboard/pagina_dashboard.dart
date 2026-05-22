@@ -73,9 +73,6 @@ class _PaginaDashboardState extends State<PaginaDashboard> {
                   : _buildContent(),
             ),
           ),
-          bottomNavigationBar: const SafeArea(
-            child: BottomNav(currentIndex: 0),
-          ),
         );
       },
     );

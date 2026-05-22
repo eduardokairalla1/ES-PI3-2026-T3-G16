@@ -8,7 +8,6 @@ import 'package:mesclainvest/pages/catalog/controllers/catalog_controller.dart';
 import 'package:mesclainvest/pages/catalog/widgets/startup_card.dart';
 import 'package:mesclainvest/shared/styles/app_colors.dart';
 import 'package:mesclainvest/shared/widgets/app_button.dart';
-import 'package:mesclainvest/shared/widgets/bottom_nav.dart';
 
 // --- CONSTANTS ---
 
@@ -137,9 +136,6 @@ class _CatalogPageState extends State<CatalogPage> {
                 Expanded(child: _buildContent()),
               ],
             ),
-          ),
-          bottomNavigationBar: const SafeArea(
-            child: BottomNav(currentIndex: 1),
           ),
         );
       },
