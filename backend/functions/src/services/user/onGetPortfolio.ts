@@ -48,30 +48,19 @@ export async function handleOnGetPortfolio(request: CallableRequest)
 
         logger.info(`Fetching portfolio for user "${uid}"...`);
 
-        // fetch all completed buy orders for this user
+        // fetch all buy orders for this user
         const ordersSnap = await db
             .collection('orders')
             .where('uid', '==', uid)
             .where('type', '==', 'buy')
-            .where('status', '==', 'completed')
-            .orderBy('created_at', 'asc')
             .get();
 
-        // --- Pedro Henrique Medeiros dos Reis - 24801656 ---
-        // After the balcão / P2P market shipped, completed buys overstate the
-        // user's holdings because they don't account for tokens the user sold.
-        // We also need to subtract:
-        //   - completed sell filled quantities
-        //   - cancelled sell filled quantities (partial fills that already left
-        //     the user's hands before cancel)
-        // We can't easily AND these two extra conditions in the same query, so
-        // pull all sell orders (completed and cancelled) and aggregate below.
+        // pull all sell orders and aggregate below
         const sellOrdersSnap = await db
             .collection('orders')
             .where('uid',  '==', uid)
             .where('type', '==', 'sell')
             .get();
-        // --- end Pedro ---
 
         if (ordersSnap.empty)
         {
@@ -81,35 +70,48 @@ export async function handleOnGetPortfolio(request: CallableRequest)
         // group orders by startup: total quantity + first purchase price
         const byStartup = new Map<string, {quantity: number; firstUnitPrice: number}>();
 
-        for (const doc of ordersSnap.docs)
+        // Sort buy orders in memory by created_at to correctly identify the first purchase price
+        const buyDocs = ordersSnap.docs.map(doc => {
+            const data = doc.data();
+            return {
+                id: doc.id,
+                startup_id: data.startup_id as string,
+                filled_quantity: (data.filled_quantity as number) ?? 0,
+                unit_price: data.unit_price as number,
+                created_at: data.created_at,
+            };
+        }).sort((a, b) => {
+            const timeA = a.created_at?.toDate?.()?.getTime() || 0;
+            const timeB = b.created_at?.toDate?.()?.getTime() || 0;
+            return timeA - timeB;
+        });
+
+        for (const data of buyDocs)
         {
-            const data      = doc.data();
-            const startupId = data.startup_id as string;
-            const quantity  = data.quantity   as number;
-            const unitPrice = data.unit_price  as number;
+            const startupId = data.startup_id;
+            const filled    = data.filled_quantity;
+            const unitPrice = data.unit_price;
+
+            if (filled <= 0) continue;
 
             if (byStartup.has(startupId))
             {
-                byStartup.get(startupId)!.quantity += quantity;
+                byStartup.get(startupId)!.quantity += filled;
             }
             else
             {
                 // first order for this startup = first purchase price
-                byStartup.set(startupId, {quantity, firstUnitPrice: unitPrice});
+                byStartup.set(startupId, {quantity: filled, firstUnitPrice: unitPrice});
             }
         }
 
-        // --- Pedro Henrique Medeiros dos Reis - 24801656 ---
         // subtract tokens that left the user's holdings via sells
         for (const doc of sellOrdersSnap.docs)
         {
             const data      = doc.data();
-            const status    = data.status as string;
             const startupId = data.startup_id as string;
             const filled    = (data.filled_quantity as number) ?? 0;
 
-            // only completed or cancelled (partially-filled) sells consumed tokens
-            if (status !== 'completed' && status !== 'cancelled') continue;
             if (filled <= 0) continue;
             if (!byStartup.has(startupId)) continue;
 
@@ -121,7 +123,6 @@ export async function handleOnGetPortfolio(request: CallableRequest)
         {
             if (agg.quantity <= 0) byStartup.delete(sid);
         }
-        // --- end Pedro ---
 
         // fetch startup details and build holdings
         const holdings = await Promise.all(

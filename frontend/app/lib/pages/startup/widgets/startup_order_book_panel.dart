@@ -60,6 +60,10 @@ class _StartupOrderBookPanelState extends State<StartupOrderBookPanel> {
   );
   final _intFmt = NumberFormat.decimalPattern('pt_BR');
 
+  /// Remaining quantity of the currently selected offer (after tapping a card).
+  /// Shown as a hint below the quantity field so the user knows the maximum.
+  int? _selectedOfferRemaining;
+
   @override
   void initState() {
     super.initState();
@@ -91,11 +95,13 @@ class _StartupOrderBookPanelState extends State<StartupOrderBookPanel> {
     return int.tryParse(cleaned) ?? 0;
   }
 
-  // tap on an order card → prefill the form with its price + remaining qty,
-  // and flip the side (taking the offer is the opposite action of the seller)
+  // tap on an order card → prefill the form with its price only,
+  // and flip the side (taking the offer is the opposite action of the seller).
+  // The quantity is NOT prefilled — the user chooses how many tokens they want.
   void _onOrderTap(OpenOrderEntry entry, {required bool isSellOffer}) {
     _priceCtrl.text = entry.price.toStringAsFixed(2).replaceAll('.', ',');
-    _qtyCtrl.text   = entry.remaining.toString();
+    _qtyCtrl.clear();
+    _selectedOfferRemaining = entry.remaining;
     // tapping a sell offer means "I want to buy"; tapping a buy offer means
     // "I want to sell" — flip the side automatically
     _controller.selectType(isSellOffer ? 'buy' : 'sell');
@@ -279,9 +285,21 @@ class _StartupOrderBookPanelState extends State<StartupOrderBookPanel> {
           _labeledField(
             label: 'Quantidade (tokens)',
             controller: _qtyCtrl,
-            hint: '0',
+            hint: 'Ex: 1, 10, 100…',
             keyboardType: TextInputType.number,
           ),
+          if (_selectedOfferRemaining != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 4, left: 4),
+              child: Text(
+                'Disponível na oferta: ${_intFmt.format(_selectedOfferRemaining!)} tokens',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                  color: isBuy ? _kBuyColor : _kSellColor,
+                ),
+              ),
+            ),
           const SizedBox(height: 12),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),

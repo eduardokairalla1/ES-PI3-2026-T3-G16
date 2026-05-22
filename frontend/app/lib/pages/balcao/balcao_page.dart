@@ -831,7 +831,9 @@ class _OrderCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      'qtd ${_intFmt.format(order.quantity)} ${order.tokenName} · ${_currencyFmt.format(total)}',
+                      'qtd ${_intFmt.format(order.quantity)}'
+                      '${(order.filledQuantity > 0 && order.status == 'pending') ? ' (executado ${_intFmt.format(order.filledQuantity)})' : ''} '
+                      '${order.tokenName} · ${_currencyFmt.format(total)}',
                       style: TextStyle(
                         fontSize: 12,
                         color: AppColors.textSecondary(context),

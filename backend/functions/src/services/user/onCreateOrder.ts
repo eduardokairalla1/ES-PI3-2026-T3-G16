@@ -92,24 +92,21 @@ function computeAvailableTokens(orders: OrderDocument[]): number
     {
         const filled = o.filled_quantity ?? 0;
 
-        // completed buy increases owned tokens
-        if (o.type === 'buy' && o.status === 'completed')
+        if (o.type === 'buy')
         {
-            owned += o.quantity;
+            // Any filled buy increases owned tokens, regardless of status (pending, completed, cancelled)
+            owned += filled;
         }
-
-        // any sell that consumed tokens decreases owned (completed and
-        // cancelled-after-partial both leave the filled portion gone)
-        if (o.type === 'sell' && (o.status === 'completed' || o.status === 'cancelled'))
+        else if (o.type === 'sell')
         {
+            // Any filled sell decreases owned tokens, regardless of status
             owned -= filled;
-        }
 
-        // pending sells reserve their remaining quantity so the user can't
-        // double-sell the same tokens in two simultaneous orders
-        if (o.type === 'sell' && o.status === 'pending')
-        {
-            reserved += (o.quantity - filled);
+            // Pending sells reserve their remaining unfilled portion
+            if (o.status === 'pending')
+            {
+                reserved += (o.quantity - filled);
+            }
         }
     }
 

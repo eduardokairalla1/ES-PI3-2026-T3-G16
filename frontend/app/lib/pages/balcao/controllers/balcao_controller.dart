@@ -31,6 +31,21 @@ import 'package:mesclainvest/pages/startup/models/startup_model.dart';
 /// orders are tracked per orderId so the UI can disable just the row being
 /// acted upon.
 class BalcaoController extends ChangeNotifier {
+  bool _disposed = false;
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
+  }
+
+  @override
+  void notifyListeners() {
+    if (!_disposed) {
+      super.notifyListeners();
+    }
+  }
+
   final CatalogService _catalogService     = CatalogService();
   final OrderService _orderService         = OrderService();
   final DashboardService _dashboardService = DashboardService();

@@ -14,6 +14,20 @@ import 'package:mesclainvest/pages/startup/models/startup_model.dart';
 /// Controlador que gerencia o estado e a lógica de negócios da UI do Dashboard.
 /// Estende [ChangeNotifier] para notificar a View sobre atualizações de dados.
 class DashboardController extends ChangeNotifier {
+  bool _disposed = false;
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
+  }
+
+  @override
+  void notifyListeners() {
+    if (!_disposed) {
+      super.notifyListeners();
+    }
+  }
 
   // Instâncias dos serviços utilizados para buscar informações da API
   final DashboardService  _dashboardService  = DashboardService();

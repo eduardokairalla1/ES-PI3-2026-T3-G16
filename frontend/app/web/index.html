@@ -34,6 +34,29 @@
   <style>
     .firebase-emulator-warning { display: none !important; }
   </style>
+  <script>
+    // Workaround para o bug de ViewInsets negativos no Flutter Web
+    if (window.visualViewport) {
+      const originalHeight = Object.getOwnPropertyDescriptor(VisualViewport.prototype, 'height');
+      if (originalHeight && originalHeight.get) {
+        Object.defineProperty(window.visualViewport, 'height', {
+          get: function() {
+            const h = originalHeight.get.call(this);
+            return Math.min(h, window.innerHeight);
+          }
+        });
+      }
+      const originalWidth = Object.getOwnPropertyDescriptor(VisualViewport.prototype, 'width');
+      if (originalWidth && originalWidth.get) {
+        Object.defineProperty(window.visualViewport, 'width', {
+          get: function() {
+            const w = originalWidth.get.call(this);
+            return Math.min(w, window.innerWidth);
+          }
+        });
+      }
+    }
+  </script>
 </head>
 <body>
   <!--
