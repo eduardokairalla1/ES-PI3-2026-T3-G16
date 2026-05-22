@@ -33,7 +33,7 @@ import type {walletDocument} from '../src/db/wallets/model';
  */
 
 const PROJECT_ID       = 'mesclainvest-eda16';
-const TOTAL_USERS      = 30;
+const TOTAL_USERS      = 150;
 const COMMON_PASSWORD  = 'Mescla@2026';
 const STARTING_BALANCE = 10000;            // BRL 10k per wallet for trading tests
 const EMAIL_DOMAIN     = 'mescla.test';
@@ -167,10 +167,12 @@ async function seed(): Promise<void>
     for (let i = 0; i < TOTAL_USERS; i++)
     {
         const n         = i + 1;
-        const padded    = String(n).padStart(2, '0');
+        const padded    = String(n).padStart(3, '0');
         const uid       = `seed-user-${padded}`;
         const email     = `aluno${padded}@${EMAIL_DOMAIN}`;
-        const fullName  = `${FIRST_NAMES[i]} ${LAST_NAMES[i]}`;
+        const firstName = FIRST_NAMES[i % FIRST_NAMES.length];
+        const lastName  = LAST_NAMES[(i + Math.floor(i / FIRST_NAMES.length)) % LAST_NAMES.length];
+        const fullName  = `${firstName} ${lastName}`;
         const cpf       = generateCpf(n);
         const phone     = generatePhone(n);
         const birthDate = generateBirthDate(n);
@@ -229,7 +231,7 @@ async function seed(): Promise<void>
 
     console.log(`\nSeed complete: ${created} created, ${skipped} skipped.\n`);
     console.log('Login credentials:');
-    console.log(`  Emails:  aluno01@${EMAIL_DOMAIN} … aluno${String(TOTAL_USERS).padStart(2, '0')}@${EMAIL_DOMAIN}`);
+    console.log(`  Emails:  aluno001@${EMAIL_DOMAIN} … aluno${String(TOTAL_USERS).padStart(3, '0')}@${EMAIL_DOMAIN}`);
     console.log(`  Senha:   ${COMMON_PASSWORD}`);
     console.log(`  Saldo:   R$ ${STARTING_BALANCE.toLocaleString('pt-BR')} em cada carteira`);
 }

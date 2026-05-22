@@ -32,7 +32,7 @@ import type {StartupDocument} from '../src/db/startups/model';
 
 const PROJECT_ID  = 'mesclainvest-eda16';
 const SEED_TAG    = 'seed-orderbook-v2';
-const TOTAL_USERS = 30;
+const TOTAL_USERS = 150;
 
 // price bands relative to the startup's current bonding-curve price.
 // Sells go ABOVE the market, buys go BELOW (this is the natural shape of
@@ -40,23 +40,40 @@ const TOTAL_USERS = 30;
 // We pack many levels close to market and a few outliers far away — feels
 // realistic and gives the depth bars something to render.
 const SELL_BANDS_PCT = [
-    0.01, 0.02, 0.03, 0.05, 0.07, 0.10, 0.13, 0.16, 0.20, 0.25,
+    0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.08, 0.10, 0.12, 0.15, 0.18, 0.22, 0.26, 0.30, 0.35,
 ];
 const BUY_BANDS_PCT  = [
-    0.01, 0.02, 0.03, 0.05, 0.07, 0.10, 0.13, 0.16, 0.20, 0.25,
+    0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.08, 0.10, 0.12, 0.15, 0.18, 0.22, 0.26, 0.30, 0.35,
 ];
 
 // historical trades to seed (so the book has a price history, not just
 // the current state). Each entry is hours ago + price drift % from market.
 const TRADE_HISTORY: Array<{hoursAgo: number; driftPct: number}> = [
-    {hoursAgo: 168, driftPct: -0.08},  // a week ago, lower
-    {hoursAgo: 120, driftPct: -0.05},
-    {hoursAgo: 72,  driftPct: -0.02},
-    {hoursAgo: 36,  driftPct:  0.00},
-    {hoursAgo: 18,  driftPct:  0.02},
-    {hoursAgo: 6,   driftPct:  0.01},
-    {hoursAgo: 2,   driftPct:  0.005},
-    {hoursAgo: 0.25, driftPct: 0.003}, // 15 min ago
+    {hoursAgo: 720, driftPct: -0.15}, // 30 days ago
+    {hoursAgo: 650, driftPct: -0.13},
+    {hoursAgo: 580, driftPct: -0.12},
+    {hoursAgo: 520, driftPct: -0.10},
+    {hoursAgo: 460, driftPct: -0.09},
+    {hoursAgo: 410, driftPct: -0.07},
+    {hoursAgo: 360, driftPct: -0.06},
+    {hoursAgo: 310, driftPct: -0.08},
+    {hoursAgo: 270, driftPct: -0.05},
+    {hoursAgo: 230, driftPct: -0.04},
+    {hoursAgo: 200, driftPct: -0.02},
+    {hoursAgo: 168, driftPct: -0.03}, // 7 days ago
+    {hoursAgo: 144, driftPct: -0.01},
+    {hoursAgo: 120, driftPct: 0.01},
+    {hoursAgo: 96,  driftPct: -0.02},
+    {hoursAgo: 72,  driftPct: 0.02},
+    {hoursAgo: 48,  driftPct: 0.00},
+    {hoursAgo: 36,  driftPct: 0.03},
+    {hoursAgo: 24,  driftPct: 0.01},
+    {hoursAgo: 18,  driftPct: 0.02},
+    {hoursAgo: 12,  driftPct: 0.04},
+    {hoursAgo: 6,   driftPct: 0.02},
+    {hoursAgo: 3,   driftPct: 0.015},
+    {hoursAgo: 1,   driftPct: 0.008},
+    {hoursAgo: 0.25, driftPct: 0.003}, // 15 mins ago
 ];
 
 /**
@@ -84,7 +101,7 @@ function deterministicQty(seed: number): number
 function pickUid(slot: number): string
 {
     const n = (slot % TOTAL_USERS) + 1;
-    return `seed-user-${String(n).padStart(2, '0')}`;
+    return `seed-user-${String(n).padStart(3, '0')}`;
 }
 
 /**

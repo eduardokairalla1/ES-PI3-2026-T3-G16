@@ -62,7 +62,7 @@ async function getUserDocId(uid: string): Promise<string | null>
  */
 async function processBalcaoTransaction(
     userDocId: string,
-    startup: {id: string, name: string, logo_url: string},
+    startup: {id: string, name: string, logo_url: string | null},
     quantity: number,
     price: number,
 ): Promise<void>
@@ -75,7 +75,7 @@ async function processBalcaoTransaction(
         'avg_purchase_price': price,
         'created_at': new Date(),
         'startup_id': startup.id,
-        'startup_logo_url': startup.logo_url,
+        'startup_logo_url': startup.logo_url || '',
         'startup_name': startup.name,
         'token_quantity': quantity,
         'updated_at': null,
@@ -88,35 +88,30 @@ async function processBalcaoTransaction(
 
 
 /**
+ * A simple stable string hash to generate deterministic random-like values.
+ */
+function hashCode(s: string): number
+{
+    let h = 0;
+    for (let i = 0; i < s.length; i++)
+    {
+        h = ((h << 5) - h) + s.charCodeAt(i);
+        h |= 0;
+    }
+    return Math.abs(h);
+}
+
+
+/**
  * Função principal (Orquestradora) do Seed.
- * Recupera o primeiro usuário da Auth do Firebase, obtém as startups cadastradas
- * no banco e simula a aquisição de tokens de forma dinâmica para preencher o portfólio.
+ * Recupera todos os usuários do Firestore, obtém as startups cadastradas
+ * no banco e simula a aquisição de tokens de forma dinâmica para preencher o portfólio de cada um.
  */
 async function seed(): Promise<void>
 {
     console.log('Iniciando população (seed) de investimentos (utilizando a lógica de Balcão)...\n');
 
-    // 1. Localiza a primeira conta criada no emulador de Autenticação do Firebase
-    const listResult = await auth.listUsers(1);
-    if (listResult.users.length === 0)
-    {
-        console.error('Nenhum usuário foi localizado no emulador de Auth. Crie um usuário no app primeiro.');
-        process.exit(1);
-    }
-
-    const uid = listResult.users[0].uid;
-    const userDocId = await getUserDocId(uid);
-
-    // Valida se o usuário da Auth já possui um documento correspondente no Firestore
-    if (userDocId === null)
-    {
-        console.error('Documento correspondente do usuário não existe no Firestore. Registre-se primeiro rodando o app.');
-        process.exit(1);
-    }
-
-    console.log(`Usuário alvo UID: ${uid} (Doc ID: ${userDocId})\n`);
-
-    // 2. Busca todas as startups existentes no Firestore ordenadas por nome
+    // 1. Busca todas as startups existentes no Firestore ordenadas por nome
     const startupsSnapshot = await db.collection('startups').orderBy('name').get();
     if (startupsSnapshot.empty)
     {
@@ -130,23 +125,65 @@ async function seed(): Promise<void>
         ...doc.data(),
     } as StartupDocument));
 
-    // 3. Simula transações de investimentos de balcão de forma dinâmica
-    // Limitamos a amostragem a no máximo 3 startups para preencher o portfólio inicial do usuário de teste
-    const sampleSize = Math.min(startups.length, 3);
-
-    for (let i = 0; i < sampleSize; i++)
+    // 2. Busca todos os usuários cadastrados no Firestore
+    const usersSnapshot = await db.collection('users').get();
+    if (usersSnapshot.empty)
     {
-        const startup = startups[i];
-        
-        // Define valores de volume e preço baseados na ordenação para simular variação
-        const quantity = 1000 * (i + 1);
-        const price = startup.token_price || 0.5;
+        console.error('Nenhum usuário foi localizado no Firestore. Execute o script seed-users primeiro.');
+        process.exit(1);
+    }
 
-        // Executa a inserção do investimento no banco
-        await processBalcaoTransaction(userDocId, startup, quantity, price);
+    console.log(`Populando investimentos para ${usersSnapshot.size} usuários...\n`);
+
+    let totalPortfoliosCreated = 0;
+    let totalInvestmentsCreated = 0;
+    let skippedUsers = 0;
+
+    // 3. Simula transações de investimentos de balcão de forma dinâmica para cada usuário
+    for (const userDoc of usersSnapshot.docs)
+    {
+        const userDocId = userDoc.id;
+        const userData = userDoc.data();
+        const uid = userData.uid;
+
+        if (!uid) continue;
+
+        // Verifica se este usuário já possui investimentos cadastrados para garantir idempotência
+        const invCol = db.collection('users').doc(userDocId).collection('investments');
+        const existingInv = await invCol.limit(1).get();
+        if (!existingInv.empty)
+        {
+            console.log(`- Skip user ${uid} (already has investments)`);
+            skippedUsers++;
+            continue;
+        }
+
+        const seedVal = hashCode(uid);
+        // Cada usuário terá entre 2 e 5 investimentos no portfólio
+        const portfolioSize = 2 + (seedVal % 4);
+        
+        console.log(`Criando portfólio de ${portfolioSize} startups para o usuário: ${uid} (Doc ID: ${userDocId})`);
+
+        for (let s = 0; s < portfolioSize; s++)
+        {
+            // Seleciona startups rotacionando pela lista usando o seed
+            const startupIdx = (seedVal + s) % startups.length;
+            const startup = startups[startupIdx];
+
+            // Quantidade de tokens varia deterministicamente entre 500 e 4900
+            const quantity = 100 * (5 + (seedVal * (s + 1)) % 45);
+            const price = startup.token_price || 0.5;
+
+            // Executa a inserção do investimento no banco
+            await processBalcaoTransaction(userDocId, startup, quantity, price);
+            totalInvestmentsCreated++;
+        }
+        
+        totalPortfoliosCreated++;
     }
 
     console.log('\nPopulação de investimentos concluída com sucesso.');
+    console.log(`Estatísticas: ${totalPortfoliosCreated} portfólios populados, ${totalInvestmentsCreated} investimentos individuais registrados, ${skippedUsers} usuários pulados.`);
 }
 
 // Inicializa a execução do fluxo principal capturando eventuais falhas críticas

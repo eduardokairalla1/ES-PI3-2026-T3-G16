@@ -55,6 +55,7 @@ $backendDir   = Join-Path $baseDir "backend"
 $functionsDir = Join-Path $backendDir "functions"
 $frontendDir  = Join-Path $baseDir "frontend\app"
 $firebaseToolsNpx = "firebase-tools@15.17.0"
+$firebaseCmd = "npx --yes $firebaseToolsNpx"
 $projectId = "mesclainvest-eda16"
 $flutterWebPort = 3000
 $portsToKill = @($flutterWebPort, 4000, 4400, 4500, 5000, 5001, 8080, 8085, 9099, 9150, 9199)
@@ -570,14 +571,72 @@ if (-not $backendOk) {
 }
 Write-Host "[OK] Backend dependencias instaladas" -ForegroundColor $cSuccess
 
-# --- Firebase Tools (via npx, sem alterar package.json) ---
-Write-Host "[Backend] Verificando firebase-tools via npx..." -ForegroundColor $cStep
-$fbVer = npx --yes $firebaseToolsNpx --version
-if ($LASTEXITCODE -eq 0 -and $fbVer) {
-    Write-Host "[OK] firebase-tools $fbVer (via npx)" -ForegroundColor $cSuccess
+# --- Firebase Tools (via npx com fallback robusto) ---
+Write-Host "[Backend] Verificando firebase-tools..." -ForegroundColor $cStep
+$fbVer = $null
+
+# 1. Tentar npx com versão pinada
+try {
+    $fbVer = npx --yes $firebaseToolsNpx --version 2>$null | Out-String
+    if ($LASTEXITCODE -eq 0 -and $fbVer) {
+        $fbVer = $fbVer.Trim()
+    } else {
+        $fbVer = $null
+    }
+} catch {}
+
+# 2. Se falhar, tentar npx sem versão pinada (usando cache local)
+if (-not $fbVer) {
+    Write-Host "       Nao foi possivel rodar $firebaseToolsNpx via npx. Tentando sem pin de versao..." -ForegroundColor $cWarning
+    try {
+        $fbVer = npx firebase-tools --version 2>$null | Out-String
+        if ($LASTEXITCODE -eq 0 -and $fbVer) {
+            $fbVer = $fbVer.Trim()
+            $firebaseCmd = "npx firebase-tools"
+        } else {
+            $fbVer = $null
+        }
+    } catch {}
+}
+
+# 3. Se falhar, tentar comando global 'firebase'
+if (-not $fbVer) {
+    Write-Host "       Tentando 'firebase' global..." -ForegroundColor $cWarning
+    try {
+        $fbVer = firebase --version 2>$null | Out-String
+        if ($LASTEXITCODE -eq 0 -and $fbVer) {
+            $fbVer = $fbVer.Trim()
+            $firebaseCmd = "firebase"
+        } else {
+            $fbVer = $null
+        }
+    } catch {}
+}
+
+# 4. Se falhar, tentar instalar localmente como devDependency no backend
+if (-not $fbVer) {
+    Write-Host "       Ainda nao foi possivel rodar firebase-tools. Instalando localmente no backend..." -ForegroundColor $cWarning
+    Set-Location $backendDir
+    $installLocalOk = Invoke-WithRetry -Name "npm install --save-dev firebase-tools" -Script { npm install --save-dev firebase-tools }
+    if ($installLocalOk) {
+        try {
+            $fbVer = npx firebase-tools --version 2>$null | Out-String
+            if ($LASTEXITCODE -eq 0 -and $fbVer) {
+                $fbVer = $fbVer.Trim()
+                $firebaseCmd = "npx firebase-tools"
+            } else {
+                $fbVer = $null
+            }
+        } catch {}
+    }
+    Set-Location $backendDir
+}
+
+if ($fbVer) {
+    Write-Host "[OK] firebase-tools $fbVer pronto para uso via '$firebaseCmd'" -ForegroundColor $cSuccess
 } else {
-    Write-Host "[ERRO] firebase-tools nao respondeu via npx." -ForegroundColor $cError
-    Write-Host "       Tente manualmente: npx --yes $firebaseToolsNpx --version" -ForegroundColor Gray
+    Write-Host "[ERRO] firebase-tools nao respondeu de nenhuma forma." -ForegroundColor $cError
+    Write-Host "       Instale manualmente: npm install -g firebase-tools" -ForegroundColor Gray
     Set-Location $baseDir
     exit 1
 }
@@ -672,7 +731,7 @@ if (-not $javaOk) {
     Write-Host "        Instale o JDK 21+ e rode o script novamente." -ForegroundColor Gray
     Write-Host ""
     Write-Host "Para iniciar manualmente (apos instalar Java 21+):" -ForegroundColor $cStep
-    Write-Host "  Backend:  cd backend; npx --yes $firebaseToolsNpx emulators:start --project $projectId --only auth,functions,firestore,storage" -ForegroundColor Gray
+    Write-Host "  Backend:  cd backend; $firebaseCmd emulators:start --project $projectId --only auth,functions,firestore,storage" -ForegroundColor Gray
     Write-Host "  Frontend: cd frontend\app; flutter run -d $flutterDevice --web-port $flutterWebPort" -ForegroundColor Gray
     Write-Host ""
     Write-Host "Boa sorte com o MesclaInvest!" -ForegroundColor $cInfo
@@ -683,7 +742,7 @@ $startAll = Read-Host "Deseja iniciar o ambiente completo agora? (S/N)"
 if ($startAll -ne "S" -and $startAll -ne "s") {
     Write-Host "" 
     Write-Host "Para iniciar manualmente:" -ForegroundColor $cStep
-    Write-Host "  Backend:  cd backend; npx --yes $firebaseToolsNpx emulators:start --project $projectId --only auth,functions,firestore,storage" -ForegroundColor Gray
+    Write-Host "  Backend:  cd backend; $firebaseCmd emulators:start --project $projectId --only auth,functions,firestore,storage" -ForegroundColor Gray
     Write-Host "  Frontend: cd frontend\app; flutter run -d $flutterDevice --web-port $flutterWebPort" -ForegroundColor Gray
     Write-Host ""
     Write-Host "Boa sorte com o MesclaInvest!" -ForegroundColor $cInfo
@@ -704,7 +763,7 @@ Write-Host "[1/4] Abrindo Backend (Firebase Emulators)..." -ForegroundColor $cSt
         $javaSetup = "`$env:JAVA_HOME='$jdkLocalDir'; `$env:PATH='$jdkLocalDir\bin;' + `$env:PATH;"
     }
 
-    $backendCommand = "$javaSetup Set-Location '$backendDir'; npx --yes $firebaseToolsNpx emulators:start --project $projectId --only auth,functions,firestore,storage"
+    $backendCommand = "$javaSetup Set-Location '$backendDir'; $firebaseCmd emulators:start --project $projectId --only auth,functions,firestore,storage"
     $emulatorCmd = "powershell -NoExit -Command `"$backendCommand`""
     Start-Process cmd -ArgumentList "/c start `"MesclaInvest Backend`" $emulatorCmd"
 
@@ -717,7 +776,7 @@ Write-Host ""
 if (-not $ready) {
     Write-Host "[ERRO] Timeout aguardando emuladores. Verifique a janela do Firebase." -ForegroundColor $cError
     Write-Host "        Se a janela nao abriu, inicie manualmente:" -ForegroundColor Gray
-    Write-Host "        cd backend; npx --yes $firebaseToolsNpx emulators:start --project $projectId --only auth,functions,firestore,storage" -ForegroundColor Gray
+    Write-Host "        cd backend; $firebaseCmd emulators:start --project $projectId --only auth,functions,firestore,storage" -ForegroundColor Gray
     Write-Host ""
     Write-Host "Portas esperadas: $($requiredBackendPorts -join ', ')" -ForegroundColor Gray
     Set-Location $baseDir
@@ -819,7 +878,7 @@ if (-not $ready) {
     # --- Seed Startups (sempre roda) ---
     [void](Invoke-SeedScript -JsPath $seedStartupsJs -Label "startups" -SuccessSummary "startups criadas no Firestore")
 
-    # --- Seed Users (cria 30 alunos demo com saldo R$ 10.000) ---
+    # --- Seed Users (cria 150 alunos demo com saldo R$ 10.000) ---
     [void](Invoke-SeedScript -JsPath $seedUsersJs -Label "usuarios demo" -SuccessSummary "usuarios criados no Auth + Firestore")
 
     # --- Seed Investments (precisa de pelo menos um usuario; seed-users garante isso) ---
@@ -839,7 +898,7 @@ if (-not $ready) {
 
     Write-Host ""
     Write-Host "       Login dos usuarios demo:" -ForegroundColor $cInfo
-    Write-Host "         Emails: aluno01@mescla.test ... aluno30@mescla.test" -ForegroundColor Gray
+    Write-Host "         Emails: aluno001@mescla.test ... aluno150@mescla.test" -ForegroundColor Gray
     Write-Host "         Senha:  Mescla@2026" -ForegroundColor Gray
 
     # Iniciar Flutter (web-server: só sobe HTTP server, sem automacao de
