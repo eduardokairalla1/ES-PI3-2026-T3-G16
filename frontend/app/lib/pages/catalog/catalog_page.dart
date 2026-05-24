@@ -6,7 +6,8 @@
 import 'package:flutter/material.dart';
 import 'package:mesclainvest/pages/catalog/controllers/catalog_controller.dart';
 import 'package:mesclainvest/pages/catalog/widgets/startup_card.dart';
-import 'package:mesclainvest/shared/widgets/bottom_nav.dart';
+import 'package:mesclainvest/shared/styles/app_colors.dart';
+import 'package:mesclainvest/shared/widgets/app_button.dart';
 
 // --- CONSTANTS ---
 
@@ -47,7 +48,7 @@ class _CatalogPageState extends State<CatalogPage> {
       animation: _controller,
       builder: (context, _) {
         return Scaffold(
-          backgroundColor: Colors.grey.shade50,
+          backgroundColor: AppColors.pageBackground(context),
           body: SafeArea(
             bottom: false,
             child: Column(
@@ -59,12 +60,12 @@ class _CatalogPageState extends State<CatalogPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         'Startups',
                         style: TextStyle(
                           fontSize: 26,
                           fontWeight: FontWeight.w800,
-                          color: Colors.black,
+                          color: AppColors.textPrimary(context),
                         ),
                       ),
                       const SizedBox(height: 2),
@@ -73,7 +74,7 @@ class _CatalogPageState extends State<CatalogPage> {
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w400,
-                          color: Colors.grey.shade600,
+                          color: AppColors.textSecondary(context),
                         ),
                       ),
                     ],
@@ -103,12 +104,14 @@ class _CatalogPageState extends State<CatalogPage> {
                             vertical: 8,
                           ),
                           decoration: BoxDecoration(
-                            color: isActive ? Colors.black : Colors.white,
+                            color: isActive
+                                ? AppColors.textPrimary(context)
+                                : AppColors.surfaceColor(context),
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(
                               color: isActive
-                                  ? Colors.black
-                                  : Colors.grey.shade300,
+                                  ? AppColors.textPrimary(context)
+                                  : AppColors.border(context),
                             ),
                           ),
                           child: Text(
@@ -117,8 +120,8 @@ class _CatalogPageState extends State<CatalogPage> {
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
                               color: isActive
-                                  ? Colors.white
-                                  : Colors.grey.shade700,
+                                  ? AppColors.surfaceColor(context)
+                                  : AppColors.textSecondary(context),
                             ),
                           ),
                         ),
@@ -134,9 +137,6 @@ class _CatalogPageState extends State<CatalogPage> {
               ],
             ),
           ),
-          bottomNavigationBar: const SafeArea(
-            child: BottomNav(currentIndex: 1),
-          ),
         );
       },
     );
@@ -144,8 +144,8 @@ class _CatalogPageState extends State<CatalogPage> {
 
   Widget _buildContent() {
     if (_controller.isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(color: Colors.black),
+      return Center(
+        child: CircularProgressIndicator(color: AppColors.textPrimary(context)),
       );
     }
 
@@ -156,37 +156,23 @@ class _CatalogPageState extends State<CatalogPage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(
+              Icon(
                 Icons.wifi_off_outlined,
                 size: 48,
-                color: Colors.black26,
+                color: AppColors.textMuted(context),
               ),
               const SizedBox(height: 16),
               Text(
                 _controller.errorMessage!,
                 textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 15, color: Colors.black54),
+                style: TextStyle(fontSize: 15, color: AppColors.textSecondary(context)),
               ),
               const SizedBox(height: 24),
-              GestureDetector(
-                onTap: _controller.load,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 12,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.black,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Text(
-                    'Tentar novamente',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
+              AppButton(
+                label: 'Tentar novamente',
+                size: AppButtonSize.small,
+                fullWidth: false,
+                onPressed: _controller.load,
               ),
             ],
           ),
@@ -199,16 +185,16 @@ class _CatalogPageState extends State<CatalogPage> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
+            Icon(
               Icons.rocket_launch_outlined,
               size: 48,
-              color: Colors.black26,
+              color: AppColors.textMuted(context),
             ),
             const SizedBox(height: 16),
             Text(
               'Nenhuma startup encontrada\nnesta categoria.',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 15, color: Colors.grey.shade600),
+              style: TextStyle(fontSize: 15, color: AppColors.textSecondary(context)),
             ),
           ],
         ),
@@ -216,13 +202,20 @@ class _CatalogPageState extends State<CatalogPage> {
     }
 
     return RefreshIndicator(
-      color: Colors.black,
+      color: AppColors.textPrimary(context),
       onRefresh: _controller.load,
       child: ListView.builder(
         padding: const EdgeInsets.only(top: 4, bottom: 16),
         itemCount: _controller.startups.length,
-        itemBuilder: (context, i) =>
-            StartupCard(startup: _controller.startups[i]),
+        itemBuilder: (context, i) {
+          final startup = _controller.startups[i];
+          return StartupCard(
+            startup: startup,
+            isFavorite: _controller.isFavorite(startup.id),
+            onFavoriteTap: () => _controller.toggleFavorite(startup.id),
+            onReturn: () => _controller.load(),
+          );
+        },
       ),
     );
   }

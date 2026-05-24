@@ -16,17 +16,19 @@ import 'package:go_router/go_router.dart';
 import 'package:mesclainvest/pages/catalog/widgets/startup_card.dart';
 import 'package:mesclainvest/pages/dashboard/controllers/dashboard_controller.dart';
 import 'package:mesclainvest/pages/dashboard/widgets/resumo_mercado.dart';
+import 'package:mesclainvest/shared/styles/app_colors.dart';
 
 /*
  * CODE
  */
 
-/// Seção principal que exibe o catálogo resumido de startups e filtros de navegação.
+/// Componente que exibe a seção de startups recomendadas e os chips de filtragem no Dashboard.
+/// Permite filtrar a exibição entre todas, novas (em captação), operando e as favoritas do investidor.
+/// Limita a exibição prévia a 3 startups, oferecendo um link direto ("Ver todas") para o catálogo completo.
 class StartupsEcossistema extends StatelessWidget {
-  // Atributos
+  /// Instância do controlador do Dashboard que fornece o estado de filtros e a lista de startups.
   final DashboardController controller;
 
-  // Construtor
   const StartupsEcossistema({super.key, required this.controller});
 
   @override
@@ -34,22 +36,22 @@ class StartupsEcossistema extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // --- Cabeçalho da Seção ---
+        // --- Cabeçalho da Seção (Título e Link para Catálogo) ---
         Padding(
           padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
+              Text(
                 'Startups do ecossistema',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
-                  color: Colors.black,
+                  color: AppColors.textPrimary(context),
                   letterSpacing: -0.5,
                 ),
               ),
-              // Botão para ver o catálogo completo
+              // Botão para ver o catálogo completo via GoRouter
               GestureDetector(
                 onTap: () => context.push('/catalog'),
                 child: Row(
@@ -71,7 +73,7 @@ class StartupsEcossistema extends StatelessWidget {
           ),
         ),
 
-        // --- Barra de Filtros (Chips Horizontais) ---
+        // --- Barra de Filtros (Chips Horizontais com Efeito de Rolagem) ---
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -96,8 +98,8 @@ class StartupsEcossistema extends StatelessWidget {
                 label: 'Favoritas',
                 isSelected: controller.selectedStartupFilter == 'Favoritas',
                 onTap: () => controller.filterStartups('Favoritas'),
-                icon: Icons.favorite,
-                iconColor: Colors.red.shade400,
+                icon: Icons.star_rounded,
+                iconColor: Colors.amber.shade600,
               ),
             ],
           ),
@@ -106,11 +108,9 @@ class StartupsEcossistema extends StatelessWidget {
         const SizedBox(height: 16),
 
         // --- Widgets de Resumo do Mercado (Injetado condicionalmente) ---
+        // Exibe o painel de estatísticas gerais se os dados do dashboard já tiverem sido carregados.
         if (controller.data != null) ...[
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: ResumoMercado(controller: controller),
-          ),
+          ResumoMercado(controller: controller),
           const SizedBox(height: 16),
         ],
 
@@ -124,19 +124,19 @@ class StartupsEcossistema extends StatelessWidget {
                   Icon(
                     Icons.business_center_outlined,
                     size: 48,
-                    color: Colors.grey.shade300,
+                    color: AppColors.textMuted(context),
                   ),
                   const SizedBox(height: 16),
                   Text(
                     'Nenhuma startup encontrada.',
-                    style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+                    style: TextStyle(color: AppColors.textSecondary(context), fontSize: 14),
                   ),
                 ],
               ),
             ),
           )
         else
-          // Exibe apenas as 3 primeiras startups no dashboard (resumo)
+          // Exibe no máximo as 3 primeiras startups filtradas no dashboard principal
           ...controller.filteredStartups
               .take(3)
               .map(
@@ -144,6 +144,7 @@ class StartupsEcossistema extends StatelessWidget {
                   startup: startup,
                   isFavorite: controller.isFavorite(startup.id),
                   onFavoriteTap: () => controller.toggleFavorite(startup.id),
+                  onReturn: () => controller.loadDashboard(),
                 ),
               ),
 
@@ -153,16 +154,24 @@ class StartupsEcossistema extends StatelessWidget {
   }
 }
 
-/// Widget interno para representar cada chip de filtro individual.
+/// Widget interno privado para representar cada botão de chip de filtro individual da lista.
+/// Implementa animações de transição de cor de fundo e sombra ao ser selecionado.
 class _FilterChip extends StatelessWidget {
-  // Atributos
+  /// Rótulo de texto do chip.
   final String label;
+  
+  /// Indica se este chip de filtro está ativo/selecionado no momento.
   final bool isSelected;
+  
+  /// Callback de clique do chip.
   final VoidCallback onTap;
+  
+  /// Ícone opcional a ser exibido no início do chip.
   final IconData? icon;
+  
+  /// Cor do ícone opcional.
   final dynamic iconColor;
 
-  // Construtor
   const _FilterChip({
     required this.label,
     required this.isSelected,
@@ -180,10 +189,14 @@ class _FilterChip extends StatelessWidget {
         margin: const EdgeInsets.symmetric(horizontal: 4),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.black : Colors.white,
+          color: isSelected
+              ? AppColors.textPrimary(context)
+              : AppColors.surfaceColor(context),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? Colors.black : Colors.grey.shade300,
+            color: isSelected
+                ? AppColors.textPrimary(context)
+                : AppColors.border(context),
           ),
           boxShadow: isSelected
               ? [
@@ -203,8 +216,8 @@ class _FilterChip extends StatelessWidget {
                 icon,
                 size: 14,
                 color: isSelected
-                    ? Colors.white
-                    : (iconColor ?? Colors.grey.shade600),
+                    ? AppColors.surfaceColor(context)
+                    : (iconColor ?? AppColors.textSecondary(context)),
               ),
               const SizedBox(width: 6),
             ],
@@ -213,7 +226,9 @@ class _FilterChip extends StatelessWidget {
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                color: isSelected ? Colors.white : Colors.grey.shade700,
+                color: isSelected
+                    ? AppColors.surfaceColor(context)
+                    : AppColors.textSecondary(context),
               ),
             ),
           ],

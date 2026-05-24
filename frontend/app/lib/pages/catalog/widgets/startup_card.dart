@@ -1,14 +1,14 @@
-/// Eduardo Kairalla - 24024241
+// Eduardo Kairalla - 24024241
 
-/// Card widget for a startup in the catalog listing.
+// Card widget for a startup in the catalog listing.
 
 // --- IMPORTS ---
-import 'dart:ui' show Color;
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:mesclainvest/pages/startup/models/startup_model.dart';
+import 'package:mesclainvest/shared/styles/app_colors.dart';
 import 'package:mesclainvest/shared/styles/money_style.dart';
 import 'package:mesclainvest/shared/styles/stage_colors.dart';
 
@@ -25,12 +25,14 @@ class StartupCard extends StatelessWidget {
   final StartupModel startup;
   final bool isFavorite;
   final VoidCallback? onFavoriteTap;
+  final VoidCallback? onReturn;
 
   const StartupCard({
     super.key, 
     required this.startup,
     this.isFavorite = false,
     this.onFavoriteTap,
+    this.onReturn,
   });
 
   @override
@@ -38,14 +40,19 @@ class StartupCard extends StatelessWidget {
     final color = stageColor(startup.stage);
 
     return GestureDetector(
-      onTap: () => context.push('/startup/${startup.id}'),
+      onTap: () async {
+        await context.push('/startup/${startup.id}');
+        if (context.mounted && onReturn != null) {
+          onReturn!();
+        }
+      },
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.surfaceColor(context),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.grey.shade200),
+          border: Border.all(color: AppColors.border(context)),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.04),
@@ -69,10 +76,10 @@ class StartupCard extends StatelessWidget {
                     children: [
                       Text(
                         startup.name,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
-                          color: Colors.black,
+                          color: AppColors.textPrimary(context),
                         ),
                       ),
                       const SizedBox(height: 2),
@@ -83,7 +90,7 @@ class StartupCard extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w400,
-                          color: Colors.grey.shade600,
+                          color: AppColors.textSecondary(context),
                           height: 1.3,
                         ),
                       ),
@@ -94,8 +101,9 @@ class StartupCard extends StatelessWidget {
                   IconButton(
                     onPressed: onFavoriteTap,
                     icon: Icon(
-                      isFavorite ? Icons.favorite : Icons.favorite_border,
-                      color: isFavorite ? Colors.red : Colors.grey.shade400,
+                      isFavorite ? Icons.star_rounded : Icons.star_border_rounded,
+                      color: isFavorite ? Colors.amber.shade600 : AppColors.textMuted(context),
+                      size: 26,
                     ),
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
@@ -121,7 +129,7 @@ class StartupCard extends StatelessWidget {
             ),
 
             const SizedBox(height: 14),
-            Divider(height: 1, color: Colors.grey.shade100),
+            Divider(height: 1, color: AppColors.borderSoft(context)),
             const SizedBox(height: 14),
 
             // --- token price + capital raised ---
@@ -139,7 +147,7 @@ class StartupCard extends StatelessWidget {
                   value: _currencyFmt.format(startup.capitalRaised),
                 ),
                 const Spacer(),
-                const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.black38),
+                Icon(Icons.arrow_forward_ios, size: 14, color: AppColors.textMuted(context)),
               ],
             ),
 
@@ -164,20 +172,20 @@ class _Logo extends StatelessWidget {
       height: 52,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: Colors.grey.shade100,
-        border: Border.all(color: Colors.grey.shade200),
+        color: AppColors.surfaceMuted(context),
+        border: Border.all(color: AppColors.border(context)),
       ),
       child: ClipOval(
         child: Image.network(
           url,
           fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => Center(
+          errorBuilder: (_, _, _) => Center(
             child: Text(
               name.isNotEmpty ? name[0].toUpperCase() : '?',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w700,
-                color: Colors.black54,
+                color: AppColors.textSecondary(context),
               ),
             ),
           ),
@@ -201,16 +209,20 @@ class _Stat extends StatelessWidget {
       children: [
         Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 11,
             fontWeight: FontWeight.w500,
-            color: Colors.black38,
+            color: AppColors.textMuted(context),
           ),
         ),
         const SizedBox(height: 2),
         Text(
           value,
-          style: moneyStyle(fontSize: 14, fontWeight: FontWeight.w700),
+          style: moneyStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
+            color: AppColors.textPrimary(context),
+          ),
         ),
       ],
     );

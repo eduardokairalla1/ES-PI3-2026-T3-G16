@@ -1,5 +1,8 @@
 /**
  * Function callable onGetDashboard.
+ * Serviço responsável por consolidar e retornar todas as informações do Dashboard do usuário.
+ * Realiza consultas agregadas para obter dados de perfil, carteira, investimentos,
+ * startups favoritas e estatísticas gerais do mercado em uma única chamada.
  *
  * Alex Gabriel Soares Sousa - 24802449
  */
@@ -8,13 +11,13 @@
  * IMPORTS
  */
 import {HttpsError} from 'firebase-functions/v2/https';
-import {getUser, getUserCount} from '../../db/users/storage';
+import {getUser} from '../../db/users/storage';
 import {getUserFavoriteIds} from '../../db/favorites/storage';
 import {getStartups} from '../../db/startups/storage';
 import {getWallet} from '../../db/wallets/storage';
-import {getOrdersByTypeAndStatus} from '../../db/orders/storage';
+import {countActiveInvestors} from '../../db/orders/storage';
 import {getOldestSnapshotSince} from '../../db/price_history/storage';
-import {mapTotalTokensByStartup, calcWeeklyReturn} from '../../utils/walletUtils';
+import {computeWalletState} from '../../utils/walletUtils';
 import {logger} from '../../utils/logger';
 import {verifyAuth} from '../../utils/auth';
 
@@ -37,40 +40,39 @@ import type {CallableRequest} from 'firebase-functions/v2/https';
  */
 
 /**
- * I handle the onGetDashboard callable.
- * Returns consolidated dashboard data: user info, portfolio, market stats,
- * investments, and favorite IDs.
+ * Manipula a requisição da Cloud Function Callable 'onGetDashboard'.
+ * Consolida as informações de perfil do usuário, saldo da carteira digital, investimentos
+ * em startups (calculados a partir do histórico de ordens executadas) e indicadores gerais
+ * do mercado inovador do Mescla.
  *
- * @param request callable request (no body params, uses auth context)
- *
- * @returns consolidated dashboard data
+ * @param request Objeto da requisição contendo o contexto de autenticação do usuário.
+ * @returns Um objeto com dados consolidados do dashboard do investidor.
  */
 export async function handleOnGetDashboard(request: CallableRequest)
 {
     try
     {
-        // verify authentication
+        // 1. Valida se a requisição provém de um usuário devidamente autenticado
         const uid = verifyAuth(request);
 
-        // fetch all data in parallel for performance
-        logger.info(`Fetching dashboard data for user "${uid}"...`);
+        // 2. Dispara consultas assíncronas em paralelo no Firestore para otimizar o tempo de resposta (latência)
+        logger.info(`Buscando dados consolidados do dashboard para o usuário "${uid}"...`);
 
-        const [user, favorites, startups, userCount, wallet, orders] = await Promise.all([
+        const [user, favorites, startups, activeInvestors, wallet] = await Promise.all([
             getUser(uid),
             getUserFavoriteIds(uid),
             getStartups(),
-            getUserCount(),
+            countActiveInvestors(),
             getWallet(uid),
-            getOrdersByTypeAndStatus(uid, 'buy', 'completed'),
         ]);
 
-        // user not found
+        // Valida se o documento de perfil do usuário existe no banco de dados
         if (user === null)
         {
-            throw new AuthError(`Profile not found for user "${uid}".`);
+            throw new AuthError(`Perfil do usuário "${uid}" não foi encontrado no banco de dados.`);
         }
 
-        // build startup lookup maps (price + details)
+        // 3. Constrói mapas de busca (lookup maps) para otimizar a associação de startups por ID (complexidade O(1))
         const startupPriceMap = new Map<string, number>();
         const startupNameMap  = new Map<string, {name: string; logoUrl: string}>();
         for (const s of startups)
@@ -79,37 +81,25 @@ export async function handleOnGetDashboard(request: CallableRequest)
             startupNameMap.set(s.id, {name: s.name, logoUrl: s.logo_url ?? ''});
         }
 
-        // derive portfolio from completed buy orders
-        const holdingsByStartup = new Map<string, {quantity: number; totalCost: number}>();
-        for (const order of orders)
-        {
-            const existing = holdingsByStartup.get(order.startup_id);
-            if (existing)
-            {
-                existing.quantity  += order.quantity;
-                existing.totalCost += order.unit_price * order.quantity;
-            }
-            else
-            {
-                holdingsByStartup.set(order.startup_id, {
-                    quantity:  order.quantity,
-                    totalCost: order.unit_price * order.quantity,
-                });
-            }
-        }
+        // 4. Calcula a custódia (holdings) atual do usuário e o rendimento semanal utilizando a nova função com fluxo de caixa
+        const {holdingsByStartup, weeklyReturn, weeklyReturnPct} = await computeWalletState(uid, startupPriceMap);
 
-        let patrimonioTotal = 0;
+        let assetsValue = 0;
 
+        // 5. Formata os investimentos ativos calculando o preço médio de aquisição, valor de mercado atual e variação percentual
         const investimentosFormatted = Array.from(holdingsByStartup.entries()).map(([startupId, holding]) =>
         {
             const currentPrice = startupPriceMap.get(startupId) ?? 0;
-            const avgPrice     = holding.quantity > 0 ? holding.totalCost / holding.quantity : 0;
+            const avgPrice     = holding.buyQuantity > 0 ? holding.totalCost / holding.buyQuantity : 0;
             const currentValue = holding.quantity * currentPrice;
+
+            // Calcula variação percentual do investimento
             const variation    = avgPrice > 0
                 ? ((currentPrice - avgPrice) / avgPrice) * 100
                 : 0;
 
-            patrimonioTotal += currentValue;
+            // Incrementa o patrimônio total investido em ativos
+            assetsValue += currentValue;
 
             const details = startupNameMap.get(startupId) ?? {name: '', logoUrl: ''};
 
@@ -119,58 +109,47 @@ export async function handleOnGetDashboard(request: CallableRequest)
                 startupLogoUrl: details.logoUrl,
                 startupName:    details.name,
                 tokenQuantity:  holding.quantity,
-                variation:      Math.round(variation * 100) / 100,
+                variation:      Math.round(variation * 100) / 100, // Arredonda para 2 casas decimais
             };
         });
 
-        // calculate real weekly return using price history (from onGetWallet logic)
-        const weekAgo = new Date();
-        weekAgo.setDate(weekAgo.getDate() - 7);
+        const patrimonioTotal = (wallet?.balance ?? 0) + assetsValue;
 
-        const totalTokensByStartup = mapTotalTokensByStartup(orders);
-
-        const weeklyValues = await Promise.all(
-            Object.entries(totalTokensByStartup).map(async ([startupId, quantity]) =>
-            {
-                const currentPrice = startupPriceMap.get(startupId);
-                if (currentPrice === undefined) return {currentValue: 0, pastValue: 0};
-
-                const snapshot = await getOldestSnapshotSince(startupId, weekAgo);
-                const pastPrice = snapshot?.price ?? currentPrice;
-                return {
-                    currentValue: quantity * currentPrice,
-                    pastValue: quantity * pastPrice,
-                };
-            }),
-        );
-
-        const {weeklyReturn, weeklyReturnPct} = calcWeeklyReturn(weeklyValues);
+        // 6. Calcula a variação bruta e percentual do portfólio na semana arredondando os valores
         const rendimentoDiarioValor = Math.round(weeklyReturn * 100) / 100;
         const rendimentoDiarioPorcentagem = Math.round(weeklyReturnPct * 100) / 100;
 
-        // market stats
+        // 7. Estatísticas gerais do ecossistema Mescla
         const totalStartups = startups.length;
 
-        // calculate average market profitability as percentage variation per startup
-        // uses (capital_raised / total_tokens) as a proxy for initial cost price
-        const rentabilidadeMedia = startups.length > 0
+        // --- Pedro Henrique Medeiros dos Reis - 24801656 ---
+        // Rentabilidade mensal real: calcula a variação média de preço de todas as startups do ecossistema,
+        // comparando o preço atual com o valor de ~30 dias atrás nos históricos.
+        const monthAgo = new Date();
+        monthAgo.setDate(monthAgo.getDate() - 30);
+
+        const startupReturns = await Promise.all(
+            startups.map(async (s) =>
+            {
+                const snap = await getOldestSnapshotSince(s.id, monthAgo);
+                if (snap === null || snap.price <= 0) return 0;
+                return ((s.token_price - snap.price) / snap.price) * 100;
+            }),
+        );
+
+        const rentabilidadeMedia = startupReturns.length > 0
             ? Math.round(
-                startups.reduce((sum, s) =>
-                {
-                    const costPrice = s.total_tokens > 0 ? s.capital_raised / s.total_tokens : 0;
-                    const variation = costPrice > 0
-                        ? ((s.token_price - costPrice) / costPrice) * 100
-                        : 0;
-                    return sum + variation;
-                }, 0) / startups.length * 100,
+                (startupReturns.reduce((sum, r) => sum + r, 0) / startupReturns.length) * 100,
             ) / 100
             : 0;
+        // --- end Pedro ---
 
-        // extract favorite startup IDs
-        const favoriteIds = favorites; // already string[]
+        // Recupera a lista de IDs de startups favoritas do usuário
+        const favoriteIds = favorites;
 
-        logger.info(`Dashboard data for user "${uid}" fetched successfully.`);
+        logger.info(`Dados do dashboard compilados com sucesso para o usuário "${uid}".`);
 
+        // Retorna todos os dados prontos para consumo na UI do aplicativo
         return {
             favoriteIds,
             investimentos: investimentosFormatted,
@@ -180,21 +159,21 @@ export async function handleOnGetDashboard(request: CallableRequest)
             rendimentoDiarioValor,
             rentabilidadeMediaMercado: rentabilidadeMedia,
             saldoDisponivel: wallet?.balance ?? 0,
-            totalInvestidoresMercado: userCount,
+            totalInvestidoresMercado: activeInvestors,
             totalStartupsMercado: totalStartups,
         };
     }
 
-    // handle errors
+    // Tratamento unificado de erros
     catch (error: unknown)
     {
         if (error instanceof AuthError)
         {
-            logger.error(error.message);
+            logger.error(`Erro de autenticação ao obter dashboard: ${error.message}`);
             throw new HttpsError('unauthenticated', error.message);
         }
 
-        const internal = new InternalError('Failed to fetch dashboard data.', error);
+        const internal = new InternalError('Falha interna ao compilar dados do dashboard.', error);
         logger.error(internal.message, internal.cause);
         throw new HttpsError('internal', internal.message);
     }

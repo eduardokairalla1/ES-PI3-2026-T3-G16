@@ -1,5 +1,7 @@
 /**
  * Function callable onToggleFavorite.
+ * Serviço encarregado de alternar (adicionar ou remover) o status de "favorita"
+ * de uma determinada startup no perfil do usuário autenticado.
  *
  * Alex Gabriel Soares Sousa - 24802449
  */
@@ -36,61 +38,61 @@ import {parseRequest} from '../../utils/validation';
  */
 
 /**
- * I handle the onToggleFavorite callable.
- * Toggles the favorite status of a startup for the authenticated user.
+ * Manipula a requisição da Cloud Function Callable 'onToggleFavorite'.
+ * Alterna o status de favorito da startup especificada para o usuário autenticado.
  *
- * @param request callable request with startup ID
- *
- * @returns object with the new favorite status
+ * @param request Objeto da requisição contendo o ID da startup no corpo (data.startupId) e o contexto de autenticação.
+ * @returns Um objeto descrevendo o novo estado da relação (se está favoritado e o respectivo ID da startup).
  */
 export async function handleOnToggleFavorite(request: CallableRequest)
 {
     try
     {
-        // verify authentication
+        // 1. Valida se a requisição provém de um usuário devidamente autenticado
         const uid = verifyAuth(request);
 
-        // validate request data
+        // 2. Valida os parâmetros de entrada utilizando o esquema Zod (ToggleFavoriteRequest)
         const parsed = parseRequest(ToggleFavoriteRequest, request.data);
 
-        // verify startup exists
+        // 3. Verifica se a startup em questão de fato existe no Firestore
         const startup = await getStartup(parsed.startupId);
         if (startup === null)
         {
-            throw new NotFoundError(`Startup "${parsed.startupId}" not found.`);
+            throw new NotFoundError(`A startup com ID "${parsed.startupId}" não foi localizada.`);
         }
 
-        // toggle favorite
-        logger.info(`Toggling favorite for user "${uid}" on startup "${parsed.startupId}"...`);
+        // 4. Executa a alternância do status de favorito no banco de dados (relação muitos-para-muitos)
+        logger.info(`Alternando favorito do usuário "${uid}" para a startup "${parsed.startupId}"...`);
         const isFavorited = await toggleFavorite(uid, parsed.startupId);
-        logger.info(`Startup "${parsed.startupId}" is now ${isFavorited ? 'favorited' : 'unfavorited'} by user "${uid}".`);
+        logger.info(`Startup "${parsed.startupId}" agora está ${isFavorited ? 'favoritada' : 'removida dos favoritos'} pelo usuário "${uid}".`);
 
+        // Retorna o resultado atualizado para persistência e sincronização otimista no front-end
         return {
             isFavorited,
             startupId: parsed.startupId,
         };
     }
 
-    // handle errors
+    // Tratamento estruturado de exceções
     catch (error: unknown)
     {
         if (error instanceof AuthError)
         {
-            logger.error(error.message);
+            logger.error(`Erro de autenticação ao favoritar: ${error.message}`);
             throw new HttpsError('unauthenticated', error.message);
         }
         if (error instanceof NotFoundError)
         {
-            logger.error(error.message);
+            logger.error(`Startup não encontrada: ${error.message}`);
             throw new HttpsError('not-found', error.message);
         }
         if (error instanceof ValidationError)
         {
-            logger.error(error.message);
+            logger.error(`Erro de validação de argumentos: ${error.message}`);
             throw new HttpsError('invalid-argument', error.message);
         }
 
-        const internal = new InternalError('Failed to toggle favorite.', error);
+        const internal = new InternalError('Falha interna ao alternar status de favorita da startup.', error);
         logger.error(internal.message, internal.cause);
         throw new HttpsError('internal', internal.message);
     }

@@ -98,6 +98,8 @@ class StartupModel {
   final double tokenPrice;
   final double capitalRaised;
   final int totalTokens;
+  final int availableTokens;
+  final String tokenName;
   final List<PartnerModel> partners;
   final List<AdvisorModel> advisors;
   final String? videoUrl;
@@ -114,11 +116,22 @@ class StartupModel {
     required this.tokenPrice,
     required this.capitalRaised,
     required this.totalTokens,
+    required this.availableTokens,
+    required this.tokenName,
     required this.partners,
     required this.advisors,
     this.videoUrl,
     this.changePercent,
   });
+
+  /// Percentage of total tokens already sold (primary market).
+  /// Derived: (total - available) / total × 100.
+  double get soldPercent {
+    if (totalTokens <= 0) return 0;
+    final sold = totalTokens - availableTokens;
+    if (sold <= 0) return 0;
+    return (sold / totalTokens) * 100;
+  }
 
   /// I return the translated stage label for display.
   String get stageLabel => switch (stage) {
@@ -143,6 +156,8 @@ class StartupModel {
       tokenPrice: (map['tokenPrice'] as num?)?.toDouble() ?? 0,
       capitalRaised: (map['capitalRaised'] as num?)?.toDouble() ?? 0,
       totalTokens: (map['totalTokens'] as num?)?.toInt() ?? 0,
+      availableTokens: (map['availableTokens'] as num?)?.toInt() ?? 0,
+      tokenName: (map['tokenName'] as String?) ?? '',
       partners: rawPartners
           .map((p) => PartnerModel.fromMap(Map<String, dynamic>.from(p as Map)))
           .toList(),
@@ -175,6 +190,8 @@ class StartupModel {
       tokenPrice: 0.10,
       capitalRaised: 18000,
       totalTokens: 1000000,
+      availableTokens: 850000,
+      tokenName: 'TC',
       videoUrl: null,
       partners: [
         PartnerModel(

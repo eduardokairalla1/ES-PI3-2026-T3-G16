@@ -5,7 +5,9 @@
 // --- IMPORTS ---
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mesclainvest/app/app_state.dart';
 import 'package:mesclainvest/pages/startup/models/startup_model.dart';
+import 'package:mesclainvest/shared/styles/app_colors.dart';
 
 // --- WIDGET ---
 
@@ -21,13 +23,16 @@ class StartupHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final initial = userName.isNotEmpty ? userName[0].toUpperCase() : 'U';
+    final profile = AppState.instance.profile;
+    final name = profile?.fullName ?? userName;
+    final initial = name.isNotEmpty ? name[0].toUpperCase() : 'U';
+    final photoUrl = profile?.photoUrl;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
       decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
+        color: AppColors.surfaceColor(context),
+        border: Border(bottom: BorderSide(color: AppColors.border(context))),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.04),
@@ -45,13 +50,13 @@ class StartupHeader extends StatelessWidget {
               width: 38,
               height: 38,
               decoration: BoxDecoration(
-                color: Colors.grey.shade100,
+                color: AppColors.surfaceMuted(context),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.arrow_back,
                 size: 20,
-                color: Colors.black87,
+                color: AppColors.textPrimary(context),
               ),
             ),
           ),
@@ -64,10 +69,10 @@ class StartupHeader extends StatelessWidget {
               children: [
                 Text(
                   startup.name,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
-                    color: Colors.black,
+                    color: AppColors.textPrimary(context),
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -77,7 +82,7 @@ class StartupHeader extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
-                    color: Colors.black.withValues(alpha: 0.5),
+                    color: AppColors.textSecondary(context),
                   ),
                   textAlign: TextAlign.center,
                   maxLines: 1,
@@ -89,25 +94,41 @@ class StartupHeader extends StatelessWidget {
 
           const SizedBox(width: 12),
 
-          Container(
-            width: 38,
-            height: 38,
-            decoration: const BoxDecoration(
-              color: Colors.black,
-              shape: BoxShape.circle,
-            ),
-            child: Center(
-              child: Text(
-                initial,
-                style: const TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
-                ),
+          GestureDetector(
+            onTap: () => context.go('/profile'),
+            child: Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                color: AppColors.textPrimary(context),
+                shape: BoxShape.circle,
+              ),
+              child: ClipOval(
+                child: photoUrl != null
+                    ? Image.network(
+                        photoUrl,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) =>
+                            _initial(context, initial),
+                      )
+                    : _initial(context, initial),
               ),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _initial(BuildContext context, String letter) {
+    return Center(
+      child: Text(
+        letter,
+        style: TextStyle(
+          fontSize: 15,
+          fontWeight: FontWeight.w700,
+          color: AppColors.surfaceColor(context),
+        ),
       ),
     );
   }

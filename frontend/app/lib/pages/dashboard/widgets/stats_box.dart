@@ -12,18 +12,22 @@ library;
  */
 
 import 'package:flutter/material.dart';
+import 'package:mesclainvest/shared/styles/app_colors.dart';
 
 /*
  * CODE
  */
 
-/// Componente visual base para indicadores numéricos/estatísticos no Dashboard.
+/// Componente visual base para exibição de blocos de indicadores numéricos/estatísticos no Dashboard.
+/// Renderiza uma caixa (card) estilizada com cantos arredondados, borda fina, sombra sutil
+/// e alinhamento centralizado para destacar métricas chaves como "Rentabilidade Média" ou "Total de Startups".
 class StatsBox extends StatelessWidget {
-  // Atributos
-  final String primaryText; // Texto em destaque (ex: valor numérico)
-  final String secondaryText; // Descrição/Rótulo do indicador
+  /// O texto principal em destaque (ex: "12%", "R$ 4.500", "28").
+  final String primaryText;
+  
+  /// O texto secundário descritivo ou rótulo do indicador (ex: "Total de investidores", "Startups ativas").
+  final String secondaryText;
 
-  // Construtor
   const StatsBox({
     super.key,
     required this.primaryText,
@@ -36,9 +40,9 @@ class StatsBox extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.surfaceColor(context),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.grey.shade100),
+          border: Border.all(color: AppColors.border(context)),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.05),
@@ -51,27 +55,27 @@ class StatsBox extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // --- Texto Primário (Destaque) ---
+            // --- Texto Primário (Destaque principal da estatística) ---
             Text(
               primaryText,
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.w800,
-                color: Colors.black87,
+                color: AppColors.textPrimary(context),
                 letterSpacing: -0.5,
               ),
             ),
             const SizedBox(height: 4),
 
-            // --- Texto Secundário (Rótulo) ---
+            // --- Texto Secundário (Rótulo/descrição secundária) ---
             Text(
               secondaryText,
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
-                color: Colors.grey.shade600,
+                color: AppColors.textSecondary(context),
                 height: 1.2,
               ),
             ),

@@ -44,14 +44,15 @@ class StartupService {
     );
   }
 
-  /// I create a buy order for a startup and return the order ID.
+  /// I create a primary-market buy order for a startup and return the order ID.
+  /// Uses the bonding-curve price (the balcão / P2P market is handled by
+  /// OrderService.createOrder instead).
   Future<String> buyTokens(String startupId, int quantity) async {
     final result = await _functions
-        .httpsCallable('onCreateOrder')
+        .httpsCallable('onBuyFromStartup')
         .call<Map<String, dynamic>>({
           'startupId': startupId,
           'quantity':  quantity,
-          'type':      'buy',
         });
 
     return (result.data as Map)['orderId'] as String;

@@ -8,13 +8,11 @@
  * IMPORTS
  */
 import {HttpsError} from 'firebase-functions/v2/https';
-import {getOldestSnapshotSince} from '../../db/price_history/storage';
-import {getStartup} from '../../db/startups/storage';
-import {getOrdersByTypeAndStatus} from '../../db/orders/storage';
+import {getStartups} from '../../db/startups/storage';
 import {getWallet, createWallet} from '../../db/wallets/storage';
 import {verifyAuth} from '../../utils/auth';
 import {logger} from '../../utils/logger';
-import {mapTotalTokensByStartup, calcWeeklyReturn} from '../../utils/walletUtils';
+import {computeWalletState} from '../../utils/walletUtils';
 
 
 /**
@@ -48,8 +46,11 @@ export async function handleOnGetWallet(request: CallableRequest)
     {
         const uid = verifyAuth(request);
 
-        logger.info(`Fetching wallet for user "${uid}"...`);
-        let wallet = await getWallet(uid);
+        logger.info(`Fetching wallet and startups for user "${uid}"...`);
+        let [wallet, startups] = await Promise.all([
+            getWallet(uid),
+            getStartups(),
+        ]);
 
         if (wallet === null)
         {
@@ -58,29 +59,13 @@ export async function handleOnGetWallet(request: CallableRequest)
             wallet = await getWallet(uid) as walletDocument;
         }
 
-        const orders = await getOrdersByTypeAndStatus(uid, 'buy', 'completed');
-        const totalTokensByStartup = mapTotalTokensByStartup(orders);
+        const startupPriceMap = new Map<string, number>();
+        for (const s of startups)
+        {
+            startupPriceMap.set(s.id, s.token_price);
+        }
 
-        const weekAgo = new Date();
-        weekAgo.setDate(weekAgo.getDate() - 7);
-
-        const values = await Promise.all(
-            Object.entries(totalTokensByStartup).map(async ([startupId, quantity]) =>
-            {
-                const [startup, snapshot] = await Promise.all([
-                    getStartup(startupId),
-                    getOldestSnapshotSince(startupId, weekAgo),
-                ]);
-                if (startup === null) return {currentValue: 0, pastValue: 0};
-                const pastPrice = snapshot?.price ?? startup.token_price;
-                return {
-                    currentValue: quantity * startup.token_price,
-                    pastValue: quantity * pastPrice,
-                };
-            }),
-        );
-
-        const {weeklyReturn, weeklyReturnPct} = calcWeeklyReturn(values);
+        const {weeklyReturn, weeklyReturnPct} = await computeWalletState(uid, startupPriceMap);
 
         logger.info(`Wallet for user "${uid}" fetched successfully.`);
 

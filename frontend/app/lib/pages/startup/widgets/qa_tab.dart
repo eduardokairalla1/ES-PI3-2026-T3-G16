@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:mesclainvest/pages/startup/controllers/startup_controller.dart';
 import 'package:mesclainvest/pages/startup/models/startup_model.dart';
+import 'package:mesclainvest/shared/styles/app_colors.dart';
 
 // --- WIDGET ---
 
@@ -47,7 +48,6 @@ class _QATabState extends State<QATab> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Pergunta enviada com sucesso!'),
-          backgroundColor: Colors.black,
         ),
       );
     } else {
@@ -92,7 +92,7 @@ class _QATabState extends State<QATab> {
           Icon(
             Icons.chat_bubble_outline,
             size: 48,
-            color: Colors.grey.shade300,
+            color: AppColors.textMuted(context),
           ),
           const SizedBox(height: 12),
           Text(
@@ -100,7 +100,7 @@ class _QATabState extends State<QATab> {
             style: TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w600,
-              color: Colors.black.withValues(alpha: 0.4),
+              color: AppColors.textSecondary(context),
             ),
           ),
           const SizedBox(height: 4),
@@ -108,7 +108,7 @@ class _QATabState extends State<QATab> {
             'Seja o primeiro a perguntar!',
             style: TextStyle(
               fontSize: 13,
-              color: Colors.black.withValues(alpha: 0.3),
+              color: AppColors.textMuted(context),
             ),
           ),
         ],
@@ -122,9 +122,9 @@ class _QATabState extends State<QATab> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surfaceColor(context),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.black.withValues(alpha: 0.08)),
+        border: Border.all(color: AppColors.border(context)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.04),
@@ -141,8 +141,8 @@ class _QATabState extends State<QATab> {
               Container(
                 width: 28,
                 height: 28,
-                decoration: const BoxDecoration(
-                  color: Colors.black,
+                decoration: BoxDecoration(
+                  color: AppColors.textPrimary(context),
                   shape: BoxShape.circle,
                 ),
                 child: Center(
@@ -150,10 +150,10 @@ class _QATabState extends State<QATab> {
                     q.authorName.isNotEmpty
                         ? q.authorName[0].toUpperCase()
                         : '?',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
-                      color: Colors.white,
+                      color: AppColors.surfaceColor(context),
                     ),
                   ),
                 ),
@@ -161,10 +161,10 @@ class _QATabState extends State<QATab> {
               const SizedBox(width: 8),
               Text(
                 q.authorName,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
-                  color: Colors.black87,
+                  color: AppColors.textPrimary(context),
                 ),
               ),
               const Spacer(),
@@ -193,7 +193,7 @@ class _QATabState extends State<QATab> {
                 dateFmt.format(q.createdAt),
                 style: TextStyle(
                   fontSize: 11,
-                  color: Colors.black.withValues(alpha: 0.4),
+                  color: AppColors.textMuted(context),
                 ),
               ),
             ],
@@ -203,10 +203,10 @@ class _QATabState extends State<QATab> {
 
           Text(
             q.text,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w500,
-              color: Colors.black87,
+              color: AppColors.textPrimary(context),
               height: 1.4,
             ),
           ),
@@ -216,10 +216,10 @@ class _QATabState extends State<QATab> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.grey.shade50,
+                color: AppColors.surfaceMuted(context),
                 borderRadius: BorderRadius.circular(12),
-                border: const Border(
-                  left: BorderSide(color: Colors.black, width: 3),
+                border: Border(
+                  left: BorderSide(color: AppColors.textPrimary(context), width: 3),
                 ),
               ),
               child: Column(
@@ -230,7 +230,7 @@ class _QATabState extends State<QATab> {
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
-                      color: Colors.black.withValues(alpha: 0.5),
+                      color: AppColors.textMuted(context),
                       letterSpacing: 0.3,
                     ),
                   ),
@@ -239,7 +239,7 @@ class _QATabState extends State<QATab> {
                     q.answer!,
                     style: TextStyle(
                       fontSize: 13,
-                      color: Colors.black.withValues(alpha: 0.7),
+                      color: AppColors.textSecondary(context),
                       height: 1.45,
                     ),
                   ),
@@ -253,7 +253,7 @@ class _QATabState extends State<QATab> {
               style: TextStyle(
                 fontSize: 12,
                 fontStyle: FontStyle.italic,
-                color: Colors.black.withValues(alpha: 0.3),
+                color: AppColors.textMuted(context),
               ),
             ),
           ],
@@ -266,8 +266,8 @@ class _QATabState extends State<QATab> {
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
       decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(top: BorderSide(color: Colors.grey.shade200)),
+        color: AppColors.surfaceColor(context),
+        border: Border(top: BorderSide(color: AppColors.border(context))),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
@@ -290,19 +290,19 @@ class _QATabState extends State<QATab> {
                       width: 18,
                       height: 18,
                       decoration: BoxDecoration(
-                        color: _isPrivate ? Colors.black : Colors.transparent,
+                        color: _isPrivate ? AppColors.textPrimary(context) : Colors.transparent,
                         borderRadius: BorderRadius.circular(4),
                         border: Border.all(
                           color: _isPrivate
-                              ? Colors.black
-                              : Colors.grey.shade400,
+                              ? AppColors.textPrimary(context)
+                              : AppColors.border(context),
                         ),
                       ),
                       child: _isPrivate
-                          ? const Icon(
+                          ? Icon(
                               Icons.check,
                               size: 12,
-                              color: Colors.white,
+                              color: AppColors.surfaceColor(context),
                             )
                           : null,
                     ),
@@ -312,7 +312,7 @@ class _QATabState extends State<QATab> {
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
-                        color: Colors.black.withValues(alpha: 0.6),
+                        color: AppColors.textSecondary(context),
                       ),
                     ),
                   ],
@@ -331,14 +331,15 @@ class _QATabState extends State<QATab> {
                   maxLines: 1,
                   textInputAction: TextInputAction.send,
                   onSubmitted: (_) => _sendQuestion(),
+                  style: TextStyle(color: AppColors.textPrimary(context)),
                   decoration: InputDecoration(
                     hintText: 'Faça sua pergunta...',
                     hintStyle: TextStyle(
                       fontSize: 14,
-                      color: Colors.black.withValues(alpha: 0.35),
+                      color: AppColors.textMuted(context),
                     ),
                     filled: true,
-                    fillColor: Colors.grey.shade100,
+                    fillColor: AppColors.surfaceMuted(context),
                     contentPadding: const EdgeInsets.symmetric(
                       horizontal: 16,
                       vertical: 12,
@@ -357,20 +358,20 @@ class _QATabState extends State<QATab> {
                   width: 46,
                   height: 46,
                   decoration: BoxDecoration(
-                    color: isSending ? Colors.grey.shade300 : Colors.black,
+                    color: isSending ? AppColors.surfaceMuted(context) : AppColors.textPrimary(context),
                     borderRadius: BorderRadius.circular(14),
                   ),
                   child: isSending
-                      ? const Padding(
-                          padding: EdgeInsets.all(12),
+                      ? Padding(
+                          padding: const EdgeInsets.all(12),
                           child: CircularProgressIndicator(
-                            color: Colors.white,
+                            color: AppColors.surfaceColor(context),
                             strokeWidth: 2,
                           ),
                         )
-                      : const Icon(
+                      : Icon(
                           Icons.send_rounded,
-                          color: Colors.white,
+                          color: AppColors.surfaceColor(context),
                           size: 20,
                         ),
                 ),

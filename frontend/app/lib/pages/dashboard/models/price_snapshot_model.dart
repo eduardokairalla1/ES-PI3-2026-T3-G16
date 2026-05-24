@@ -1,11 +1,20 @@
-/// Modelo de snapshot de preço de token.
+/*
+ * Modelo de snapshot de preço de token.
+ *
+ * Alex Gabriel Soares Sousa - 24802449
+ */
 
+/// Representa a cotação/valor do token de uma startup em um momento específico do tempo.
 class PriceSnapshotModel {
+  /// Preço unitário do token registrado no snapshot.
   final double   price;
+  
+  /// Data e hora do registro da cotação.
   final DateTime recordedAt;
 
   const PriceSnapshotModel({required this.price, required this.recordedAt});
 
+  /// Instancia o snapshot de preço a partir de chaves/valores vindos do Firestore.
   factory PriceSnapshotModel.fromMap(Map<String, dynamic> map) {
     return PriceSnapshotModel(
       price:      (map['price'] as num).toDouble(),
@@ -13,6 +22,7 @@ class PriceSnapshotModel {
     );
   }
 
+  /// Método utilitário privado para decodificar timestamps do Firebase (segundos/milissegundos) para [DateTime].
   static DateTime? _parseTimestamp(dynamic value) {
     if (value == null) return null;
     if (value is Map) {
@@ -24,11 +34,21 @@ class PriceSnapshotModel {
 }
 
 
+/// Representa o histórico consolidado de preços e informações de custódia do investidor para um token de startup.
 class TokenHistoryModel {
+  /// Cotação unitária atual do token de startup no mercado.
   final double                   currentPrice;
+  
+  /// Preço médio pago pelo investidor (nulo se o investidor não tiver posição ativa).
   final double?                  purchasePrice;
+  
+  /// Quantidade de tokens possuída pelo investidor na carteira.
   final int                      tokenQuantity;
+  
+  /// Valor de mercado total da custódia do usuário (quantidade * preço atual).
   final double                   totalValue;
+  
+  /// Snapshots contendo as cotações históricas na janela de tempo selecionada.
   final List<PriceSnapshotModel> snapshots;
 
   const TokenHistoryModel({
@@ -39,6 +59,7 @@ class TokenHistoryModel {
     required this.snapshots,
   });
 
+  /// Cria o histórico de tokens a partir da resposta HTTP Callable.
   factory TokenHistoryModel.fromMap(Map<String, dynamic> map) {
     final raw = (map['snapshots'] as List<dynamic>?) ?? [];
     return TokenHistoryModel(
@@ -52,13 +73,15 @@ class TokenHistoryModel {
     );
   }
 
+  /// Indica se o investidor logado possui investimento ativo e histórico disponível para exibição de gráfico.
   bool get hasInvestment => purchasePrice != null && snapshots.isNotEmpty;
 
-  /// Preço no início do período exibido (primeiro snapshot da janela).
+  /// Retorna a cotação registrada no início do período temporal carregado (primeiro snapshot).
+  /// Caso a lista esteja vazia, retorna a cotação atual como fallback.
   double get periodStartPrice =>
       snapshots.isNotEmpty ? snapshots.first.price : currentPrice;
 
-  /// Variação percentual dentro do período selecionado.
+  /// Retorna a variação percentual de valorização/desvalorização do ativo no período temporal selecionado.
   double get changePercent {
     if (periodStartPrice == 0) return 0;
     return ((currentPrice - periodStartPrice) / periodStartPrice) * 100;

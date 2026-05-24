@@ -5,6 +5,7 @@
 // --- IMPORTS ---
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:mesclainvest/pages/auth/widgets/auth_constants.dart';
+import 'package:mesclainvest/shared/widgets/app_button.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -31,7 +32,6 @@ class _ResetPasswordPageState extends State<ResetPasswordPage>
   bool _isLoading = false;
   bool _showPassword = false;
   bool _showConfirm = false;
-  bool _btnPressed = false;
   bool _done = false;
   String? _error;
 
@@ -239,43 +239,11 @@ class _ResetPasswordPageState extends State<ResetPasswordPage>
           ),
 
           // submit button
-          GestureDetector(
-            onTapDown: (_) => setState(() => _btnPressed = true),
-            onTapUp: (_) {
-              setState(() => _btnPressed = false);
-              if (!_isLoading) _submit();
-            },
-            onTapCancel: () => setState(() => _btnPressed = false),
-            child: AnimatedScale(
-              scale: _btnPressed ? 0.97 : 1.0,
-              duration: const Duration(milliseconds: 80),
-              child: Container(
-                width: double.infinity,
-                height: 58,
-                decoration: BoxDecoration(
-                  color: Colors.black,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                alignment: Alignment.center,
-                child: _isLoading
-                    ? const SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2.5,
-                        ),
-                      )
-                    : Text(
-                        'REDEFINIR SENHA',
-                        style: GoogleFonts.inter(
-                          fontWeight: FontWeight.w800,
-                          fontSize: 20,
-                          color: Colors.white,
-                        ),
-                      ),
-              ),
-            ),
+          AppButton(
+            label: 'REDEFINIR SENHA',
+            size: AppButtonSize.large,
+            isLoading: _isLoading,
+            onPressed: _submit,
           ),
         ],
       ),
@@ -393,25 +361,10 @@ class _ResetPasswordPageState extends State<ResetPasswordPage>
           ),
         ),
         const SizedBox(height: 40),
-        GestureDetector(
-          onTap: () => context.go('/login'),
-          child: Container(
-            width: double.infinity,
-            height: 58,
-            decoration: BoxDecoration(
-              color: Colors.black,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            alignment: Alignment.center,
-            child: Text(
-              'IR PARA O LOGIN',
-              style: GoogleFonts.inter(
-                fontWeight: FontWeight.w800,
-                fontSize: 20,
-                color: Colors.white,
-              ),
-            ),
-          ),
+        AppButton(
+          label: 'IR PARA O LOGIN',
+          size: AppButtonSize.large,
+          onPressed: () => context.go('/login'),
         ),
       ],
     );
@@ -462,25 +415,10 @@ class _ResetPasswordPageState extends State<ResetPasswordPage>
                 ),
               ),
               const SizedBox(height: 40),
-              GestureDetector(
-                onTap: () => context.go('/forgot-password'),
-                child: Container(
-                  width: double.infinity,
-                  height: 58,
-                  decoration: BoxDecoration(
-                    color: Colors.black,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  alignment: Alignment.center,
-                  child: Text(
-                    'SOLICITAR NOVO LINK',
-                    style: GoogleFonts.inter(
-                      fontWeight: FontWeight.w800,
-                      fontSize: 20,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
+              AppButton(
+                label: 'SOLICITAR NOVO LINK',
+                size: AppButtonSize.large,
+                onPressed: () => context.go('/forgot-password'),
               ),
             ],
           ),

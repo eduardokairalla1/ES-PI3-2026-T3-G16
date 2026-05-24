@@ -48,13 +48,18 @@ export async function handleOnGetPortfolio(request: CallableRequest)
 
         logger.info(`Fetching portfolio for user "${uid}"...`);
 
-        // fetch all completed buy orders for this user
+        // fetch all buy orders for this user
         const ordersSnap = await db
             .collection('orders')
             .where('uid', '==', uid)
             .where('type', '==', 'buy')
-            .where('status', '==', 'completed')
-            .orderBy('created_at', 'asc')
+            .get();
+
+        // pull all sell orders and aggregate below
+        const sellOrdersSnap = await db
+            .collection('orders')
+            .where('uid',  '==', uid)
+            .where('type', '==', 'sell')
             .get();
 
         if (ordersSnap.empty)
@@ -65,22 +70,60 @@ export async function handleOnGetPortfolio(request: CallableRequest)
         // group orders by startup: total quantity + first purchase price
         const byStartup = new Map<string, {quantity: number; firstUnitPrice: number}>();
 
-        for (const doc of ordersSnap.docs)
+        // Sort buy orders in memory by created_at to correctly identify the first purchase price
+        const buyDocs = ordersSnap.docs.map(doc =>
         {
-            const data      = doc.data();
-            const startupId = data.startup_id as string;
-            const quantity  = data.quantity   as number;
-            const unitPrice = data.unit_price  as number;
+            const data = doc.data();
+            return {
+                id: doc.id,
+                startup_id: data.startup_id as string,
+                filled_quantity: (data.filled_quantity as number) ?? 0,
+                unit_price: data.unit_price as number,
+                created_at: data.created_at,
+            };
+        }).sort((a, b) =>
+        {
+            const timeA = a.created_at?.toDate?.()?.getTime() || 0;
+            const timeB = b.created_at?.toDate?.()?.getTime() || 0;
+            return timeA - timeB;
+        });
+
+        for (const data of buyDocs)
+        {
+            const startupId = data.startup_id;
+            const filled    = data.filled_quantity;
+            const unitPrice = data.unit_price;
+
+            if (filled <= 0) continue;
 
             if (byStartup.has(startupId))
             {
-                byStartup.get(startupId)!.quantity += quantity;
+                byStartup.get(startupId)!.quantity += filled;
             }
             else
             {
                 // first order for this startup = first purchase price
-                byStartup.set(startupId, {quantity, firstUnitPrice: unitPrice});
+                byStartup.set(startupId, {quantity: filled, firstUnitPrice: unitPrice});
             }
+        }
+
+        // subtract tokens that left the user's holdings via sells
+        for (const doc of sellOrdersSnap.docs)
+        {
+            const data      = doc.data();
+            const startupId = data.startup_id as string;
+            const filled    = (data.filled_quantity as number) ?? 0;
+
+            if (filled <= 0) continue;
+            if (!byStartup.has(startupId)) continue;
+
+            byStartup.get(startupId)!.quantity -= filled;
+        }
+
+        // drop startups whose net quantity dropped to zero or less (fully sold)
+        for (const [sid, agg] of Array.from(byStartup.entries()))
+        {
+            if (agg.quantity <= 0) byStartup.delete(sid);
         }
 
         // fetch startup details and build holdings

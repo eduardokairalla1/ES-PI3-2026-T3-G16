@@ -1,13 +1,13 @@
-/// Eduardo Kairalla - 24024241
+// Eduardo Kairalla - 24024241
 
-/// Card with logo, token price, and stage badge.
+// Card with logo, token price, and stage badge.
 
 // --- IMPORTS ---
-import 'dart:ui' show Clip, Color;
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:mesclainvest/pages/startup/models/startup_model.dart';
+import 'package:mesclainvest/shared/styles/app_colors.dart';
 import 'package:mesclainvest/shared/styles/money_style.dart';
 import 'package:mesclainvest/shared/styles/stage_colors.dart';
 
@@ -25,7 +25,7 @@ class StartupInfoCard extends StatelessWidget {
     final currencyFmt = NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
 
     return Container(
-      color: Colors.white,
+      color: AppColors.surfaceColor(context),
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       child: Row(
         children: [
@@ -34,7 +34,7 @@ class StartupInfoCard extends StatelessWidget {
             width: 63,
             height: 63,
             decoration: BoxDecoration(
-              color: Colors.grey.shade200,
+              color: AppColors.surfaceMuted(context),
               borderRadius: BorderRadius.circular(12),
             ),
             clipBehavior: Clip.antiAlias,
@@ -55,7 +55,11 @@ class StartupInfoCard extends StatelessWidget {
               children: [
                 Text(
                   currencyFmt.format(startup.tokenPrice),
-                  style: moneyStyle(fontSize: 28, fontWeight: FontWeight.w700),
+                  style: moneyStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary(context),
+                  ),
                 ),
                 const SizedBox(height: 2),
                 Text(
@@ -63,7 +67,7 @@ class StartupInfoCard extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
-                    color: Colors.grey.shade500,
+                    color: AppColors.textSecondary(context),
                   ),
                 ),
               ],
@@ -93,13 +97,15 @@ class StartupInfoCard extends StatelessWidget {
 
   Widget _logoPlaceholder(String name) {
     final letter = name.isNotEmpty ? name[0].toUpperCase() : '?';
-    return Center(
-      child: Text(
-        letter,
-        style: const TextStyle(
-          fontSize: 24,
-          fontWeight: FontWeight.w700,
-          color: Colors.black54,
+    return Builder(
+      builder: (context) => Center(
+        child: Text(
+          letter,
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.w700,
+            color: AppColors.textSecondary(context),
+          ),
         ),
       ),
     );

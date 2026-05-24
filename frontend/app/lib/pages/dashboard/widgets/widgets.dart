@@ -6,6 +6,10 @@
  */
 library;
 
+/// Barrel file (arquivo de barril) que unifica e exporta todos os componentes visuais (widgets)
+/// utilizados na renderização da tela principal do Dashboard.
+/// Evita a necessidade de múltiplos imports individuais de arquivos da pasta widgets.
+
 export 'botoes_acao.dart';
 export 'cabecalho_dashboard.dart';
 export 'cartao_patrimonio.dart';

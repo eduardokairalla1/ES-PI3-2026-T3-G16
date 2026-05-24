@@ -14,6 +14,7 @@ import './configs';
  * --- EXPORTS ---
  */
 export {onUserCreated, onGetProfile, onGetWallet, onCreateOrder, onGetPortfolio, onUpdateProfile, onToggle2FA} from './responders/index';
+export {onBuyFromStartup, onCancelOrder, onGetMyOrders} from './responders/index';
 export {onDeposit, onGetTransactions} from './responders/index';
-export {onGetStartups, onGetStartup, onSendQuestion, onGetQuestions} from './responders/index';
-export {onGetDashboard, onToggleFavorite} from './responders/index';
+export {onGetStartups, onGetStartup, onGetStartupOrderBook, onSendQuestion, onGetQuestions} from './responders/index';
+export {onGetDashboard, onToggleFavorite, onGetPatrimonyHistory} from './responders/index';

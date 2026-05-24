@@ -110,7 +110,12 @@ class AuthService {
         'birthDate': birthDate,
       });
     } on FirebaseFunctionsException catch (e) {
-      await _auth.currentUser?.delete();
+      try {
+        await _auth.currentUser?.delete();
+      } catch (_) {
+        // avoid masking the original exception
+      }
+      await _auth.signOut();
       if (e.code == 'invalid-argument' &&
           (e.message?.contains('CPF') ?? false)) {
         throw AuthException.cpfAlreadyInUse(
@@ -124,7 +129,12 @@ class AuthService {
         stackTrace: StackTrace.current,
       );
     } catch (e) {
-      await _auth.currentUser?.delete();
+      try {
+        await _auth.currentUser?.delete();
+      } catch (_) {
+        // avoid masking the original exception
+      }
+      await _auth.signOut();
       throw InfrastructureException(
         message: e.toString(),
         originalError: e,
@@ -188,9 +198,28 @@ class AuthService {
 
       // build and return a UserProfile from the result
       return UserProfile.fromMap(Map<String, dynamic>.from(result.data));
-    }
-    // any error: throw an InfrastructureException
-    catch (e) {
+    } on FirebaseFunctionsException catch (e) {
+      // If the profile is not found on the backend (orphaned account),
+      // we delete the Auth user and sign out to avoid leaving them in a broken state.
+      if (e.code == 'unauthenticated' &&
+          (e.message?.contains('Profile not found') ?? false)) {
+        try {
+          await _auth.currentUser?.delete();
+        } catch (_) {
+          // ignore to avoid masking original exception
+        }
+        await _auth.signOut();
+        throw AuthException.userNotFound(
+          originalError: e,
+          stackTrace: StackTrace.current,
+        );
+      }
+      throw InfrastructureException(
+        message: e.message ?? e.toString(),
+        originalError: e,
+        stackTrace: StackTrace.current,
+      );
+    } catch (e) {
       throw InfrastructureException(
         message: e.toString(),
         originalError: e,

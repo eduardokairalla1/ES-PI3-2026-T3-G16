@@ -1,8 +1,25 @@
+/*
+ * Tela de carregamento (Skeleton screen / shimmer effect) para a página do Dashboard.
+ *
+ * Este widget fornece uma interface de transição visual (placeholder animado) durante
+ * a chamada assíncrona inicial de dados do Dashboard (carregamento de saldos, startups
+ * e investimentos). Melhora significativamente a percepção de performance (UX) ao desenhar
+ * contornos cinzas pulsantes que mimetizam exatamente a estrutura do conteúdo real da página.
+ *
+ * Utiliza o componente customizado [ShimmerBox] para criar formas circulares e retangulares
+ * proporcionais às dimensões finais dos cards reais do Dashboard.
+ *
+ * Alex Gabriel Soares Sousa - 24802449
+ */
+
 import 'package:flutter/material.dart';
+import 'package:mesclainvest/shared/styles/app_colors.dart';
 import 'package:mesclainvest/shared/widgets/shimmer_box.dart';
 
+/// Componente que desenha o esqueleto visual do dashboard em estado de carregamento.
 class DashboardSkeleton extends StatelessWidget {
 
+  /// Construtor padrão da tela de carregamento.
   const DashboardSkeleton({super.key});
 
   @override
@@ -36,9 +53,9 @@ class DashboardSkeleton extends StatelessWidget {
             margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: AppColors.surfaceColor(context),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.grey.shade200),
+              border: Border.all(color: AppColors.border(context)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -49,7 +66,7 @@ class DashboardSkeleton extends StatelessWidget {
                 const SizedBox(height: 10),
                 ShimmerBox(width: 140, height: 14, borderRadius: BorderRadius.circular(6)),
                 const SizedBox(height: 20),
-                Divider(height: 1, color: Colors.grey.shade100),
+                Divider(height: 1, color: AppColors.borderSoft(context)),
               ],
             ),
           ),
@@ -73,9 +90,9 @@ class DashboardSkeleton extends StatelessWidget {
             margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
             padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: AppColors.surfaceColor(context),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.grey.shade200),
+              border: Border.all(color: AppColors.border(context)),
             ),
             child: Column(
               children: [

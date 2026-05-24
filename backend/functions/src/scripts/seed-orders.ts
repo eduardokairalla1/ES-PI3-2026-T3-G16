@@ -82,17 +82,20 @@ async function simulatePurchase(
     // order document
     const orderRef              = db.collection('orders').doc();
     const order: OrderDocument  = {
-        id:             orderRef.id,
-        uid:            USER_UID,
-        startup_id:     startup.id,
-        type:           'buy',
-        status:         'completed',
+        id:              orderRef.id,
+        uid:             USER_UID,
+        startup_id:      startup.id,
+        type:            'buy',
+        status:          'completed',
         quantity,
-        unit_price:     unitPrice,
-        total_amount:   totalAmount,
-        created_at:     purchaseDate,
-        completed_at:   purchaseDate,
-        failure_reason: null,
+        unit_price:      unitPrice,
+        total_amount:    totalAmount,
+        created_at:      purchaseDate,
+        completed_at:    purchaseDate,
+        failure_reason:  null,
+        filled_quantity: quantity,
+        cancelled_at:    null,
+        avg_fill_price:  unitPrice,
     };
     batch.set(orderRef, order);
 

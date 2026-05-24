@@ -5,6 +5,7 @@
 // --- IMPORTS ---
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mesclainvest/shared/styles/app_colors.dart';
 
 // --- PAGE ---
 
@@ -14,33 +15,34 @@ class HelpPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey.shade50,
+      backgroundColor: AppColors.pageBackground(context),
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.surfaceColor(context),
         elevation: 0,
         leading: GestureDetector(
           onTap: () =>
               context.canPop() ? context.pop() : context.go('/profile'),
-          child: const Icon(Icons.arrow_back, color: Colors.black),
+          child: Icon(Icons.arrow_back, color: AppColors.textPrimary(context)),
         ),
         centerTitle: true,
-        title: const Text(
+        title: Text(
           'Ajuda & Suporte',
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w700,
-            color: Colors.black,
+            color: AppColors.textPrimary(context),
           ),
         ),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
-          child: Divider(height: 1, color: Colors.grey.shade200),
+          child: Divider(height: 1, color: AppColors.border(context)),
         ),
       ),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
           _faqCard(
+            context: context,
             question: 'O que é o MesclaInvest?',
             answer:
                 'O MesclaInvest é uma plataforma simulada de investimento em startups, '
@@ -48,6 +50,7 @@ class HelpPage extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           _faqCard(
+            context: context,
             question: 'Como funcionam os tokens?',
             answer:
                 'Cada startup emite uma quantidade de tokens. Ao investir, você adquire '
@@ -56,6 +59,7 @@ class HelpPage extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           _faqCard(
+            context: context,
             question: 'O que é a autenticação 2FA?',
             answer:
                 'A autenticação em dois fatores adiciona uma camada extra de segurança '
@@ -64,6 +68,7 @@ class HelpPage extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           _faqCard(
+            context: context,
             question: 'Como entro em contato com o suporte?',
             answer:
                 'Para este projeto, o suporte é prestado pelos desenvolvedores via '
@@ -73,9 +78,9 @@ class HelpPage extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: AppColors.surfaceColor(context),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.black.withValues(alpha: 0.08)),
+              border: Border.all(color: AppColors.border(context)),
             ),
             child: Row(
               children: [
@@ -83,16 +88,16 @@ class HelpPage extends StatelessWidget {
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    color: Colors.grey.shade100,
+                    color: AppColors.surfaceMuted(context),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.email_outlined,
-                    color: Colors.black54,
+                    color: AppColors.textSecondary(context),
                   ),
                 ),
                 const SizedBox(width: 12),
-                const Expanded(
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -101,11 +106,12 @@ class HelpPage extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
+                          color: AppColors.textPrimary(context),
                         ),
                       ),
                       Text(
                         'suporte@mesclainvest.com.br',
-                        style: TextStyle(fontSize: 13, color: Colors.black54),
+                        style: TextStyle(fontSize: 13, color: AppColors.textSecondary(context)),
                       ),
                     ],
                   ),
@@ -118,23 +124,27 @@ class HelpPage extends StatelessWidget {
     );
   }
 
-  Widget _faqCard({required String question, required String answer}) {
+  Widget _faqCard({
+    required BuildContext context,
+    required String question,
+    required String answer,
+  }) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surfaceColor(context),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.black.withValues(alpha: 0.08)),
+        border: Border.all(color: AppColors.border(context)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             question,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w700,
-              color: Colors.black,
+              color: AppColors.textPrimary(context),
             ),
           ),
           const SizedBox(height: 8),
@@ -142,7 +152,7 @@ class HelpPage extends StatelessWidget {
             answer,
             style: TextStyle(
               fontSize: 13,
-              color: Colors.black.withValues(alpha: 0.6),
+              color: AppColors.textSecondary(context),
               height: 1.5,
             ),
           ),

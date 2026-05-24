@@ -166,6 +166,22 @@ class AuthException implements Exception {
     stackTrace: stackTrace,
   );
 
+  /// I create an AuthException for user/profile not found.
+  ///
+  /// :param originalError: the original error that caused this exception
+  /// :param stackTrace: the stack trace of the original error
+  ///
+  /// :returns: an AuthException with user/profile not found message
+  factory AuthException.userNotFound({
+    Object? originalError,
+    Object? stackTrace,
+  }) => AuthException._(
+    message: 'Usuário não encontrado ou sem perfil cadastrado.',
+    code: 'user_not_found',
+    originalError: originalError,
+    stackTrace: stackTrace,
+  );
+
   /// I create an AuthException from a FirebaseAuthException code.
   ///
   /// :param code: the FirebaseAuthException code.
