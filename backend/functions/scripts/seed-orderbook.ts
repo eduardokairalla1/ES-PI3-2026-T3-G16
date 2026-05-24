@@ -132,7 +132,7 @@ async function seed(): Promise<void>
     const app = initializeApp({projectId: PROJECT_ID});
     const db  = getFirestore(app);
 
-    console.log(`Seeding orderbook into Firestore emulator...`);
+    console.log('Seeding orderbook into Firestore emulator...');
     console.log(`  Firestore: ${process.env.FIRESTORE_EMULATOR_HOST}\n`);
 
     // pull every startup we'll seed against

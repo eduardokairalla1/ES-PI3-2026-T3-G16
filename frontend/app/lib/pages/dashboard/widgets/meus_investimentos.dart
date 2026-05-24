@@ -122,6 +122,7 @@ class MeusInvestimentos extends StatelessWidget {
               return InvestimentoCard(
                 investimento: investimentos[index],
                 exibirValores: controller.exibirValores,
+                onReturn: () => controller.loadDashboard(),
               );
             },
           ),
@@ -142,11 +143,15 @@ class InvestimentoCard extends StatelessWidget {
   // Sinalizador que determina se o saldo e a porcentagem devem ser exibidos ou mascarados com '•••••'
   final bool exibirValores;
 
+  // Callback to execute when returning from the startup detail page
+  final VoidCallback? onReturn;
+
   // Construtor com as propriedades obrigatórias para renderização do card
   const InvestimentoCard({
     super.key,
     required this.investimento,
     required this.exibirValores,
+    this.onReturn,
   });
 
   @override
@@ -159,7 +164,12 @@ class InvestimentoCard extends StatelessWidget {
 
     return GestureDetector(
       // Navegação para o detalhe da startup
-      onTap: () => context.push('/startup/${investimento.startupId}'),
+      onTap: () async {
+        await context.push('/startup/${investimento.startupId}');
+        if (context.mounted && onReturn != null) {
+          onReturn!();
+        }
+      },
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),

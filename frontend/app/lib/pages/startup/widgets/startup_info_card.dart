@@ -1,9 +1,8 @@
-/// Eduardo Kairalla - 24024241
+// Eduardo Kairalla - 24024241
 
-/// Card with logo, token price, and stage badge.
+// Card with logo, token price, and stage badge.
 
 // --- IMPORTS ---
-import 'dart:ui' show Clip, Color;
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';

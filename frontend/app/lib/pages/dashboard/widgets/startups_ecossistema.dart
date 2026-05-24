@@ -144,6 +144,7 @@ class StartupsEcossistema extends StatelessWidget {
                   startup: startup,
                   isFavorite: controller.isFavorite(startup.id),
                   onFavoriteTap: () => controller.toggleFavorite(startup.id),
+                  onReturn: () => controller.loadDashboard(),
                 ),
               ),
 

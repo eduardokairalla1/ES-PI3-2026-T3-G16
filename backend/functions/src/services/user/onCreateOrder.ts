@@ -214,13 +214,30 @@ export async function handleOnCreateOrder(request: CallableRequest)
                 .where('uid', '==', uid)
                 .where('startup_id', '==', startupId);
 
-            const [walletSnap, opposingSnap, authorOrdersSnap] = await Promise.all([
+            // author's active pending buy orders across all startups (validates available BRL balance)
+            const authorPendingBuysQuery = db.collection('orders')
+                .where('uid', '==', uid)
+                .where('type', '==', 'buy')
+                .where('status', '==', 'pending');
+
+            const [walletSnap, opposingSnap, authorOrdersSnap, pendingBuysSnap] = await Promise.all([
                 tx.get(walletRef),
                 tx.get(opposingQuery),
                 tx.get(authorOrdersQuery),
+                tx.get(authorPendingBuysQuery),
             ]);
 
             const authorBalance = (walletSnap.data()?.balance as number) ?? 0;
+
+            // Calculate BRL locked in pending buy orders
+            let lockedBrl = 0;
+            for (const doc of pendingBuysSnap.docs)
+            {
+                const o = doc.data() as OrderDocument;
+                const remainingQty = o.quantity - (o.filled_quantity ?? 0);
+                lockedBrl += remainingQty * o.unit_price;
+            }
+            const availableBrl = authorBalance - lockedBrl;
 
             // drop the author's own offers (self-trade guard), then cap to the matching depth
             const opposing: OrderDocument[] = opposingSnap.docs
@@ -248,11 +265,11 @@ export async function handleOnCreateOrder(request: CallableRequest)
                 // worst-case cost for a limit-price buy is quantity * unitPrice
                 // (we may end up paying less if we cross better offers)
                 const maxCost = quantity * unitPrice;
-                if (authorBalance < maxCost)
+                if (availableBrl < maxCost)
                 {
                     throw new ValidationError(
                         `Insufficient balance. Required up to ${maxCost}, ` +
-                        `have ${authorBalance}.`,
+                        `available: ${availableBrl} (balance: ${authorBalance}, locked: ${lockedBrl}).`,
                     );
                 }
             }
@@ -266,10 +283,10 @@ export async function handleOnCreateOrder(request: CallableRequest)
                     const ref  = db.collection('wallets').doc(cuid);
                     const snap = await tx.get(ref);
                     return {
-                        uid:     cuid,
-                        ref,
-                        exists:  snap.exists,
                         balance: snap.exists ? (snap.data()!.balance as number) : 0,
+                        exists:  snap.exists,
+                        ref,
+                        uid:     cuid,
                     };
                 }),
             );
@@ -282,7 +299,7 @@ export async function handleOnCreateOrder(request: CallableRequest)
             {
                 if (entry.exists)
                 {
-                    walletByUid.set(entry.uid, {ref: entry.ref, balance: entry.balance});
+                    walletByUid.set(entry.uid, {balance: entry.balance, ref: entry.ref});
                 }
             }
 
@@ -308,8 +325,66 @@ export async function handleOnCreateOrder(request: CallableRequest)
                 const tradeQty   = Math.min(remaining, oppRemaining);
                 const tradePrice = opp.unit_price;
 
-                trades.push({counter: opp, tradeQty, tradePrice});
+                trades.push({counter: opp, tradePrice, tradeQty});
                 remaining -= tradeQty;
+            }
+
+            // --- RESOLVE USER DOC IDS AND INVESTMENTS (READS) ---
+            const matchedCounterUids = Array.from(new Set(trades.map(t => t.counter.uid)));
+            const allUidsToResolve = Array.from(new Set([uid, ...matchedCounterUids]));
+
+            const usersSnap = await tx.get(db.collection('users').where('uid', 'in', allUidsToResolve));
+            const userDocIdByUid = new Map<string, string>();
+            for (const doc of usersSnap.docs)
+            {
+                const data = doc.data();
+                if (data && data.uid)
+                {
+                    userDocIdByUid.set(data.uid, doc.id);
+                }
+            }
+
+            const authorDocId = userDocIdByUid.get(uid);
+            if (!authorDocId)
+            {
+                throw new ValidationError(`Author user document for "${uid}" not found.`);
+            }
+
+            const investmentRefs = allUidsToResolve.map(cuid =>
+            {
+                const docId = userDocIdByUid.get(cuid);
+                if (!docId) return null;
+                return {
+                    ref: db.collection('users').doc(docId).collection('investments').doc(startupId),
+                    uid: cuid,
+                };
+            }).filter((x): x is {uid: string; ref: FirebaseFirestore.DocumentReference} => x !== null);
+
+            const investmentSnaps = await Promise.all(
+                investmentRefs.map(async (item) =>
+                {
+                    const snap = await tx.get(item.ref);
+                    return {
+                        ref: item.ref,
+                        snap,
+                        uid: item.uid,
+                    };
+                }),
+            );
+
+            const investmentByUid = new Map<string, {
+                ref: FirebaseFirestore.DocumentReference;
+                exists: boolean;
+                data: any;
+            }>();
+
+            for (const item of investmentSnaps)
+            {
+                investmentByUid.set(item.uid, {
+                    data: item.snap.exists ? item.snap.data() : null,
+                    exists: item.snap.exists,
+                    ref: item.ref,
+                });
             }
 
             // --- WRITES PHASE ---
@@ -330,6 +405,7 @@ export async function handleOnCreateOrder(request: CallableRequest)
                 const newCounterFilled = (trade.counter.filled_quantity ?? 0) + trade.tradeQty;
 
                 const counterUpdate: Partial<OrderDocument> = {
+                    avg_fill_price:  trade.tradePrice,
                     filled_quantity: newCounterFilled,
                 };
                 if (newCounterFilled === trade.counter.quantity)
@@ -366,6 +442,117 @@ export async function handleOnCreateOrder(request: CallableRequest)
                     balance:    authorBalanceAfter,
                     updated_at: now,
                 });
+            }
+
+            // 3b) update users/{userId}/investments for all involved users
+            const userInvestmentState = new Map<string, {
+                qty: number;
+                avgPrice: number;
+                totalCostPaidForBuys: number;
+                totalQtyBought: number;
+                totalQtySold: number;
+            }>();
+
+            for (const cuid of allUidsToResolve)
+            {
+                const inv = investmentByUid.get(cuid);
+                let qty = 0;
+                let avgPrice = 0;
+                if (inv && inv.exists)
+                {
+                    qty = (inv.data.token_quantity as number) ?? 0;
+                    avgPrice = (inv.data.avg_purchase_price as number) ?? 0;
+                }
+                userInvestmentState.set(cuid, {
+                    avgPrice,
+                    qty,
+                    totalCostPaidForBuys: 0,
+                    totalQtyBought: 0,
+                    totalQtySold: 0,
+                });
+            }
+
+            for (const trade of trades)
+            {
+                const tradeAmount = trade.tradeQty * trade.tradePrice;
+
+                // Author side
+                const authorState = userInvestmentState.get(uid)!;
+                if (type === 'buy')
+                {
+                    authorState.totalQtyBought += trade.tradeQty;
+                    authorState.totalCostPaidForBuys += tradeAmount;
+                }
+                else
+                {
+                    authorState.totalQtySold += trade.tradeQty;
+                }
+
+                // Counter party side
+                const counterState = userInvestmentState.get(trade.counter.uid)!;
+                if (type === 'buy')
+                {
+                    // Counter is seller
+                    counterState.totalQtySold += trade.tradeQty;
+                }
+                else
+                {
+                    // Counter is buyer
+                    counterState.totalQtyBought += trade.tradeQty;
+                    counterState.totalCostPaidForBuys += tradeAmount;
+                }
+            }
+
+            for (const [cuid, state] of userInvestmentState.entries())
+            {
+                if (state.totalQtyBought === 0 && state.totalQtySold === 0)
+                {
+                    continue;
+                }
+
+                const inv = investmentByUid.get(cuid)!;
+                const newQty = state.qty + state.totalQtyBought - state.totalQtySold;
+
+                if (newQty <= 0)
+                {
+                    if (inv.exists)
+                    {
+                        tx.delete(inv.ref);
+                    }
+                }
+                else
+                {
+                    let newAvgPrice = state.avgPrice;
+                    if (state.totalQtyBought > 0)
+                    {
+                        const oldTotalCost = state.qty * state.avgPrice;
+                        newAvgPrice = (oldTotalCost + state.totalCostPaidForBuys) / (state.qty + state.totalQtyBought);
+                    }
+
+                    if (inv.exists)
+                    {
+                        tx.update(inv.ref, {
+                            avg_purchase_price: newAvgPrice,
+                            token_quantity:     newQty,
+                            updated_at:         now,
+                        });
+                    }
+                    else
+                    {
+                        const startupName = startup.name;
+                        const startupLogo = startup.logo_url ?? '';
+
+                        tx.set(inv.ref, {
+                            avg_purchase_price: newAvgPrice,
+                            created_at:         now,
+                            startup_id:         startupId,
+                            startup_logo_url:   startupLogo,
+                            startup_name:       startupName,
+                            token_quantity:     newQty,
+                            updated_at:         null,
+                        });
+                    }
+                }
             }
 
             // 4) create the new order document

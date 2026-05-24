@@ -9,7 +9,6 @@
  */
 import db from '../configs';
 import {getOldestSnapshotSince} from '../db/price_history/storage';
-import {getOrdersByTypeAndStatus} from '../db/orders/storage';
 
 /**
  * TYPES
@@ -59,9 +58,11 @@ export function calcWeeklyReturn(
 /**
  * Helper to safely convert Firestore Timestamp or string to JS Date
  */
-export function toJsDate(val: any): Date {
+export function toJsDate(val: any): Date
+{
     if (!val) return new Date(0);
-    if (typeof val.toDate === 'function') {
+    if (typeof val.toDate === 'function')
+    {
         return val.toDate();
     }
     return new Date(val);
@@ -70,11 +71,14 @@ export function toJsDate(val: any): Date {
 /**
  * Helper to determine the effective event date of an order (completed or cancelled)
  */
-export function getOrderEventDate(order: OrderDocument): Date {
-    if (order.status === 'completed' && order.completed_at) {
+export function getOrderEventDate(order: OrderDocument): Date
+{
+    if (order.status === 'completed' && order.completed_at)
+    {
         return toJsDate(order.completed_at);
     }
-    if (order.status === 'cancelled' && order.cancelled_at) {
+    if (order.status === 'cancelled' && order.cancelled_at)
+    {
         return toJsDate(order.cancelled_at);
     }
     return toJsDate(order.created_at);
@@ -95,13 +99,15 @@ export async function computeWalletState(
     holdingsByStartup: Map<string, {quantity: number; buyQuantity: number; totalCost: number}>;
     weeklyReturn: number;
     weeklyReturnPct: number;
-}> {
-    // 1. Fetch buy orders (completed) and sell orders (all by user, filter in memory)
-    const [buyOrders, sellOrdersSnap] = await Promise.all([
-        getOrdersByTypeAndStatus(uid, 'buy', 'completed'),
+}>
+{
+    // 1. Fetch buy and sell orders (all by user, filter in memory)
+    const [buyOrdersSnap, sellOrdersSnap] = await Promise.all([
+        db.collection('orders').where('uid', '==', uid).where('type', '==', 'buy').get(),
         db.collection('orders').where('uid', '==', uid).where('type', '==', 'sell').get(),
     ]);
 
+    const buyOrders = buyOrdersSnap.docs.map(doc => doc.data() as OrderDocument);
     const sellOrders = sellOrdersSnap.docs.map(doc => doc.data() as OrderDocument);
 
     // 2. Define timeframe (7 days ago)
@@ -110,36 +116,46 @@ export async function computeWalletState(
 
     // 3. Compute current holdings
     const holdingsByStartup = new Map<string, {quantity: number; buyQuantity: number; totalCost: number}>();
-    
-    for (const order of buyOrders) {
-        const existing = holdingsByStartup.get(order.startup_id);
-        if (existing) {
-            existing.quantity    += order.quantity;
-            existing.buyQuantity += order.quantity;
-            existing.totalCost   += order.unit_price * order.quantity;
-        } else {
-            holdingsByStartup.set(order.startup_id, {
-                quantity:    order.quantity,
-                buyQuantity: order.quantity,
-                totalCost:   order.unit_price * order.quantity,
-            });
-        }
-    }
 
-    for (const order of sellOrders) {
-        if (order.status !== 'completed' && order.status !== 'cancelled') continue;
+    for (const order of buyOrders)
+    {
         const filled = order.filled_quantity ?? 0;
         if (filled <= 0) continue;
 
         const existing = holdingsByStartup.get(order.startup_id);
-        if (existing) {
+        if (existing)
+        {
+            existing.quantity    += filled;
+            existing.buyQuantity += filled;
+            existing.totalCost   += (order.avg_fill_price ?? order.unit_price) * filled;
+        }
+        else
+        {
+            holdingsByStartup.set(order.startup_id, {
+                buyQuantity: filled,
+                quantity:    filled,
+                totalCost:   (order.avg_fill_price ?? order.unit_price) * filled,
+            });
+        }
+    }
+
+    for (const order of sellOrders)
+    {
+        const filled = order.filled_quantity ?? 0;
+        if (filled <= 0) continue;
+
+        const existing = holdingsByStartup.get(order.startup_id);
+        if (existing)
+        {
             existing.quantity -= filled;
         }
     }
 
     // Clean up fully liquidated assets from current holdings map
-    for (const [sid, holding] of Array.from(holdingsByStartup.entries())) {
-        if (holding.quantity <= 0) {
+    for (const [sid, holding] of Array.from(holdingsByStartup.entries()))
+    {
+        if (holding.quantity <= 0)
+        {
             holdingsByStartup.delete(sid);
         }
     }
@@ -147,29 +163,41 @@ export async function computeWalletState(
     // 4. Compute past holdings (7 days ago)
     const pastHoldingsByStartup = new Map<string, {quantity: number}>();
 
-    for (const order of buyOrders) {
-        const orderDate = getOrderEventDate(order);
-        if (orderDate < weekAgo) {
-            const existing = pastHoldingsByStartup.get(order.startup_id);
-            if (existing) {
-                existing.quantity += order.quantity;
-            } else {
-                pastHoldingsByStartup.set(order.startup_id, {quantity: order.quantity});
-            }
-        }
-    }
-
-    for (const order of sellOrders) {
-        if (order.status !== 'completed' && order.status !== 'cancelled') continue;
+    for (const order of buyOrders)
+    {
         const filled = order.filled_quantity ?? 0;
         if (filled <= 0) continue;
 
         const orderDate = getOrderEventDate(order);
-        if (orderDate < weekAgo) {
+        if (orderDate < weekAgo)
+        {
             const existing = pastHoldingsByStartup.get(order.startup_id);
-            if (existing) {
+            if (existing)
+            {
+                existing.quantity += filled;
+            }
+            else
+            {
+                pastHoldingsByStartup.set(order.startup_id, {quantity: filled});
+            }
+        }
+    }
+
+    for (const order of sellOrders)
+    {
+        const filled = order.filled_quantity ?? 0;
+        if (filled <= 0) continue;
+
+        const orderDate = getOrderEventDate(order);
+        if (orderDate < weekAgo)
+        {
+            const existing = pastHoldingsByStartup.get(order.startup_id);
+            if (existing)
+            {
                 existing.quantity -= filled;
-            } else {
+            }
+            else
+            {
                 pastHoldingsByStartup.set(order.startup_id, {quantity: -filled});
             }
         }
@@ -179,11 +207,16 @@ export async function computeWalletState(
     const weeklyBuysCostByStartup = new Map<string, number>();
     const weeklySalesProceedsByStartup = new Map<string, number>();
 
-    for (const order of buyOrders) {
+    for (const order of buyOrders)
+    {
+        const filled = order.filled_quantity ?? 0;
+        if (filled <= 0) continue;
+
         const orderDate = getOrderEventDate(order);
-        if (orderDate >= weekAgo) {
+        if (orderDate >= weekAgo)
+        {
             const price = order.avg_fill_price ?? order.unit_price;
-            const amount = price * order.quantity;
+            const amount = price * filled;
             weeklyBuysCostByStartup.set(
                 order.startup_id,
                 (weeklyBuysCostByStartup.get(order.startup_id) ?? 0) + amount,
@@ -191,13 +224,14 @@ export async function computeWalletState(
         }
     }
 
-    for (const order of sellOrders) {
-        if (order.status !== 'completed' && order.status !== 'cancelled') continue;
+    for (const order of sellOrders)
+    {
         const filled = order.filled_quantity ?? 0;
         if (filled <= 0) continue;
 
         const orderDate = getOrderEventDate(order);
-        if (orderDate >= weekAgo) {
+        if (orderDate >= weekAgo)
+        {
             const price = order.avg_fill_price ?? order.unit_price;
             const amount = price * filled;
             weeklySalesProceedsByStartup.set(
@@ -215,7 +249,8 @@ export async function computeWalletState(
 
     // 7. Calculate weekly values for each startup in the union
     const weeklyValues = await Promise.all(
-        Array.from(allStartupIds).map(async (startupId) => {
+        Array.from(allStartupIds).map(async (startupId) =>
+        {
             const currentPrice = startupPriceMap.get(startupId) ?? 0;
             const currentQty = holdingsByStartup.get(startupId)?.quantity ?? 0;
             const pastQty = pastHoldingsByStartup.get(startupId)?.quantity ?? 0;

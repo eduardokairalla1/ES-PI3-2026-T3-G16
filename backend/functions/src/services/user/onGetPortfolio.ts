@@ -71,7 +71,8 @@ export async function handleOnGetPortfolio(request: CallableRequest)
         const byStartup = new Map<string, {quantity: number; firstUnitPrice: number}>();
 
         // Sort buy orders in memory by created_at to correctly identify the first purchase price
-        const buyDocs = ordersSnap.docs.map(doc => {
+        const buyDocs = ordersSnap.docs.map(doc =>
+        {
             const data = doc.data();
             return {
                 id: doc.id,
@@ -80,7 +81,8 @@ export async function handleOnGetPortfolio(request: CallableRequest)
                 unit_price: data.unit_price as number,
                 created_at: data.created_at,
             };
-        }).sort((a, b) => {
+        }).sort((a, b) =>
+        {
             const timeA = a.created_at?.toDate?.()?.getTime() || 0;
             const timeB = b.created_at?.toDate?.()?.getTime() || 0;
             return timeA - timeB;

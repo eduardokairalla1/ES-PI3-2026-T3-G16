@@ -213,6 +213,7 @@ class _CatalogPageState extends State<CatalogPage> {
             startup: startup,
             isFavorite: _controller.isFavorite(startup.id),
             onFavoriteTap: () => _controller.toggleFavorite(startup.id),
+            onReturn: () => _controller.load(),
           );
         },
       ),

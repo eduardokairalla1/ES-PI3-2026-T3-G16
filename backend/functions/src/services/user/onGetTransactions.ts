@@ -35,7 +35,7 @@ export async function handleOnGetTransactions(request: CallableRequest)
     {
         // 1. Valida se a requisição provém de um usuário autenticado no Firebase
         const uid = verifyAuth(request);
-        
+
         // Define o limite padrão de transações a retornar se não especificado pelo cliente (default: 20)
         const limit: number = request.data.limit || 20;
 
@@ -62,7 +62,7 @@ export async function handleOnGetTransactions(request: CallableRequest)
         const orderTransactions = orders.map(order =>
         {
             const startupName = startupNameMap.get(order.startup_id) ?? order.startup_id;
-            
+
             // Define a descrição da transação baseado no tipo da ordem (compra ou venda)
             const description = order.type === 'buy'
                 ? `Compra de tokens — ${startupName}`

@@ -22,7 +22,6 @@ import {logger} from '../../utils/logger';
 import {verifyAuth} from '../../utils/auth';
 
 
-
 /**
  * ERRORS
  */
@@ -85,7 +84,7 @@ export async function handleOnGetDashboard(request: CallableRequest)
         // 4. Calcula a custódia (holdings) atual do usuário e o rendimento semanal utilizando a nova função com fluxo de caixa
         const {holdingsByStartup, weeklyReturn, weeklyReturnPct} = await computeWalletState(uid, startupPriceMap);
 
-        let patrimonioTotal = 0;
+        let assetsValue = 0;
 
         // 5. Formata os investimentos ativos calculando o preço médio de aquisição, valor de mercado atual e variação percentual
         const investimentosFormatted = Array.from(holdingsByStartup.entries()).map(([startupId, holding]) =>
@@ -93,14 +92,14 @@ export async function handleOnGetDashboard(request: CallableRequest)
             const currentPrice = startupPriceMap.get(startupId) ?? 0;
             const avgPrice     = holding.buyQuantity > 0 ? holding.totalCost / holding.buyQuantity : 0;
             const currentValue = holding.quantity * currentPrice;
-            
+
             // Calcula variação percentual do investimento
             const variation    = avgPrice > 0
                 ? ((currentPrice - avgPrice) / avgPrice) * 100
                 : 0;
 
             // Incrementa o patrimônio total investido em ativos
-            patrimonioTotal += currentValue;
+            assetsValue += currentValue;
 
             const details = startupNameMap.get(startupId) ?? {name: '', logoUrl: ''};
 
@@ -113,6 +112,8 @@ export async function handleOnGetDashboard(request: CallableRequest)
                 variation:      Math.round(variation * 100) / 100, // Arredonda para 2 casas decimais
             };
         });
+
+        const patrimonioTotal = (wallet?.balance ?? 0) + assetsValue;
 
         // 6. Calcula a variação bruta e percentual do portfólio na semana arredondando os valores
         const rendimentoDiarioValor = Math.round(weeklyReturn * 100) / 100;

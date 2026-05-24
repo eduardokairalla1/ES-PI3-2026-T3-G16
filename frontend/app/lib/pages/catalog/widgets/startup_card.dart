@@ -1,9 +1,8 @@
-/// Eduardo Kairalla - 24024241
+// Eduardo Kairalla - 24024241
 
-/// Card widget for a startup in the catalog listing.
+// Card widget for a startup in the catalog listing.
 
 // --- IMPORTS ---
-import 'dart:ui' show Color;
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -26,12 +25,14 @@ class StartupCard extends StatelessWidget {
   final StartupModel startup;
   final bool isFavorite;
   final VoidCallback? onFavoriteTap;
+  final VoidCallback? onReturn;
 
   const StartupCard({
     super.key, 
     required this.startup,
     this.isFavorite = false,
     this.onFavoriteTap,
+    this.onReturn,
   });
 
   @override
@@ -39,7 +40,12 @@ class StartupCard extends StatelessWidget {
     final color = stageColor(startup.stage);
 
     return GestureDetector(
-      onTap: () => context.push('/startup/${startup.id}'),
+      onTap: () async {
+        await context.push('/startup/${startup.id}');
+        if (context.mounted && onReturn != null) {
+          onReturn!();
+        }
+      },
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
         padding: const EdgeInsets.all(16),

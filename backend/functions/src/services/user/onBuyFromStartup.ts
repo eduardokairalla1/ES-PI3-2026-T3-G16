@@ -13,6 +13,7 @@
 import {HttpsError} from 'firebase-functions/v2/https';
 import {getWallet, createWallet} from '../../db/wallets/storage';
 import {getStartup} from '../../db/startups/storage';
+import {getUserDocId} from '../../db/users/storage';
 import {createOrder, updateOrderStatus} from '../../db/orders/storage';
 import {recordTransaction} from '../../db/transactions/storage';
 import {verifyAuth} from '../../utils/auth';
@@ -98,6 +99,13 @@ export async function handleOnBuyFromStartup(request: CallableRequest)
 
         logger.info(`Primary order "${order.id}" created as pending.`);
 
+        // fetch userDocId before transaction
+        const userDocId = await getUserDocId(uid);
+        if (userDocId === null)
+        {
+            throw new NotFoundError(`User document for "${uid}" not found.`);
+        }
+
         // transaction: re-read startup + wallet inside, validate, debit, update
         let totalAmount: number;
 
@@ -107,10 +115,12 @@ export async function handleOnBuyFromStartup(request: CallableRequest)
             {
                 const startupRef = db.collection('startups').doc(startupId);
                 const walletRef  = db.collection('wallets').doc(uid);
+                const investmentRef = db.collection('users').doc(userDocId).collection('investments').doc(startupId);
 
-                const [startupSnap, walletSnap] = await Promise.all([
+                const [startupSnap, walletSnap, investmentSnap] = await Promise.all([
                     tx.get(startupRef),
                     tx.get(walletRef),
+                    tx.get(investmentRef),
                 ]);
 
                 const available          = startupSnap.data()!.available_tokens    as number;
@@ -161,6 +171,44 @@ export async function handleOnBuyFromStartup(request: CallableRequest)
                     tokens_sold: tokensSold,
                     recorded_at: now,
                 });
+
+                // Update users/{userId}/investments
+                const startupName = startupSnap.data()!.name as string;
+                const startupLogo = (startupSnap.data()!.logo_url as string | null) ?? '';
+
+                let oldQty = 0;
+                let oldTotalCost = 0;
+                if (investmentSnap.exists)
+                {
+                    const invData = investmentSnap.data()!;
+                    oldQty = (invData.token_quantity as number) ?? 0;
+                    const oldAvgPrice = (invData.avg_purchase_price as number) ?? 0;
+                    oldTotalCost = oldQty * oldAvgPrice;
+                }
+
+                const newQty = oldQty + quantity;
+                const newAvgPrice = (oldTotalCost + amount) / newQty;
+
+                if (investmentSnap.exists)
+                {
+                    tx.update(investmentRef, {
+                        token_quantity:     newQty,
+                        avg_purchase_price: newAvgPrice,
+                        updated_at:         now,
+                    });
+                }
+                else
+                {
+                    tx.set(investmentRef, {
+                        avg_purchase_price: newAvgPrice,
+                        created_at:         now,
+                        startup_id:         startupId,
+                        startup_logo_url:   startupLogo,
+                        startup_name:       startupName,
+                        token_quantity:     newQty,
+                        updated_at:         null,
+                    });
+                }
 
                 return {totalAmount: amount};
             }));

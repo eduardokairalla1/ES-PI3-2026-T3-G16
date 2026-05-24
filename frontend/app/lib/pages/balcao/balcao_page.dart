@@ -500,6 +500,7 @@ class _MercadoTab extends StatelessWidget {
             _MercadoRow(
               startup:   s,
               variation: controller.variationFor(s.id),
+              onReturn: () => controller.load(),
             ),
         ],
       ),
@@ -533,7 +534,12 @@ class _MercadoHeaderRow extends StatelessWidget {
 class _MercadoRow extends StatelessWidget {
   final StartupModel startup;
   final double? variation;
-  const _MercadoRow({required this.startup, required this.variation});
+  final VoidCallback onReturn;
+  const _MercadoRow({
+    required this.startup,
+    required this.variation,
+    required this.onReturn,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -542,7 +548,10 @@ class _MercadoRow extends StatelessWidget {
         : startup.tokenName;
 
     return GestureDetector(
-      onTap: () => context.push('/startup/${startup.id}/balcao'),
+      onTap: () async {
+        await context.push('/startup/${startup.id}/balcao');
+        onReturn();
+      },
       child: Container(
         margin: const EdgeInsets.only(bottom: 10),
         padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),

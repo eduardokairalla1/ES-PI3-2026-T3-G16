@@ -101,18 +101,18 @@ export async function handleOnGetPatrimonyHistory(request: CallableRequest)
             };
         }).sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 
-        // 5. Separa ordens de compra e venda concluídas
+        // 5. Separa ordens de compra e venda por filled_quantity independentemente do status
         const allOrders = ordersSnap.docs.map(doc => doc.data() as OrderDocument);
         const buyOrders = allOrders
-            .filter(o => o.type === 'buy' && o.status === 'completed')
+            .filter(o => o.type === 'buy' && (o.filled_quantity ?? 0) > 0)
             .map(o => ({
                 startupId: o.startup_id,
-                quantity: o.quantity,
+                quantity: o.filled_quantity ?? 0,
                 date: getOrderEventDate(o),
             }));
 
         const sellOrders = allOrders
-            .filter(o => o.type === 'sell' && (o.status === 'completed' || o.status === 'cancelled') && (o.filled_quantity ?? 0) > 0)
+            .filter(o => o.type === 'sell' && (o.filled_quantity ?? 0) > 0)
             .map(o => ({
                 startupId: o.startup_id,
                 filledQuantity: o.filled_quantity ?? 0,

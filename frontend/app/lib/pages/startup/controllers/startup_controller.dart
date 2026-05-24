@@ -26,10 +26,12 @@ class StartupController extends ChangeNotifier {
   String? errorMessage;
 
   /// I load the startup details and its public questions in parallel.
-  Future<void> load(String startupId) async {
-    isLoading = true;
-    errorMessage = null;
-    notifyListeners();
+  Future<void> load(String startupId, {bool silent = false}) async {
+    if (!silent) {
+      isLoading = true;
+      errorMessage = null;
+      notifyListeners();
+    }
 
     try {
       final results = await Future.wait([
@@ -40,9 +42,13 @@ class StartupController extends ChangeNotifier {
       startup = results[0] as StartupModel;
       questions = results[1] as List<QuestionModel>;
     } catch (_) {
-      errorMessage = 'Não foi possível carregar a startup. Tente novamente.';
+      if (!silent) {
+        errorMessage = 'Não foi possível carregar a startup. Tente novamente.';
+      }
     } finally {
-      isLoading = false;
+      if (!silent) {
+        isLoading = false;
+      }
       notifyListeners();
     }
   }
@@ -78,6 +84,7 @@ class StartupController extends ChangeNotifier {
     try {
       await _service.buyTokens(startupId, orderQuantity);
       showOrderPanel = false;
+      await load(startupId, silent: true);
       return true;
     } on FirebaseFunctionsException catch (e) {
       switch (e.code) {

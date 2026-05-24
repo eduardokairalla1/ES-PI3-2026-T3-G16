@@ -187,7 +187,10 @@ class BalcaoController extends ChangeNotifier {
 
     try {
       await _orderService.cancelOrder(orderId);
-      await loadMyOrders();
+      await Future.wait([
+        loadMyOrders(),
+        loadWalletAndHoldings(),
+      ]);
       return null;
     } on FirebaseFunctionsException catch (e) {
       return e.message ?? 'Não foi possível cancelar a ordem.';
@@ -224,7 +227,10 @@ class BalcaoController extends ChangeNotifier {
         quantity:  newQuantity,
         unitPrice: newUnitPrice,
       );
-      await loadMyOrders();
+      await Future.wait([
+        loadMyOrders(),
+        loadWalletAndHoldings(),
+      ]);
       return null;
     } on FirebaseFunctionsException catch (e) {
       return e.message ?? 'Não foi possível editar a ordem.';

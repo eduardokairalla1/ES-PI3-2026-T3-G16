@@ -3,7 +3,7 @@
  * Este script deve ser executado com os emuladores do Firebase ativos na porta local.
  * Ele serve para gerar dados realistas de portfólio para o primeiro usuário cadastrado,
  * permitindo que a interface do aplicativo exiba gráficos e tabelas de investimentos de forma imediata.
- * 
+ *
  * Uso:
  *   npm run seed:investments
  *
@@ -42,10 +42,10 @@ async function getUserDocId(uid: string): Promise<string | null>
 {
     // Realiza uma query buscando na coleção 'users' pelo campo 'uid' correspondente
     const snapshot = await db.collection('users').where('uid', '==', uid).limit(1).get();
-    
+
     // Retorna nulo se o documento não for encontrado
     if (snapshot.empty) return null;
-    
+
     // Retorna o ID de documento do primeiro resultado
     return snapshot.docs[0].id;
 }
@@ -161,7 +161,7 @@ async function seed(): Promise<void>
         const seedVal = hashCode(uid);
         // Cada usuário terá entre 2 e 5 investimentos no portfólio
         const portfolioSize = 2 + (seedVal % 4);
-        
+
         console.log(`Criando portfólio de ${portfolioSize} startups para o usuário: ${uid} (Doc ID: ${userDocId})`);
 
         for (let s = 0; s < portfolioSize; s++)
@@ -178,7 +178,7 @@ async function seed(): Promise<void>
             await processBalcaoTransaction(userDocId, startup, quantity, price);
             totalInvestmentsCreated++;
         }
-        
+
         totalPortfoliosCreated++;
     }
 
