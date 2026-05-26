@@ -1,20 +1,15 @@
-/**
- * Function callable onBuyFromStartup.
- *
- * Pedro Henrique Medeiros dos Reis - 24801656
- *
- * Primary market purchase: buy tokens directly from the startup using the
- * bonding-curve price. This logic was previously inside onCreateOrder; with
- * the introduction of the order book (P2P secondary market), onCreateOrder
- * now hosts the matching engine, and the primary flow lives here.
- */
+// --- Function callable onBuyFromStartup ---
+//
+// Pedro Henrique Medeiros dos Reis - 24801656
+// Primary-market purchase: buys tokens directly from the startup using the
+// bonding-curve price. The P2P matching engine now lives in onCreateOrder.ts.
 
 // --- IMPORTS ---
 import {HttpsError} from 'firebase-functions/v2/https';
 import {getWallet, createWallet} from '../../db/wallets/storage';
 import {getStartup} from '../../db/startups/storage';
 import {getUserDocId} from '../../db/users/storage';
-import {createOrder, updateOrderStatus} from '../../db/orders/storage';
+import type {OrderDocument} from '../../db/orders/model';
 import {recordTransaction} from '../../db/transactions/storage';
 import {verifyAuth} from '../../utils/auth';
 import {calcTokenPrice} from '../../utils/pricing';
@@ -80,25 +75,6 @@ export async function handleOnBuyFromStartup(request: CallableRequest)
             await createWallet(uid);
         }
 
-        // create order as pending — audit trail starts here
-        const order = await createOrder({
-            uid,
-            startup_id:      startupId,
-            type:            'buy',
-            status:          'pending',
-            quantity,
-            unit_price:      startup.token_price,
-            total_amount:    startup.token_price * quantity,
-            created_at:      new Date(),
-            completed_at:    null,
-            failure_reason:  null,
-            filled_quantity: 0,
-            cancelled_at:    null,
-            avg_fill_price:  null,
-        });
-
-        logger.info(`Primary order "${order.id}" created as pending.`);
-
         // fetch userDocId before transaction
         const userDocId = await getUserDocId(uid);
         if (userDocId === null)
@@ -106,21 +82,30 @@ export async function handleOnBuyFromStartup(request: CallableRequest)
             throw new NotFoundError(`User document for "${uid}" not found.`);
         }
 
+        const orderRef = db.collection('orders').doc();
+        const orderId = orderRef.id;
+
         // transaction: re-read startup + wallet inside, validate, debit, update
         let totalAmount: number;
+        let completedAt: Date;
 
         try
         {
-            ({totalAmount} = await db.runTransaction(async (tx) =>
+            ({totalAmount, completedAt} = await db.runTransaction(async (tx) =>
             {
                 const startupRef = db.collection('startups').doc(startupId);
                 const walletRef  = db.collection('wallets').doc(uid);
                 const investmentRef = db.collection('users').doc(userDocId).collection('investments').doc(startupId);
+                const pendingBuysQuery = db.collection('orders')
+                    .where('uid', '==', uid)
+                    .where('type', '==', 'buy')
+                    .where('status', '==', 'pending');
 
-                const [startupSnap, walletSnap, investmentSnap] = await Promise.all([
+                const [startupSnap, walletSnap, investmentSnap, pendingBuysSnap] = await Promise.all([
                     tx.get(startupRef),
                     tx.get(walletRef),
                     tx.get(investmentRef),
+                    tx.get(pendingBuysQuery),
                 ]);
 
                 const available          = startupSnap.data()!.available_tokens    as number;
@@ -131,6 +116,16 @@ export async function handleOnBuyFromStartup(request: CallableRequest)
                 const unitPrice          = startupSnap.data()!.token_price         as number;
                 const amount             = unitPrice * quantity;
 
+                // Calculate BRL locked in pending buy orders
+                let lockedBrl = 0;
+                for (const doc of pendingBuysSnap.docs)
+                {
+                    const o = doc.data() as OrderDocument;
+                    const remainingQty = o.quantity - (o.filled_quantity ?? 0);
+                    lockedBrl += remainingQty * o.unit_price;
+                }
+                const availableBrl = balance - lockedBrl;
+
                 // validate inside transaction — sees the committed state
                 if (available < quantity)
                 {
@@ -139,10 +134,10 @@ export async function handleOnBuyFromStartup(request: CallableRequest)
                     );
                 }
 
-                if (balance < amount)
+                if (availableBrl < amount)
                 {
                     throw new ValidationError(
-                        `Insufficient balance. Required: ${amount}, available: ${balance}.`,
+                        `Insufficient balance. Required: ${amount}, available: ${availableBrl} (balance: ${balance}, locked: ${lockedBrl}).`,
                     );
                 }
 
@@ -210,25 +205,32 @@ export async function handleOnBuyFromStartup(request: CallableRequest)
                     });
                 }
 
-                return {totalAmount: amount};
+                // Write completed order directly inside the transaction
+                const orderData: OrderDocument = {
+                    id:              orderId,
+                    uid,
+                    startup_id:      startupId,
+                    type:            'buy',
+                    status:          'completed',
+                    quantity,
+                    unit_price:      unitPrice,
+                    total_amount:    amount,
+                    created_at:      now,
+                    completed_at:    now,
+                    failure_reason:  null,
+                    filled_quantity: quantity,
+                    cancelled_at:    null,
+                    avg_fill_price:  unitPrice,
+                };
+                tx.set(orderRef, orderData);
+
+                return {totalAmount: amount, completedAt: now};
             }));
         }
         catch (txError: unknown)
         {
-            const reason = txError instanceof ValidationError
-                ? txError.message
-                : 'Transaction failed.';
-
-            await updateOrderStatus(order.id, 'failed', {failure_reason: reason});
             throw txError;
         }
-
-        // mark order as completed
-        const completedAt = new Date();
-        await updateOrderStatus(order.id, 'completed', {
-            completed_at:    completedAt,
-            filled_quantity: quantity,
-        });
 
         // Record in transaction history — best-effort, does not roll back the order
         try
@@ -242,13 +244,13 @@ export async function handleOnBuyFromStartup(request: CallableRequest)
         }
         catch (txErr)
         {
-            logger.warning(`Failed to record transaction for primary order "${order.id}": ${txErr}`);
+            logger.warning(`Failed to record transaction for primary order "${orderId}": ${txErr}`);
         }
 
-        logger.info(`Primary order "${order.id}" completed. User "${uid}" bought ${quantity} tokens of "${startupId}".`);
+        logger.info(`Primary order "${orderId}" completed. User "${uid}" bought ${quantity} tokens of "${startupId}".`);
 
         return {
-            orderId: order.id,
+            orderId,
             status:  'completed',
             totalAmount,
             completedAt,

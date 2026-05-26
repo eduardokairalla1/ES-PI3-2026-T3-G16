@@ -1,23 +1,16 @@
-/**
- * User database operations.
- *
- * Davi da Cruz Shieh - 24798076
- */
+// --- User database operations ---
+//
+// Davi da Cruz Shieh - 24798076
+// Firestore helpers for reading and updating user documents.
 
-/**
- * IMPORTS
- */
+// --- IMPORTS ---
 import db from '../../configs';
 
 
-/**
-* TYPES
-*/
+// --- TYPES ---
 import type {userDocument} from './model';
 
-/**
-* CODE
-*/
+// --- CODE ---
 
 /**
  * I get a user by uid.
@@ -28,7 +21,10 @@ import type {userDocument} from './model';
  */
 export async function getUser(uid: string): Promise<userDocument | null>
 {
-    // query user by uid
+    const snap = await db.collection('users').doc(uid).get();
+    if (snap.exists) return snap.data() as userDocument;
+
+    // query user by uid (backwards compatibility)
     const user = await db.collection('users')
         .where('uid', '==', uid)
         .limit(1)
@@ -95,8 +91,8 @@ export async function addUser(
         'updated_at': null,
     };
 
-    // persist user to Firestore
-    await db.collection('users').add(user);
+    // persist user to Firestore using UID as document ID
+    await db.collection('users').doc(uid).set(user);
 
     // return validated user
     return user;
@@ -114,14 +110,10 @@ export async function updateUser(
     updates: Partial<Pick<userDocument, 'full_name' | 'phone' | 'photo_url'>>,
 ): Promise<void>
 {
-    const snapshot = await db.collection('users')
-        .where('uid', '==', uid)
-        .limit(1)
-        .get();
+    const userDocId = await getUserDocId(uid);
+    if (!userDocId) throw new Error(`User "${uid}" not found.`);
 
-    if (snapshot.empty) throw new Error(`User "${uid}" not found.`);
-
-    await snapshot.docs[0].ref.update({...updates, 'updated_at': new Date()});
+    await db.collection('users').doc(userDocId).update({...updates, 'updated_at': new Date()});
 }
 
 
@@ -134,17 +126,14 @@ export async function updateUser(
  */
 export async function toggleUserTwoFA(uid: string): Promise<boolean>
 {
-    const snapshot = await db.collection('users')
-        .where('uid', '==', uid)
-        .limit(1)
-        .get();
+    const userDocId = await getUserDocId(uid);
+    if (!userDocId) throw new Error(`User "${uid}" not found.`);
 
-    if (snapshot.empty) throw new Error(`User "${uid}" not found.`);
+    const userRef = db.collection('users').doc(userDocId);
+    const snap = await userRef.get();
+    const next = !((snap.data() as userDocument).two_fa_enabled ?? false);
 
-    const doc = snapshot.docs[0];
-    const next = !((doc.data() as userDocument).two_fa_enabled ?? false);
-
-    await doc.ref.update({'two_fa_enabled': next, 'updated_at': new Date()});
+    await userRef.update({'two_fa_enabled': next, 'updated_at': new Date()});
 
     return next;
 }
@@ -159,6 +148,9 @@ export async function toggleUserTwoFA(uid: string): Promise<boolean>
  */
 export async function getUserDocId(uid: string): Promise<string | null>
 {
+    const docSnap = await db.collection('users').doc(uid).get();
+    if (docSnap.exists) return uid;
+
     const snapshot = await db.collection('users')
         .where('uid', '==', uid)
         .limit(1)
@@ -194,27 +186,24 @@ import {FieldValue} from 'firebase-admin/firestore';
  */
 export async function toggleFavoriteId(uid: string, startupId: string): Promise<boolean>
 {
-    const snapshot = await db.collection('users')
-        .where('uid', '==', uid)
-        .limit(1)
-        .get();
+    const userDocId = await getUserDocId(uid);
+    if (!userDocId) throw new Error(`User "${uid}" not found.`);
 
-    if (snapshot.empty) throw new Error(`User "${uid}" not found.`);
-
-    const doc = snapshot.docs[0];
-    const current = (doc.data() as userDocument).favorite_ids ?? [];
+    const docRef = db.collection('users').doc(userDocId);
+    const docSnap = await docRef.get();
+    const current = (docSnap.data() as userDocument).favorite_ids ?? [];
     const isFavorited = current.includes(startupId);
 
     if (isFavorited)
     {
-        await doc.ref.update({
+        await docRef.update({
             'favorite_ids': FieldValue.arrayRemove(startupId),
             'updated_at': new Date(),
         });
         return false;
     }
 
-    await doc.ref.update({
+    await docRef.update({
         'favorite_ids': FieldValue.arrayUnion(startupId),
         'updated_at': new Date(),
     });
@@ -231,12 +220,9 @@ export async function toggleFavoriteId(uid: string, startupId: string): Promise<
  */
 export async function getFavoriteIds(uid: string): Promise<string[]>
 {
-    const snapshot = await db.collection('users')
-        .where('uid', '==', uid)
-        .limit(1)
-        .get();
+    const userDocId = await getUserDocId(uid);
+    if (!userDocId) return [];
 
-    if (snapshot.empty) return [];
-
-    return (snapshot.docs[0].data() as userDocument).favorite_ids ?? [];
+    const snap = await db.collection('users').doc(userDocId).get();
+    return (snap.data() as userDocument).favorite_ids ?? [];
 }

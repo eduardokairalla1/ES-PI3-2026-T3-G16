@@ -161,6 +161,43 @@ EOF
     fi
 }
 
+# Atualizar/criar uma variavel no .env mantendo o restante do arquivo.
+set_env_var() {
+    local file="$1"
+    local key="$2"
+    local value="$3"
+
+    if grep -qE "^${key}=" "$file" 2>/dev/null; then
+        sed -i "s|^${key}=.*|${key}=${value}|" "$file"
+    else
+        printf "%s=%s\n" "$key" "$value" >> "$file"
+    fi
+}
+
+# Garantir frontend/app/.env exatamente no formato que lib/main.dart le.
+ensure_frontend_env() {
+    cd "$FRONTEND_DIR"
+
+    if [ ! -f ".env" ] && [ -f ".env.example" ]; then
+        cp ".env.example" ".env"
+        ok ".env criado a partir do .env.example"
+    fi
+
+    if [ ! -f ".env" ]; then
+        touch ".env"
+        ok ".env criado"
+    fi
+
+    set_env_var ".env" "USE_EMULATOR" "true"
+    set_env_var ".env" "EMULATOR_HOST" "localhost"
+    set_env_var ".env" "AUTH_EMULATOR_PORT" "9099"
+    set_env_var ".env" "FUNCTIONS_EMULATOR_PORT" "5001"
+    set_env_var ".env" "FIRESTORE_EMULATOR_PORT" "8080"
+    set_env_var ".env" "STORAGE_EMULATOR_PORT" "9199"
+
+    ok ".env configurado para Flutter Web + Firebase emulators"
+}
+
 # Garantir frontend/app/lib/firebase_options.dart (config para emuladores)
 ensure_flutter_firebase_options() {
     local options_path="$FRONTEND_DIR/lib/firebase_options.dart"
@@ -375,10 +412,9 @@ if [ -f "$BASHRC" ] && [ -n "${CHROME_EXECUTABLE:-}" ] && ! grep -q "CHROME_EXEC
     ok "CHROME_EXECUTABLE salvo em ~/.bashrc"
 fi
 
-# --- Dependencias de build para Flutter Linux/Web ---
-# (cmake, ninja, g++, clang, libgtk-3-dev sao necessarios para compilar apps Linux)
+# --- Dependencias utilitarias para Flutter Web/setup ---
 if command -v apt-get &>/dev/null; then
-    FLUTTER_BUILD_DEPS=(cmake ninja-build g++ clang libgtk-3-dev pkg-config libblkid-dev liblzma-dev)
+    FLUTTER_BUILD_DEPS=(curl wget tar xz-utils lsof)
     MISSING_DEPS=()
     for dep in "${FLUTTER_BUILD_DEPS[@]}"; do
         if ! dpkg -s "$dep" &>/dev/null 2>&1; then
@@ -386,17 +422,17 @@ if command -v apt-get &>/dev/null; then
         fi
     done
     if [ "${#MISSING_DEPS[@]}" -gt 0 ]; then
-        warn "Dependencias de build do Flutter ausentes: ${MISSING_DEPS[*]}"
+        warn "Dependencias utilitarias ausentes: ${MISSING_DEPS[*]}"
         read -rp "Deseja instalar agora via apt? (S/N) " choice
         if [[ "$choice" =~ ^[Ss]$ ]]; then
             sudo apt-get install -y "${MISSING_DEPS[@]}"
-            ok "Dependencias de build instaladas: ${MISSING_DEPS[*]}"
+            ok "Dependencias utilitarias instaladas: ${MISSING_DEPS[*]}"
         else
-            warn "Sem essas dependencias o Flutter nao compilara apps Linux/Web."
+            warn "Sem essas dependencias algumas etapas automaticas podem falhar."
             gray "  Instale manualmente: sudo apt install ${MISSING_DEPS[*]}"
         fi
     else
-        ok "Dependencias de build do Flutter OK (cmake, ninja, g++, clang, libgtk-3-dev)"
+        ok "Dependencias utilitarias OK"
     fi
 fi
 
@@ -620,36 +656,8 @@ if [ -d "$FRONTEND_DIR" ]; then
         warn "flutter pub get falhou apos tentativas."
     fi
 
-    # Configurar .env para emuladores
-    if [ ! -f ".env" ] && [ -f ".env.example" ]; then
-        cp ".env.example" ".env"
-        ok ".env criado a partir do .env.example"
-    fi
-
-    if [ -f ".env" ]; then
-        if grep -q "USE_EMULATOR=false" ".env"; then
-            sed -i 's/USE_EMULATOR=false/USE_EMULATOR=true/' ".env"
-            ok ".env configurado: USE_EMULATOR=true"
-        elif grep -q "USE_EMULATOR=true" ".env"; then
-            ok ".env ja configurado para emuladores"
-        else
-            # Garantir que o .env tenha as variaveis de emulador caso nao existam
-            if ! grep -q "USE_EMULATOR" ".env"; then
-                echo "USE_EMULATOR=true" >> ".env"
-                ok ".env: USE_EMULATOR=true adicionado"
-            fi
-        fi
-    else
-        # Criar .env basico se nao existir
-        cat > ".env" <<EOF
-USE_EMULATOR=true
-FIREBASE_AUTH_EMULATOR_HOST=localhost:9099
-FIRESTORE_EMULATOR_HOST=localhost:8080
-FIREBASE_STORAGE_EMULATOR_HOST=localhost:9199
-FUNCTIONS_EMULATOR_HOST=localhost:5001
-EOF
-        ok ".env criado com configuracoes de emulador"
-    fi
+    # Configurar .env para emuladores usando as chaves lidas pelo Flutter.
+    ensure_frontend_env
 
     ensure_flutter_firebase_options
     hide_emulator_banner
@@ -856,7 +864,7 @@ gray "  Senha:  Mescla@2026"
 echo ""
 step "[3/4] Iniciando Flutter ($FLUTTER_DEVICE)..."
 
-FLUTTER_COMMAND="cd '$FRONTEND_DIR' && $FLUTTER_CMD run -d $FLUTTER_DEVICE --web-port $FLUTTER_WEB_PORT --release"
+FLUTTER_COMMAND="cd '$FRONTEND_DIR' && $FLUTTER_CMD run -d $FLUTTER_DEVICE --web-port $FLUTTER_WEB_PORT"
 
 if [ -n "$TERM_CMD" ]; then
     case "$TERM_CMD" in

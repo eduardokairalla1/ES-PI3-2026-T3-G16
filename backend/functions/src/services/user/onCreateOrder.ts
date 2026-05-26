@@ -1,15 +1,10 @@
-/**
- * Function callable onCreateOrder.
- *
- * Davi da Cruz Shieh - 24798076 (original primary-market flow, now moved
- *   to onBuyFromStartup.ts)
- * Pedro Henrique Medeiros dos Reis - 24801656 (P2P balcão / matching engine
- *   rewrite that lives in this file now)
- *
- * Creates a P2P order in the balcão. If there are compatible opposing offers
- * already in the book, they cross automatically inside a single Firestore
- * transaction. Whatever quantity is left becomes a pending offer in the book.
- */
+// --- Function callable onCreateOrder ---
+//
+// Davi da Cruz Shieh - 24798076 (original primary-market flow, now moved
+//   to onBuyFromStartup.ts)
+// Pedro Henrique Medeiros dos Reis - 24801656 (P2P balcão / matching engine)
+// Creates a P2P order in the balcão and crosses compatible opposing offers
+// inside a single Firestore transaction when possible.
 
 // --- IMPORTS ---
 import {HttpsError} from 'firebase-functions/v2/https';
@@ -42,6 +37,9 @@ import {parseRequest} from '../../utils/validation';
 // still satisfy the cap.
 const PULL_LIMIT  = 60;
 const MATCH_DEPTH = 50;
+const MIN_PRICE_FACTOR = 0.5;
+const MAX_PRICE_FACTOR = 1.5;
+const MAX_ORDER_TOTAL  = 100000;
 
 
 // --- CODE ---
@@ -183,6 +181,25 @@ export async function handleOnCreateOrder(request: CallableRequest)
             throw new NotFoundError(`Startup "${startupId}" not found.`);
         }
 
+        const marketPrice = startup.token_price;
+        const minPrice = Math.round(marketPrice * MIN_PRICE_FACTOR * 100) / 100;
+        const maxPrice = Math.round(marketPrice * MAX_PRICE_FACTOR * 100) / 100;
+        const totalAmount = quantity * unitPrice;
+
+        if (unitPrice < minPrice || unitPrice > maxPrice)
+        {
+            throw new ValidationError(
+                `Price outside allowed range. Use a price between ${minPrice} and ${maxPrice}.`,
+            );
+        }
+
+        if (totalAmount > MAX_ORDER_TOTAL)
+        {
+            throw new ValidationError(
+                `Order total exceeds the limit of ${MAX_ORDER_TOTAL}.`,
+            );
+        }
+
         // pre-provision author wallet so it is guaranteed to exist when the tx reads it
         const existingWallet = await getWallet(uid);
         if (existingWallet === null)
@@ -307,6 +324,8 @@ export async function handleOnCreateOrder(request: CallableRequest)
 
             const trades: PlannedTrade[] = [];
             let remaining = quantity;
+            const buyerBalances = new Map<string, number>();
+            const now            = new Date();
 
             for (const opp of opposing)
             {
@@ -324,6 +343,29 @@ export async function handleOnCreateOrder(request: CallableRequest)
 
                 const tradeQty   = Math.min(remaining, oppRemaining);
                 const tradePrice = opp.unit_price;
+                const tradeAmount = tradeQty * tradePrice;
+
+                // If incoming is sell, counter is buyer. Validate counterparty buyer balance.
+                if (type === 'sell')
+                {
+                    const buyerWallet = walletByUid.get(opp.uid)!;
+                    const currentBal = buyerBalances.has(opp.uid)
+                        ? buyerBalances.get(opp.uid)!
+                        : buyerWallet.balance;
+
+                    if (currentBal < tradeAmount)
+                    {
+                        // Mark the counterparty order as failed due to insufficient funds
+                        const oppRef = db.collection('orders').doc(opp.id);
+                        tx.update(oppRef, {
+                            status: 'failed',
+                            failure_reason: 'Insufficient buyer balance during P2P matching',
+                            completed_at: now,
+                        });
+                        continue;
+                    }
+                    buyerBalances.set(opp.uid, currentBal - tradeAmount);
+                }
 
                 trades.push({counter: opp, tradePrice, tradeQty});
                 remaining -= tradeQty;
@@ -333,14 +375,26 @@ export async function handleOnCreateOrder(request: CallableRequest)
             const matchedCounterUids = Array.from(new Set(trades.map(t => t.counter.uid)));
             const allUidsToResolve = Array.from(new Set([uid, ...matchedCounterUids]));
 
-            const usersSnap = await tx.get(db.collection('users').where('uid', 'in', allUidsToResolve));
             const userDocIdByUid = new Map<string, string>();
-            for (const doc of usersSnap.docs)
+            const chunks: string[][] = [];
+            for (let i = 0; i < allUidsToResolve.length; i += 30)
             {
-                const data = doc.data();
-                if (data && data.uid)
+                chunks.push(allUidsToResolve.slice(i, i + 30));
+            }
+            
+            const snaps = await Promise.all(
+                chunks.map(chunk => tx.get(db.collection('users').where('uid', 'in', chunk)))
+            );
+            
+            for (const snap of snaps)
+            {
+                for (const doc of snap.docs)
                 {
-                    userDocIdByUid.set(data.uid, doc.id);
+                    const data = doc.data();
+                    if (data && data.uid)
+                    {
+                        userDocIdByUid.set(data.uid, doc.id);
+                    }
                 }
             }
 
@@ -389,7 +443,6 @@ export async function handleOnCreateOrder(request: CallableRequest)
 
             // --- WRITES PHASE ---
 
-            const now            = new Date();
             let totalFilledQty   = 0;
             let totalAmount      = 0;
             let authorBalanceAfter = authorBalance;
@@ -400,12 +453,17 @@ export async function handleOnCreateOrder(request: CallableRequest)
                 totalFilledQty += trade.tradeQty;
                 totalAmount    += tradeAmount;
 
-                // 1) update the crossed (counter) order
+                // 1) update the crossed (counter) order (using weighted average fill price)
                 const counterRef       = db.collection('orders').doc(trade.counter.id);
-                const newCounterFilled = (trade.counter.filled_quantity ?? 0) + trade.tradeQty;
+                const prevFilled       = trade.counter.filled_quantity ?? 0;
+                const prevAvgPrice     = trade.counter.avg_fill_price ?? 0;
+                const newCounterFilled = prevFilled + trade.tradeQty;
+                const newAvgPrice = prevFilled > 0
+                    ? ((prevFilled * prevAvgPrice) + (trade.tradeQty * trade.tradePrice)) / newCounterFilled
+                    : trade.tradePrice;
 
                 const counterUpdate: Partial<OrderDocument> = {
-                    avg_fill_price:  trade.tradePrice,
+                    avg_fill_price:  newAvgPrice,
                     filled_quantity: newCounterFilled,
                 };
                 if (newCounterFilled === trade.counter.quantity)
@@ -510,7 +568,8 @@ export async function handleOnCreateOrder(request: CallableRequest)
                     continue;
                 }
 
-                const inv = investmentByUid.get(cuid)!;
+                const inv = investmentByUid.get(cuid);
+                if (!inv) continue;
                 const newQty = state.qty + state.totalQtyBought - state.totalQtySold;
 
                 if (newQty <= 0)

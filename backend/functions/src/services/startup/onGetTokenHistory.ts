@@ -1,40 +1,32 @@
-/**
- * Function callable onGetTokenHistory.
- *
- * Davi da Cruz Shieh - 24798076
- */
+// --- Function callable onGetTokenHistory ---
+//
+// Davi da Cruz Shieh - 24798076
+// Returns token-price history for the authenticated user's investment view.
 
-/**
- * IMPORTS
- */
+// --- IMPORTS ---
 import {HttpsError} from 'firebase-functions/v2/https';
 import {getPriceSnapshots} from '../../db/price_history/storage';
 import {getStartup} from '../../db/startups/storage';
+import {getUserDocId} from '../../db/users/storage';
 import {verifyAuth} from '../../utils/auth';
 import {logger} from '../../utils/logger';
 import db from '../../configs';
 
 
-/**
- * ERRORS
- */
+// --- ERRORS ---
 import {AuthError} from '../../errors/authError';
 import {ValidationError} from '../../errors/validationError';
 import {NotFoundError} from '../../errors/notFoundError';
 import {InternalError} from '../../errors/internalError';
 
 
-/**
- * TYPES
- */
+// --- TYPES ---
 import type {CallableRequest} from 'firebase-functions/v2/https';
 import {GetTokenHistoryRequest} from '../../types/responders/investment';
 import {parseRequest} from '../../utils/validation';
 
 
-/**
- * CODE
- */
+// --- CONSTANTS ---
 
 const PERIOD_TO_DAYS: Record<string, number> = {
     daily:    1,
@@ -43,6 +35,8 @@ const PERIOD_TO_DAYS: Record<string, number> = {
     '6months': 180,
     ytd:      -1, // handled separately
 };
+
+// --- CODE ---
 
 function sinceDate(period: string): Date
 {
@@ -86,7 +80,7 @@ export async function handleOnGetTokenHistory(request: CallableRequest)
             throw new NotFoundError(`Startup "${startupId}" not found.`);
         }
 
-        // Single query sorted by created_at — docs[0] gives firstPurchase, all docs give tokenQuantity.
+        // Query to find the first purchase date of this startup
         const ordersSnap = await db
             .collection('orders')
             .where('uid', '==', uid)
@@ -94,7 +88,25 @@ export async function handleOnGetTokenHistory(request: CallableRequest)
             .where('type', '==', 'buy')
             .where('status', '==', 'completed')
             .orderBy('created_at', 'asc')
+            .limit(1)
             .get();
+
+        const userDocId = await getUserDocId(uid);
+        if (!userDocId)
+        {
+            throw new NotFoundError(`User document for "${uid}" not found.`);
+        }
+
+        const investmentSnap = await db
+            .collection('users')
+            .doc(userDocId)
+            .collection('investments')
+            .doc(startupId)
+            .get();
+
+        const tokenQuantity = investmentSnap.exists
+            ? (investmentSnap.data()?.token_quantity as number ?? 0)
+            : 0;
 
         if (ordersSnap.empty)
         {
@@ -109,11 +121,6 @@ export async function handleOnGetTokenHistory(request: CallableRequest)
 
         const firstTs       = ordersSnap.docs[0].data().created_at;
         const firstPurchase = firstTs?.toDate ? firstTs.toDate() : new Date(firstTs);
-
-        const tokenQuantity = ordersSnap.docs.reduce(
-            (sum, doc) => sum + (doc.data().quantity as number),
-            0,
-        );
 
         // since = latest of (period start, first purchase date)
         const periodStart = sinceDate(period);

@@ -1,13 +1,9 @@
-/**
- * Function callable onGetPatrimonyHistory.
- * Serviço responsável por compilar o histórico de evolução patrimonial real do usuário.
- *
- * Alex Gabriel Soares Sousa - 24802449
- */
+// --- Function callable onGetPatrimonyHistory ---
+//
+// Alex Gabriel Soares Sousa - 24802449
+// Serviço responsável por compilar o histórico de evolução patrimonial real do usuário.
 
-/**
- * IMPORTS
- */
+// --- IMPORTS ---
 import {HttpsError} from 'firebase-functions/v2/https';
 import {verifyAuth} from '../../utils/auth';
 import {logger} from '../../utils/logger';
@@ -18,20 +14,18 @@ import {getUserDocId} from '../../db/users/storage';
 import {getWallet} from '../../db/wallets/storage';
 import {getStartups} from '../../db/startups/storage';
 import {getPriceSnapshots} from '../../db/price_history/storage';
-import {getOrderEventDate} from '../../utils/walletUtils';
+import {toJsDate} from '../../utils/walletUtils';
 
-/**
- * ERRORS
- */
+// --- ERRORS ---
 import {AuthError} from '../../errors/authError';
 import {ValidationError} from '../../errors/validationError';
 import {InternalError} from '../../errors/internalError';
 
-/**
- * TYPES
- */
+// --- TYPES ---
 import type {CallableRequest} from 'firebase-functions/v2/https';
 import type {OrderDocument} from '../../db/orders/model';
+
+// --- CONSTANTS ---
 
 const PERIOD_TO_DAYS: Record<string, number> = {
     d7: 7,
@@ -40,6 +34,8 @@ const PERIOD_TO_DAYS: Record<string, number> = {
     m6: 180,
     y1: 365,
 };
+
+// --- CODE ---
 
 /**
  * Manipula a requisição da Cloud Function Callable 'onGetPatrimonyHistory'.
@@ -108,7 +104,7 @@ export async function handleOnGetPatrimonyHistory(request: CallableRequest)
             .map(o => ({
                 startupId: o.startup_id,
                 quantity: o.filled_quantity ?? 0,
-                date: getOrderEventDate(o),
+                date: o.completed_at ? toJsDate(o.completed_at) : toJsDate(o.created_at),
             }));
 
         const sellOrders = allOrders
@@ -116,7 +112,7 @@ export async function handleOnGetPatrimonyHistory(request: CallableRequest)
             .map(o => ({
                 startupId: o.startup_id,
                 filledQuantity: o.filled_quantity ?? 0,
-                date: getOrderEventDate(o),
+                date: o.completed_at ? toJsDate(o.completed_at) : toJsDate(o.created_at),
             }));
 
         // 6. Obtém o conjunto de startups investidas para buscar os históricos de preços correspondentes
