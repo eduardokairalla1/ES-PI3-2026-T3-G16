@@ -1,32 +1,27 @@
-/**
- * Types for investment callable functions.
- *
- * Davi da Cruz Shieh - 24798076
- */
+// --- Investment responder schemas ---
+//
+// Davi da Cruz Shieh - 24798076
+// Zod contracts for investment-related callable functions.
 
-/**
- * IMPORTS
- */
+// --- IMPORTS ---
 import * as z from 'zod';
 
 
-/**
- * TYPES
- */
+// --- TYPES ---
 
 export const CreateOrderRequest = z.object(
     {
         startupId: z.string().min(1, 'Startup ID is required'),
-        quantity:  z.number().int().min(1, 'Quantity must be at least 1'),
+        quantity:  z.number().finite().int().min(1, 'Quantity must be at least 1').max(100000, 'Quantity is too high'),
         type:      z.enum(['buy', 'sell']),
-        unitPrice: z.number().positive('Price must be positive'),
+        unitPrice: z.number().finite().positive('Price must be positive').max(100000, 'Price is too high'),
     },
 );
 
 export const BuyFromStartupRequest = z.object(
     {
         startupId: z.string().min(1, 'Startup ID is required'),
-        quantity:  z.number().int().min(1, 'Quantity must be at least 1'),
+        quantity:  z.number().finite().int().min(1, 'Quantity must be at least 1').max(100000, 'Quantity is too high'),
     },
 );
 

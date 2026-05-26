@@ -8,15 +8,17 @@
 //   - wallet balance + search filter shared between both tabs
 
 // --- IMPORTS ---
+import 'dart:math';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
+import 'package:mesclainvest/app/app_state.dart';
 import 'package:mesclainvest/pages/balcao/models/order_model.dart';
 import 'package:mesclainvest/pages/balcao/services/order_service.dart';
 import 'package:mesclainvest/pages/catalog/services/catalog_service.dart';
 import 'package:mesclainvest/pages/dashboard/services/dashboard_service.dart';
 import 'package:mesclainvest/pages/startup/models/startup_model.dart';
 
-// --- CONTROLLER ---
+// --- CODE ---
 
 /// State holder for the balcão hub.
 ///
@@ -46,8 +48,8 @@ class BalcaoController extends ChangeNotifier {
     }
   }
 
-  final CatalogService _catalogService     = CatalogService();
-  final OrderService _orderService         = OrderService();
+  final CatalogService _catalogService = CatalogService();
+  final OrderService _orderService = OrderService();
   final DashboardService _dashboardService = DashboardService();
 
   // Mercado tab
@@ -62,7 +64,7 @@ class BalcaoController extends ChangeNotifier {
 
   // Wallet + holdings (loaded from the dashboard payload so we get the
   // already-computed per-startup variation for free).
-  double walletBalance = 0;
+  double get walletBalance => AppState.instance.saldoDisponivel;
   bool isLoadingWallet = true;
   final Map<String, double> _variationByStartup = {};
 
@@ -71,7 +73,7 @@ class BalcaoController extends ChangeNotifier {
 
   // In-flight tracking so the UI can disable just one row at a time.
   final Set<String> _cancelling = {};
-  final Set<String> _editing    = {};
+  final Set<String> _editing = {};
 
   /// Current search query (lower-cased, trimmed). Used by [filteredStartups].
   String get searchQuery => _searchQuery;
@@ -109,44 +111,48 @@ class BalcaoController extends ChangeNotifier {
 
   /// Loads everything in parallel: startups, orders and wallet + holdings.
   /// Used on first page enter.
-  Future<void> load() async {
+  Future<void> load({bool silent = false}) async {
     await Future.wait([
-      loadStartups(),
-      loadMyOrders(),
-      loadWalletAndHoldings(),
+      loadStartups(silent: silent),
+      loadMyOrders(silent: silent),
+      loadWalletAndHoldings(silent: silent),
     ]);
   }
 
   /// Reloads the "Mercado" tab. Sets [isLoadingStartups]/[startupsError] and
   /// notifies listeners around the fetch.
-  Future<void> loadStartups() async {
-    isLoadingStartups = true;
-    startupsError = null;
-    notifyListeners();
+  Future<void> loadStartups({bool silent = false}) async {
+    if (!silent) {
+      isLoadingStartups = true;
+      startupsError = null;
+      notifyListeners();
+    }
 
     try {
       startups = await _catalogService.fetchStartups();
     } catch (_) {
-      startupsError = 'Não foi possível carregar as startups.';
+      if (!silent) startupsError = 'Não foi possível carregar as startups.';
     } finally {
-      isLoadingStartups = false;
+      if (!silent) isLoadingStartups = false;
       notifyListeners();
     }
   }
 
   /// Reloads the "Minhas ordens" tab. Sets [isLoadingOrders]/[ordersError]
   /// and notifies listeners around the fetch.
-  Future<void> loadMyOrders() async {
-    isLoadingOrders = true;
-    ordersError = null;
-    notifyListeners();
+  Future<void> loadMyOrders({bool silent = false}) async {
+    if (!silent) {
+      isLoadingOrders = true;
+      ordersError = null;
+      notifyListeners();
+    }
 
     try {
       orders = await _orderService.getMyOrders();
     } catch (_) {
-      ordersError = 'Não foi possível carregar suas ordens.';
+      if (!silent) ordersError = 'Não foi possível carregar suas ordens.';
     } finally {
-      isLoadingOrders = false;
+      if (!silent) isLoadingOrders = false;
       notifyListeners();
     }
   }
@@ -155,13 +161,18 @@ class BalcaoController extends ChangeNotifier {
   /// payload. The dashboard endpoint already computes the variation since the
   /// user's average purchase price for every owned startup, so we just copy
   /// the map across — no extra backend work needed.
-  Future<void> loadWalletAndHoldings() async {
-    isLoadingWallet = true;
-    notifyListeners();
+  Future<void> loadWalletAndHoldings({bool silent = false}) async {
+    if (!silent) {
+      isLoadingWallet = true;
+      notifyListeners();
+    }
 
     try {
       final data = await _dashboardService.fetchUserDashboardData();
-      walletBalance = data.saldoDisponivel;
+      AppState.instance.setFinancialSummary(
+        saldoDisponivel: data.saldoDisponivel,
+        patrimonioTotal: data.patrimonioTotal,
+      );
       _variationByStartup
         ..clear()
         ..addEntries(
@@ -170,7 +181,7 @@ class BalcaoController extends ChangeNotifier {
     } catch (_) {
       // best-effort: keep the previous values so the UI does not flash to 0
     } finally {
-      isLoadingWallet = false;
+      if (!silent) isLoadingWallet = false;
       notifyListeners();
     }
   }
@@ -187,10 +198,8 @@ class BalcaoController extends ChangeNotifier {
 
     try {
       await _orderService.cancelOrder(orderId);
-      await Future.wait([
-        loadMyOrders(),
-        loadWalletAndHoldings(),
-      ]);
+      await Future.wait([loadMyOrders(), loadWalletAndHoldings()]);
+      AppState.instance.triggerGlobalRefresh();
       return null;
     } on FirebaseFunctionsException catch (e) {
       return e.message ?? 'Não foi possível cancelar a ordem.';
@@ -217,25 +226,32 @@ class BalcaoController extends ChangeNotifier {
     _editing.add(original.orderId);
     notifyListeners();
 
+    bool cancelSucceeded = false;
     try {
       // 1. cancel the old order
       await _orderService.cancelOrder(original.orderId);
+      cancelSucceeded = true;
+
       // 2. create the new one with the updated price/quantity
       await _orderService.createOrder(
         startupId: original.startupId,
-        type:      original.type,
-        quantity:  newQuantity,
+        type: original.type,
+        quantity: newQuantity,
         unitPrice: newUnitPrice,
       );
-      await Future.wait([
-        loadMyOrders(),
-        loadWalletAndHoldings(),
-      ]);
+      await Future.wait([loadMyOrders(), loadWalletAndHoldings()]);
+      AppState.instance.triggerGlobalRefresh();
       return null;
-    } on FirebaseFunctionsException catch (e) {
-      return e.message ?? 'Não foi possível editar a ordem.';
-    } catch (_) {
-      return 'Erro inesperado ao editar a ordem.';
+    } catch (e) {
+      await Future.wait([loadMyOrders(), loadWalletAndHoldings()]);
+
+      final String detail = e is FirebaseFunctionsException
+          ? (e.message ?? '')
+          : '';
+      if (cancelSucceeded) {
+        return 'A ordem original foi cancelada, mas não foi possível criar a nova ordem. ${detail.isNotEmpty ? detail : "Por favor, crie uma nova ordem manualmente."}';
+      }
+      return detail.isNotEmpty ? detail : 'Não foi possível editar a ordem.';
     } finally {
       _editing.remove(original.orderId);
       notifyListeners();
@@ -246,8 +262,20 @@ class BalcaoController extends ChangeNotifier {
   /// reflects the new value without a full refetch. Rethrows on failure so
   /// the caller (e.g. [showDepositDialog]) can display the error.
   Future<void> deposit(double amount) async {
-    final newBalance = await _dashboardService.deposit(amount);
-    walletBalance = newBalance;
+    final depositId =
+        'dep_${DateTime.now().microsecondsSinceEpoch}_${Random().nextInt(1000000)}';
+    final previousBalance = AppState.instance.saldoDisponivel;
+    final previousPatrimony = AppState.instance.patrimonioTotal;
+    final newBalance = await _dashboardService.deposit(
+      amount,
+      depositId: depositId,
+    );
+    final delta = newBalance - previousBalance;
+    AppState.instance.setFinancialSummary(
+      saldoDisponivel: newBalance,
+      patrimonioTotal: (previousPatrimony ?? previousBalance) + delta,
+    );
+    AppState.instance.triggerGlobalRefresh();
     notifyListeners();
   }
 }

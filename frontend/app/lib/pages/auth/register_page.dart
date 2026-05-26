@@ -1,6 +1,8 @@
+// --- Register page ---
+//
 // Eduardo Kairalla - 24024241
-
-// Register page.
+// Account creation screen with identity fields, password validation and
+// backend profile provisioning.
 
 // --- IMPORTS ---
 import 'package:flutter/material.dart';
@@ -33,7 +35,7 @@ class RegisterPage extends StatefulWidget {
 class _RegisterPageState extends State<RegisterPage>
     with SingleTickerProviderStateMixin {
   // define controllers for text fields
-  final _authService = AuthService();
+  final _authService = AuthService.instance;
   final _formKey = GlobalKey<FormState>();
   final _fullNameCtrl = TextEditingController();
   final _emailCtrl = TextEditingController();
@@ -645,6 +647,7 @@ class _RegisterPageState extends State<RegisterPage>
 
   @override
   void dispose() {
+    _passwordFocusNode.removeListener(_onFocusChanged);
     _entranceCtrl.dispose();
     _fullNameCtrl.dispose();
     _emailCtrl.dispose();

@@ -16,18 +16,21 @@ import 'package:mesclainvest/app/app_state.dart';
 import 'package:mesclainvest/pages/balcao/controllers/balcao_controller.dart';
 import 'package:mesclainvest/pages/balcao/models/order_model.dart';
 import 'package:mesclainvest/pages/balcao/widgets/edit_order_dialog.dart';
+import 'package:mesclainvest/pages/dashboard/models/transaction_model.dart';
+import 'package:mesclainvest/pages/dashboard/services/dashboard_service.dart';
 import 'package:mesclainvest/pages/dashboard/widgets/deposit_prompt_card.dart';
 import 'package:mesclainvest/pages/startup/models/startup_model.dart';
 import 'package:mesclainvest/shared/styles/app_colors.dart';
 import 'package:mesclainvest/shared/widgets/app_button.dart';
+import 'package:mesclainvest/shared/widgets/notifications_sheet.dart';
 
 // --- CONSTANTS ---
 
-const _kBuyColor  = Color(0xFF16A34A);
+const _kBuyColor = Color(0xFF16A34A);
 const _kSellColor = Color(0xFFDC2626);
 // Wallet card stays dark on both themes (deliberate brand accent).
-const _kWalletBg     = Color(0xFF111111);
-const _kWalletFg     = Color(0xFFFFFFFF);
+const _kWalletBg = Color(0xFF111111);
+const _kWalletFg = Color(0xFFFFFFFF);
 const _kWalletButtonBg = Color(0xFF2A2A2D);
 
 final _currencyFmt = NumberFormat.currency(
@@ -37,7 +40,7 @@ final _currencyFmt = NumberFormat.currency(
 );
 final _intFmt = NumberFormat.decimalPattern('pt_BR');
 
-// --- PAGE ---
+// --- CODE ---
 
 /// Hub page of the balcão (P2P market).
 ///
@@ -56,15 +59,25 @@ class _BalcaoPageState extends State<BalcaoPage> {
   final BalcaoController _controller = BalcaoController();
   final TextEditingController _searchCtrl = TextEditingController();
   int _activeTab = 0; // 0 = Mercado, 1 = Minhas Ordens
+  int _lastRefreshTicket = 0;
 
   @override
   void initState() {
     super.initState();
     _controller.load();
+    AppState.instance.addListener(_onAppStateChanged);
+  }
+
+  void _onAppStateChanged() {
+    if (AppState.instance.refreshTicket != _lastRefreshTicket) {
+      _lastRefreshTicket = AppState.instance.refreshTicket;
+      _controller.load(silent: true);
+    }
   }
 
   @override
   void dispose() {
+    AppState.instance.removeListener(_onAppStateChanged);
     _controller.dispose();
     _searchCtrl.dispose();
     super.dispose();
@@ -128,7 +141,10 @@ class _BalcaoPageState extends State<BalcaoPage> {
                 const SizedBox(height: 14),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: _SearchBar(controller: _searchCtrl, balcao: _controller),
+                  child: _SearchBar(
+                    controller: _searchCtrl,
+                    balcao: _controller,
+                  ),
                 ),
                 const SizedBox(height: 14),
                 Expanded(
@@ -145,7 +161,6 @@ class _BalcaoPageState extends State<BalcaoPage> {
   }
 }
 
-
 // --- USER HEADER ---
 // Compact "avatar + name + bell" header, mirrors the one used on the
 // dashboard. Reads the profile from [AppState] directly so this widget does
@@ -158,7 +173,7 @@ class _UserHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final profile = AppState.instance.profile;
     final userName = profile?.fullName ?? 'Usuário';
-    final initial  = userName.isNotEmpty ? userName[0].toUpperCase() : 'U';
+    final initial = userName.isNotEmpty ? userName[0].toUpperCase() : 'U';
     final photoUrl = profile?.photoUrl;
 
     return Padding(
@@ -215,7 +230,13 @@ class _UserHeader extends StatelessWidget {
             Stack(
               children: [
                 IconButton(
-                  onPressed: () {},
+                  onPressed: () => showAppNotificationsSheet(
+                    context: context,
+                    loadTransactions: () async {
+                      final raw = await DashboardService().getTransactions();
+                      return raw.map(TransactionModel.fromMap).toList();
+                    },
+                  ),
                   icon: Icon(
                     Icons.notifications_outlined,
                     color: AppColors.textPrimary(context),
@@ -258,7 +279,6 @@ class _UserHeader extends StatelessWidget {
   }
 }
 
-
 // --- WALLET CARD ---
 // Black accent card showing the wallet balance and the deposit shortcut.
 // Stays dark on both themes by design.
@@ -267,11 +287,16 @@ class _WalletCard extends StatelessWidget {
   final BalcaoController controller;
   const _WalletCard({required this.controller});
 
+  static bool _isDepositOpening = false;
+
   void _openDeposit(BuildContext context) {
-    showDepositDialog(
-      context: context,
-      onDeposit: controller.deposit,
-    );
+    if (_isDepositOpening) return;
+    _isDepositOpening = true;
+    showDepositDialog(context: context, onDeposit: controller.deposit).then((
+      _,
+    ) {
+      _isDepositOpening = false;
+    });
   }
 
   @override
@@ -348,7 +373,6 @@ class _WalletCard extends StatelessWidget {
   }
 }
 
-
 // --- PILL TABS ---
 // Two equal-width buttons: the active one is filled (textPrimary), the other
 // is just an outline. Used in place of the underline TabBar to match the
@@ -363,14 +387,18 @@ class _PillTabs extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Expanded(child: _pill(context, label: 'Mercado',       index: 0)),
+        Expanded(child: _pill(context, label: 'Mercado', index: 0)),
         const SizedBox(width: 10),
         Expanded(child: _pill(context, label: 'Minhas Ordens', index: 1)),
       ],
     );
   }
 
-  Widget _pill(BuildContext context, {required String label, required int index}) {
+  Widget _pill(
+    BuildContext context, {
+    required String label,
+    required int index,
+  }) {
     final isActive = active == index;
     return GestureDetector(
       onTap: () => onChange(index),
@@ -404,7 +432,6 @@ class _PillTabs extends StatelessWidget {
   }
 }
 
-
 // --- SEARCH BAR ---
 
 class _SearchBar extends StatelessWidget {
@@ -417,16 +444,10 @@ class _SearchBar extends StatelessWidget {
     return TextField(
       controller: controller,
       onChanged: balcao.updateSearch,
-      style: TextStyle(
-        fontSize: 14,
-        color: AppColors.textPrimary(context),
-      ),
+      style: TextStyle(fontSize: 14, color: AppColors.textPrimary(context)),
       decoration: InputDecoration(
         hintText: 'Buscar startup ou ticket',
-        hintStyle: TextStyle(
-          fontSize: 14,
-          color: AppColors.textMuted(context),
-        ),
+        hintStyle: TextStyle(fontSize: 14, color: AppColors.textMuted(context)),
         prefixIcon: Icon(
           Icons.search,
           color: AppColors.textMuted(context),
@@ -446,13 +467,15 @@ class _SearchBar extends StatelessWidget {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: AppColors.textPrimary(context), width: 1.5),
+          borderSide: BorderSide(
+            color: AppColors.textPrimary(context),
+            width: 1.5,
+          ),
         ),
       ),
     );
   }
 }
-
 
 // --- MERCADO TAB ---
 
@@ -463,7 +486,9 @@ class _MercadoTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (controller.isLoadingStartups) {
-      return Center(child: CircularProgressIndicator(color: AppColors.textPrimary(context)));
+      return Center(
+        child: CircularProgressIndicator(color: AppColors.textPrimary(context)),
+      );
     }
 
     if (controller.startupsError != null) {
@@ -498,7 +523,7 @@ class _MercadoTab extends StatelessWidget {
           const SizedBox(height: 6),
           for (final s in list)
             _MercadoRow(
-              startup:   s,
+              startup: s,
               variation: controller.variationFor(s.id),
               onReturn: () => controller.load(),
             ),
@@ -523,8 +548,14 @@ class _MercadoHeaderRow extends StatelessWidget {
       child: Row(
         children: [
           Expanded(flex: 5, child: Text('STARTUP / TICKET', style: style)),
-          Expanded(flex: 3, child: Text('PREÇO',  style: style, textAlign: TextAlign.right)),
-          Expanded(flex: 3, child: Text('VAR %',  style: style, textAlign: TextAlign.right)),
+          Expanded(
+            flex: 3,
+            child: Text('PREÇO', style: style, textAlign: TextAlign.right),
+          ),
+          Expanded(
+            flex: 3,
+            child: Text('VAR %', style: style, textAlign: TextAlign.right),
+          ),
         ],
       ),
     );
@@ -544,7 +575,9 @@ class _MercadoRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokenName = startup.tokenName.isEmpty
-        ? startup.name.substring(0, startup.name.length > 4 ? 4 : startup.name.length).toUpperCase()
+        ? startup.name
+              .substring(0, startup.name.length > 4 ? 4 : startup.name.length)
+              .toUpperCase()
         : startup.tokenName;
 
     return GestureDetector(
@@ -609,10 +642,7 @@ class _MercadoRow extends StatelessWidget {
                 ),
               ),
             ),
-            Expanded(
-              flex: 3,
-              child: _VariationCell(variation: variation),
-            ),
+            Expanded(flex: 3, child: _VariationCell(variation: variation)),
           ],
         ),
       ),
@@ -662,7 +692,6 @@ class _VariationCell extends StatelessWidget {
   }
 }
 
-
 // --- MINHAS ORDENS TAB ---
 
 class _MyOrdersTab extends StatelessWidget {
@@ -672,7 +701,9 @@ class _MyOrdersTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (controller.isLoadingOrders) {
-      return Center(child: CircularProgressIndicator(color: AppColors.textPrimary(context)));
+      return Center(
+        child: CircularProgressIndicator(color: AppColors.textPrimary(context)),
+      );
     }
 
     if (controller.ordersError != null) {
@@ -708,11 +739,11 @@ class _MyOrdersTab extends StatelessWidget {
         itemBuilder: (context, i) {
           final o = filtered[i];
           return _OrderCard(
-            order:        o,
+            order: o,
             isCancelling: controller.isCancelling(o.orderId),
-            isEditing:    controller.isEditing(o.orderId),
-            onCancel:     () => _confirmCancel(context, o),
-            onEdit:       () => _openEdit(context, o),
+            isEditing: controller.isEditing(o.orderId),
+            onCancel: () => _confirmCancel(context, o),
+            onEdit: () => _openEdit(context, o),
           );
         },
       ),
@@ -766,9 +797,9 @@ class _MyOrdersTab extends StatelessWidget {
     if (result == null || !context.mounted) return;
 
     final err = await controller.updateOrder(
-      original:      order,
-      newQuantity:   result.quantity,
-      newUnitPrice:  result.unitPrice,
+      original: order,
+      newQuantity: result.quantity,
+      newUnitPrice: result.unitPrice,
     );
     if (!context.mounted) return;
 
@@ -800,7 +831,9 @@ class _OrderCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final isBuy = order.isBuy;
     final typeLabel = isBuy ? 'Compra' : 'Venda';
-    final tokenName = order.tokenName.isEmpty ? order.startupName : order.tokenName;
+    final tokenName = order.tokenName.isEmpty
+        ? order.startupName
+        : order.tokenName;
     final total = order.unitPrice * order.quantity;
     final status = _statusLabel(order.status);
     final statusColor = _statusColor(order.status);
@@ -820,7 +853,11 @@ class _OrderCard extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _Logo(url: order.startupLogoUrl ?? '', name: order.startupName, size: 36),
+              _Logo(
+                url: order.startupLogoUrl ?? '',
+                name: order.startupName,
+                size: 36,
+              ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -857,21 +894,21 @@ class _OrderCard extends StatelessWidget {
               children: [
                 Expanded(
                   child: _ActionButton(
-                    label:     'EDITAR',
-                    color:     AppColors.surfaceMuted(context),
-                    fgColor:   AppColors.textPrimary(context),
+                    label: 'EDITAR',
+                    color: AppColors.surfaceMuted(context),
+                    fgColor: AppColors.textPrimary(context),
                     isLoading: isEditing,
-                    onTap:     isCancelling ? null : onEdit,
+                    onTap: isCancelling ? null : onEdit,
                   ),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
                   child: _ActionButton(
-                    label:     'CANCELAR',
-                    color:     _kSellColor.withValues(alpha: 0.12),
-                    fgColor:   _kSellColor,
+                    label: 'CANCELAR',
+                    color: _kSellColor.withValues(alpha: 0.12),
+                    fgColor: _kSellColor,
                     isLoading: isCancelling,
-                    onTap:     isEditing ? null : onCancel,
+                    onTap: isEditing ? null : onCancel,
                   ),
                 ),
               ],
@@ -883,20 +920,20 @@ class _OrderCard extends StatelessWidget {
   }
 
   String _statusLabel(String status) => switch (status) {
-        'pending'   => 'Aberta',
-        'completed' => 'Executada',
-        'cancelled' => 'Cancelada',
-        'failed'    => 'Falhou',
-        _ => status,
-      };
+    'pending' => 'Aberta',
+    'completed' => 'Executada',
+    'cancelled' => 'Cancelada',
+    'failed' => 'Falhou',
+    _ => status,
+  };
 
   Color _statusColor(String status) => switch (status) {
-        'pending'   => _kBuyColor,
-        'completed' => Colors.blueGrey,
-        'cancelled' => Colors.grey,
-        'failed'    => _kSellColor,
-        _ => Colors.grey,
-      };
+    'pending' => _kBuyColor,
+    'completed' => Colors.blueGrey,
+    'cancelled' => Colors.grey,
+    'failed' => _kSellColor,
+    _ => Colors.grey,
+  };
 }
 
 class _StatusBadge extends StatelessWidget {
@@ -954,7 +991,10 @@ class _ActionButton extends StatelessWidget {
             ? SizedBox(
                 width: 16,
                 height: 16,
-                child: CircularProgressIndicator(strokeWidth: 2, color: fgColor),
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: fgColor,
+                ),
               )
             : Text(
                 label,
@@ -969,7 +1009,6 @@ class _ActionButton extends StatelessWidget {
     );
   }
 }
-
 
 // --- SHARED UI ---
 
@@ -1034,7 +1073,10 @@ class _EmptyView extends StatelessWidget {
             child: Text(
               message,
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 15, color: AppColors.textSecondary(context)),
+              style: TextStyle(
+                fontSize: 15,
+                color: AppColors.textSecondary(context),
+              ),
             ),
           ),
         ],
@@ -1056,12 +1098,19 @@ class _ErrorView extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.wifi_off_outlined, size: 48, color: AppColors.textMuted(context)),
+            Icon(
+              Icons.wifi_off_outlined,
+              size: 48,
+              color: AppColors.textMuted(context),
+            ),
             const SizedBox(height: 16),
             Text(
               message,
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 15, color: AppColors.textSecondary(context)),
+              style: TextStyle(
+                fontSize: 15,
+                color: AppColors.textSecondary(context),
+              ),
             ),
             const SizedBox(height: 24),
             AppButton(

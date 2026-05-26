@@ -1,4 +1,6 @@
 // --- Project entry point ---
+//
+// Boots Firebase, wires emulator hosts from .env and starts the root widget.
 
 // --- IMPORTS ---
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -14,15 +16,13 @@ import 'package:mesclainvest/app/theme/theme_controller.dart';
 import 'package:mesclainvest/core/services/auth.dart';
 import 'package:mesclainvest/firebase_options.dart';
 
+// --- CODE ---
 
-/// --- CODE ---
-
-// tracks whether Firebase has been configured in this process (survives hot restart)
+// Tracks whether Firebase has been configured in this process (survives hot restart).
 bool _firebaseReady = false;
 
 /// I am the application entry point.
 Future<void> main() async {
-
   // ensure Flutter engine is initialized before async calls
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -33,13 +33,13 @@ Future<void> main() async {
   final useEmulator = dotenv.env['USE_EMULATOR'] == 'true';
   final emulatorHost = dotenv.env['EMULATOR_HOST'] ?? 'localhost';
   final authEmulatorPort =
-    int.tryParse(dotenv.env['AUTH_EMULATOR_PORT'] ?? '9099') ?? 9099;
+      int.tryParse(dotenv.env['AUTH_EMULATOR_PORT'] ?? '9099') ?? 9099;
   final functionsEmulatorPort =
-    int.tryParse(dotenv.env['FUNCTIONS_EMULATOR_PORT'] ?? '5001') ?? 5001;
+      int.tryParse(dotenv.env['FUNCTIONS_EMULATOR_PORT'] ?? '5001') ?? 5001;
   final storageEmulatorPort =
-    int.tryParse(dotenv.env['STORAGE_EMULATOR_PORT'] ?? '9199') ?? 9199;
+      int.tryParse(dotenv.env['STORAGE_EMULATOR_PORT'] ?? '9199') ?? 9199;
   final firestoreEmulatorPort =
-    int.tryParse(dotenv.env['FIRESTORE_EMULATOR_PORT'] ?? '8080') ?? 8080;
+      int.tryParse(dotenv.env['FIRESTORE_EMULATOR_PORT'] ?? '8080') ?? 8080;
 
   if (!_firebaseReady) {
     _firebaseReady = true;
@@ -56,10 +56,22 @@ Future<void> main() async {
 
     // point all Firebase services at the local emulators
     if (useEmulator) {
-      await FirebaseAuth.instance.useAuthEmulator(emulatorHost, authEmulatorPort);
-      FirebaseFirestore.instance.useFirestoreEmulator(emulatorHost, firestoreEmulatorPort);
-      FirebaseFunctions.instance.useFunctionsEmulator(emulatorHost, functionsEmulatorPort);
-      await FirebaseStorage.instance.useStorageEmulator(emulatorHost, storageEmulatorPort);
+      await FirebaseAuth.instance.useAuthEmulator(
+        emulatorHost,
+        authEmulatorPort,
+      );
+      FirebaseFirestore.instance.useFirestoreEmulator(
+        emulatorHost,
+        firestoreEmulatorPort,
+      );
+      FirebaseFunctions.instance.useFunctionsEmulator(
+        emulatorHost,
+        functionsEmulatorPort,
+      );
+      await FirebaseStorage.instance.useStorageEmulator(
+        emulatorHost,
+        storageEmulatorPort,
+      );
     }
   }
 
@@ -71,7 +83,7 @@ Future<void> main() async {
   // is being restored from IndexedDB. Wait for the first emission of
   // `authStateChanges` so we know the real state before deciding whether to
   // pre-fetch the profile. This avoids the "Usuário" / "—" flash on refresh.
-  final authService = AuthService();
+  final authService = AuthService.instance;
   final restoredUser = await authService.authStateChanges.first;
   if (restoredUser != null) {
     try {
@@ -85,10 +97,17 @@ Future<void> main() async {
   // Keep AppState in sync with future auth state changes so sign-out from
   // anywhere in the app clears the profile, and sign-in (e.g. from a fresh
   // tab) repopulates it without needing an explicit call site.
+  //
+  // IMPORTANT: skip loadProfile() when a registration is in progress.
+  // createUserWithEmailAndPassword() immediately authenticates the new user,
+  // firing this listener before onUserCreated has finished writing the Firestore
+  // document — a race condition that causes onGetProfile to fail with
+  // "Profile not found" and then incorrectly delete the Auth account.
   authService.authStateChanges.listen((user) async {
     if (user == null) {
       AppState.instance.clearProfile();
-    } else if (AppState.instance.profile == null) {
+    } else if (AppState.instance.profile == null &&
+        !authService.isRegistering) {
       try {
         await AppState.instance.loadProfile(authService);
       } catch (_) {}

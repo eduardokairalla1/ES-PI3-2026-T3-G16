@@ -1,6 +1,7 @@
+// --- Forgot password page ---
+//
 // Eduardo Kairalla - 24024241
-
-// Forgot password page.
+// Password recovery screen backed by Firebase Auth email reset.
 
 // --- IMPORTS ---
 import 'package:flutter/material.dart';
@@ -32,7 +33,7 @@ class ForgotPasswordPage extends StatefulWidget {
 class _ForgotPasswordPageState extends State<ForgotPasswordPage>
     with SingleTickerProviderStateMixin {
   // controllers
-  final _authService = AuthService();
+  final _authService = AuthService.instance;
   final _formKey = GlobalKey<FormState>();
   final _emailCtrl = TextEditingController();
 

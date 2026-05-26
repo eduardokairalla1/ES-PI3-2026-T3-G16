@@ -1,8 +1,12 @@
 // --- App routes ---
+//
+// Central GoRouter configuration, including auth redirects and the
+// StatefulShellRoute used by the bottom navigation.
 
 // --- IMPORTS ---
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mesclainvest/app/app_state.dart';
 import 'package:mesclainvest/pages/auth/forgot_password_page.dart';
 import 'package:mesclainvest/pages/catalog/catalog_page.dart';
 import 'package:mesclainvest/pages/auth/login_page.dart';
@@ -23,18 +27,28 @@ import 'package:flutter/material.dart';
 import 'package:mesclainvest/shared/widgets/bottom_nav.dart';
 import 'package:mesclainvest/shared/widgets/light_theme_scope.dart';
 
-/// --- GLOBAIS ---
+// --- CODE ---
 
-// inicializa o roteador do app
+/// Roteador principal do aplicativo.
 final router = GoRouter(
   initialLocation: '/',
+  refreshListenable: AppState.instance,
   redirect: (context, state) {
     // verifica se o usuário está logado
     final isLoggedIn = FirebaseAuth.instance.currentUser != null;
 
     // verifica se o usuário está tentando acessar uma rota protegida
-    final protectedPaths = ['/dashboard', '/catalog', '/balcao', '/carteira', '/profile', '/startup'];
-    final isProtected = protectedPaths.any((p) => state.matchedLocation.startsWith(p));
+    final protectedPaths = [
+      '/dashboard',
+      '/catalog',
+      '/balcao',
+      '/carteira',
+      '/profile',
+      '/startup',
+    ];
+    final isProtected = protectedPaths.any(
+      (p) => state.matchedLocation.startsWith(p),
+    );
 
     // usuário não está logado e tentando acessar rota protegida: redireciona para login
     if (!isLoggedIn && isProtected) return '/login';
@@ -63,7 +77,8 @@ final router = GoRouter(
     ),
     GoRoute(
       path: '/forgot-password',
-      builder: (context, state) => const LightThemeScope(child: ForgotPasswordPage()),
+      builder: (context, state) =>
+          const LightThemeScope(child: ForgotPasswordPage()),
     ),
     GoRoute(
       path: '/reset-password',
@@ -108,7 +123,8 @@ final router = GoRouter(
           routes: [
             GoRoute(
               path: '/catalog',
-              pageBuilder: (context, state) => const NoTransitionPage(child: CatalogPage()),
+              pageBuilder: (context, state) =>
+                  const NoTransitionPage(child: CatalogPage()),
             ),
           ],
         ),
@@ -116,7 +132,8 @@ final router = GoRouter(
           routes: [
             GoRoute(
               path: '/carteira',
-              pageBuilder: (context, state) => const NoTransitionPage(child: CarteiraPage()),
+              pageBuilder: (context, state) =>
+                  const NoTransitionPage(child: CarteiraPage()),
             ),
           ],
         ),
@@ -124,7 +141,8 @@ final router = GoRouter(
           routes: [
             GoRoute(
               path: '/balcao',
-              pageBuilder: (context, state) => const NoTransitionPage(child: BalcaoPage()),
+              pageBuilder: (context, state) =>
+                  const NoTransitionPage(child: BalcaoPage()),
             ),
           ],
         ),
@@ -132,7 +150,8 @@ final router = GoRouter(
           routes: [
             GoRoute(
               path: '/profile',
-              pageBuilder: (context, state) => const NoTransitionPage(child: ProfilePage()),
+              pageBuilder: (context, state) =>
+                  const NoTransitionPage(child: ProfilePage()),
             ),
           ],
         ),
@@ -144,21 +163,18 @@ final router = GoRouter(
     ),
     GoRoute(
       path: '/startup/:id',
-      builder: (context, state) => StartupDetailPage(
-        startupId: state.pathParameters['id']!,
-      ),
+      builder: (context, state) =>
+          StartupDetailPage(startupId: state.pathParameters['id']!),
     ),
     GoRoute(
       path: '/startup/:id/balcao',
-      builder: (context, state) => StartupBalcaoPage(
-        startupId: state.pathParameters['id']!,
-      ),
+      builder: (context, state) =>
+          StartupBalcaoPage(startupId: state.pathParameters['id']!),
     ),
     GoRoute(
       path: '/startup/:id/valorizacao',
-      builder: (context, state) => ValorizacaoPage(
-        startupId: state.pathParameters['id']!,
-      ),
+      builder: (context, state) =>
+          ValorizacaoPage(startupId: state.pathParameters['id']!),
     ),
     GoRoute(
       path: '/profile/settings',

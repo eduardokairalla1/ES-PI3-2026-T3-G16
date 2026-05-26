@@ -1,6 +1,7 @@
-// Eduardo Kairalla - 24024241
-
 // --- Auth service ---
+//
+// Eduardo Kairalla - 24024241
+// Firebase Auth facade used by the UI and AppState.
 
 // --- IMPORTS ---
 import 'package:cloud_functions/cloud_functions.dart';
@@ -12,9 +13,20 @@ import 'package:mesclainvest/core/models/user_profile.dart';
 // --- CODE ---
 
 /// I handle Firebase Authentication operations.
+/// I am a singleton — access me via [AuthService.instance].
 class AuthService {
+  // singleton
+  AuthService._();
+  static final AuthService instance = AuthService._();
+
   // attributes
   final _auth = FirebaseAuth.instance;
+
+  /// I am true while a new account registration is in progress.
+  /// The auth-state listener in main.dart must skip loadProfile() when this is true
+  /// to avoid a race condition where onGetProfile is called before onUserCreated
+  /// has finished writing the user document to Firestore.
+  bool isRegistering = false;
 
   /// I return the current authenticated user.
   ///
@@ -82,64 +94,83 @@ class AuthService {
     String phone,
     String birthDate,
   ) async {
-    // register with Firebase Authentication
+    isRegistering = true;
     try {
-      await _auth.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-    } on FirebaseAuthException catch (e) {
-      throw AuthException.fromFirebaseCode(
-            e.code,
-            originalError: e,
-            stackTrace: StackTrace.current,
-          ) ??
-          InfrastructureException(
+      // register with Firebase Authentication
+      try {
+        final credential = await _auth.createUserWithEmailAndPassword(
+          email: email,
+          password: password,
+        );
+        await credential.user?.getIdToken(true);
+      } on FirebaseAuthException catch (e) {
+        throw AuthException.fromFirebaseCode(
+              e.code,
+              originalError: e,
+              stackTrace: StackTrace.current,
+            ) ??
+            InfrastructureException(
+              originalError: e,
+              stackTrace: StackTrace.current,
+            );
+      }
+
+      // persist user metadata — if this fails, delete the just-created auth user
+      // so the account doesn't end up in a broken state.
+      // The isRegistering flag tells the auth-state listener in main.dart to skip
+      // the premature loadProfile() call that would race against this write.
+      try {
+        final callable = FirebaseFunctions.instance.httpsCallable(
+          'onUserCreated',
+        );
+        final payload = {
+          'fullName': fullName,
+          'cpf': cpf,
+          'phone': phone,
+          'birthDate': birthDate,
+        };
+
+        try {
+          await callable.call(payload);
+        } on FirebaseFunctionsException catch (e) {
+          if (e.code != 'unauthenticated') rethrow;
+          await _auth.currentUser?.getIdToken(true);
+          await callable.call(payload);
+        }
+      } on FirebaseFunctionsException catch (e) {
+        try {
+          await _auth.currentUser?.delete();
+        } catch (_) {
+          // avoid masking the original exception
+        }
+        await _auth.signOut();
+        if (e.code == 'invalid-argument' &&
+            (e.message?.contains('CPF') ?? false)) {
+          throw AuthException.cpfAlreadyInUse(
             originalError: e,
             stackTrace: StackTrace.current,
           );
-    }
-
-    // persist user metadata — if this fails, delete the just-created auth user
-    // so the account doesn't end up in a broken state
-    try {
-      await FirebaseFunctions.instance.httpsCallable('onUserCreated').call({
-        'fullName': fullName,
-        'cpf': cpf,
-        'phone': phone,
-        'birthDate': birthDate,
-      });
-    } on FirebaseFunctionsException catch (e) {
-      try {
-        await _auth.currentUser?.delete();
-      } catch (_) {
-        // avoid masking the original exception
-      }
-      await _auth.signOut();
-      if (e.code == 'invalid-argument' &&
-          (e.message?.contains('CPF') ?? false)) {
-        throw AuthException.cpfAlreadyInUse(
+        }
+        throw InfrastructureException(
+          message: e.message ?? e.toString(),
+          originalError: e,
+          stackTrace: StackTrace.current,
+        );
+      } catch (e) {
+        try {
+          await _auth.currentUser?.delete();
+        } catch (_) {
+          // avoid masking the original exception
+        }
+        await _auth.signOut();
+        throw InfrastructureException(
+          message: e.toString(),
           originalError: e,
           stackTrace: StackTrace.current,
         );
       }
-      throw InfrastructureException(
-        message: e.message ?? e.toString(),
-        originalError: e,
-        stackTrace: StackTrace.current,
-      );
-    } catch (e) {
-      try {
-        await _auth.currentUser?.delete();
-      } catch (_) {
-        // avoid masking the original exception
-      }
-      await _auth.signOut();
-      throw InfrastructureException(
-        message: e.toString(),
-        originalError: e,
-        stackTrace: StackTrace.current,
-      );
+    } finally {
+      isRegistering = false;
     }
   }
 

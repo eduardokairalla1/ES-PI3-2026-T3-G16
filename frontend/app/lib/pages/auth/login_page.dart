@@ -1,6 +1,7 @@
+// --- Login page ---
+//
 // Eduardo Kairalla - 24024241
-
-// Login page.
+// Email/password sign-in screen with local validation and AppState bootstrap.
 
 // --- IMPORTS ---
 import 'package:flutter/material.dart';
@@ -12,8 +13,10 @@ import 'package:mesclainvest/core/exceptions/infrastructure.dart';
 import 'package:mesclainvest/core/services/auth.dart';
 import 'package:mesclainvest/pages/auth/widgets/auth_constants.dart';
 import 'package:mesclainvest/shared/widgets/app_button.dart';
+
 // --- CONSTANTS ---
-/// --- CODE ---
+
+// --- CODE ---
 
 /// I represent the login page.
 class LoginPage extends StatefulWidget {
@@ -31,7 +34,7 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage>
     with SingleTickerProviderStateMixin {
   // define controllers for text fields
-  final _authService = AuthService();
+  final _authService = AuthService.instance;
   final _formKey = GlobalKey<FormState>();
   final _emailCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
