@@ -9,10 +9,18 @@ import 'dart:async';
 
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
+import 'package:mesclainvest/app/app_state.dart';
 import 'package:mesclainvest/pages/balcao/models/order_book_model.dart';
 import 'package:mesclainvest/pages/balcao/services/order_service.dart';
 
-// --- CONTROLLER ---
+// --- CONSTANTS ---
+
+const double kMinOrderPriceFactor = 0.5;
+const double kMaxOrderPriceFactor = 1.5;
+const double kMaxOrderTotal = 100000;
+const int kMaxOrderQuantity = 100000;
+
+// --- CODE ---
 
 /// State holder for the balcão panel of a single startup.
 ///
@@ -74,7 +82,10 @@ class StartupOrderBookController extends ChangeNotifier {
 
     // start auto-refresh every 5 seconds
     _refreshTimer?.cancel();
-    _refreshTimer = Timer.periodic(const Duration(seconds: 5), (_) => refresh());
+    _refreshTimer = Timer.periodic(
+      const Duration(seconds: 5),
+      (_) => refresh(),
+    );
   }
 
   /// Silent refresh used by the 5s timer and after a successful submit.
@@ -122,9 +133,15 @@ class StartupOrderBookController extends ChangeNotifier {
   Future<bool> submitOrder({
     required int quantity,
     required double unitPrice,
+    required double marketPrice,
+    String? type,
   }) async {
     submitError = null;
     lastResultMessage = null;
+
+    if (type != null) {
+      selectedType = type;
+    }
 
     if (quantity <= 0) {
       submitError = 'Quantidade deve ser maior que zero.';
@@ -137,30 +154,52 @@ class StartupOrderBookController extends ChangeNotifier {
       return false;
     }
 
+    if (quantity > kMaxOrderQuantity) {
+      submitError = 'Quantidade maxima por ordem: $kMaxOrderQuantity tokens.';
+      notifyListeners();
+      return false;
+    }
+    final minPrice = marketPrice * kMinOrderPriceFactor;
+    final maxPrice = marketPrice * kMaxOrderPriceFactor;
+    if (unitPrice < minPrice || unitPrice > maxPrice) {
+      submitError =
+          'Preco fora da faixa permitida. Use entre 50% e 150% do preco de mercado.';
+      notifyListeners();
+      return false;
+    }
+    if (unitPrice * quantity > kMaxOrderTotal) {
+      submitError = 'Valor maximo por ordem: R\$ 100.000,00.';
+      notifyListeners();
+      return false;
+    }
+
     isSubmitting = true;
     notifyListeners();
 
     try {
       final outcome = await _service.createOrder(
         startupId: startupId,
-        type:      selectedType,
-        quantity:  quantity,
+        type: selectedType,
+        quantity: quantity,
         unitPrice: unitPrice,
       );
 
-      final filled    = (outcome['filled']    as num?)?.toInt() ?? 0;
+      final status = outcome['status'] as String? ?? 'pending';
+      final filled = (outcome['filled'] as num?)?.toInt() ?? 0;
       final remaining = (outcome['remaining'] as num?)?.toInt() ?? 0;
 
-      if (filled == quantity) {
-        lastResultMessage = 'Ordem fechada na hora ($filled tokens).';
+      if (status == 'completed') {
+        lastResultMessage = 'Ordem executada ($filled tokens).';
       } else if (filled > 0) {
-        lastResultMessage = 'Parcial: $filled tokens fechados, $remaining aguardando.';
+        lastResultMessage =
+            'Parcial: $filled tokens fechados, $remaining aguardando.';
       } else {
         lastResultMessage = 'Ordem aberta no balcão. Aguardando contraparte.';
       }
 
       // refresh the book to show the new state
       await refresh();
+      AppState.instance.triggerGlobalRefresh();
 
       return true;
     } on FirebaseFunctionsException catch (e) {
@@ -169,8 +208,13 @@ class StartupOrderBookController extends ChangeNotifier {
           final msg = (e.message ?? '').toLowerCase();
           if (msg.contains('balance')) {
             submitError = 'Saldo insuficiente para criar essa ordem.';
-          } else if (msg.contains('tokens to sell') || msg.contains('available')) {
+          } else if (msg.contains('tokens to sell') ||
+              msg.contains('available')) {
             submitError = 'Você não tem tokens suficientes para vender.';
+          } else if (msg.contains('outside allowed range')) {
+            submitError = 'Preco fora da faixa permitida para esse token.';
+          } else if (msg.contains('exceeds the limit')) {
+            submitError = 'Valor maximo por ordem: R\$ 100.000,00.';
           } else {
             submitError = e.message ?? 'Dados inválidos.';
           }

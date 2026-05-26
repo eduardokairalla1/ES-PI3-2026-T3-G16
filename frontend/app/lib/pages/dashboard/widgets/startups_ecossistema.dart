@@ -1,16 +1,11 @@
-/*
- * Widget de exibição das startups do ecossistema no Dashboard.
- * Inclui filtros dinâmicos por estágio (Novas, Operando, Favoritas) e listagem de cards.
- *
- * Alex Gabriel Soares Sousa - 24802449
- */
+// --- Startups do ecossistema ---
+//
+// Alex Gabriel Soares Sousa - 24802449
+// Exibe startups em destaque no Dashboard com filtros por estágio e favoritas.
 
 library;
 
-/*
- * IMPORTS
- */
-
+// --- IMPORTS ---
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mesclainvest/pages/catalog/widgets/startup_card.dart';
@@ -18,9 +13,7 @@ import 'package:mesclainvest/pages/dashboard/controllers/dashboard_controller.da
 import 'package:mesclainvest/pages/dashboard/widgets/resumo_mercado.dart';
 import 'package:mesclainvest/shared/styles/app_colors.dart';
 
-/*
- * CODE
- */
+// --- CODE ---
 
 /// Componente que exibe a seção de startups recomendadas e os chips de filtragem no Dashboard.
 /// Permite filtrar a exibição entre todas, novas (em captação), operando e as favoritas do investidor.
@@ -53,7 +46,7 @@ class StartupsEcossistema extends StatelessWidget {
               ),
               // Botão para ver o catálogo completo via GoRouter
               GestureDetector(
-                onTap: () => context.push('/catalog'),
+                onTap: () => context.go('/catalog'),
                 child: Row(
                   children: [
                     Text(
@@ -129,7 +122,10 @@ class StartupsEcossistema extends StatelessWidget {
                   const SizedBox(height: 16),
                   Text(
                     'Nenhuma startup encontrada.',
-                    style: TextStyle(color: AppColors.textSecondary(context), fontSize: 14),
+                    style: TextStyle(
+                      color: AppColors.textSecondary(context),
+                      fontSize: 14,
+                    ),
                   ),
                 ],
               ),
@@ -159,16 +155,16 @@ class StartupsEcossistema extends StatelessWidget {
 class _FilterChip extends StatelessWidget {
   /// Rótulo de texto do chip.
   final String label;
-  
+
   /// Indica se este chip de filtro está ativo/selecionado no momento.
   final bool isSelected;
-  
+
   /// Callback de clique do chip.
   final VoidCallback onTap;
-  
+
   /// Ícone opcional a ser exibido no início do chip.
   final IconData? icon;
-  
+
   /// Cor do ícone opcional.
   final dynamic iconColor;
 

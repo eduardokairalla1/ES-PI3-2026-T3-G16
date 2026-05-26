@@ -1,15 +1,17 @@
-/// Eduardo Kairalla - 24024241
-
-/// Global bottom navigation bar shared across main pages.
+// --- Bottom navigation ---
+//
+// Eduardo Kairalla - 24024241
+// Global bottom navigation bar shared across main pages.
 
 // --- IMPORTS ---
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mesclainvest/shared/styles/app_colors.dart';
 
+// --- CODE ---
 
+/// Bottom navigation shell used by the authenticated app tabs.
 class BottomNav extends StatelessWidget {
-
   final int currentIndex;
   final ValueChanged<int>? onTap;
 
@@ -34,20 +36,58 @@ class BottomNav extends StatelessWidget {
       ),
       child: Row(
         children: [
-          _NavItem(index: 0, current: currentIndex, iconOutlined: Icons.home_outlined,          iconFilled: Icons.home,           label: 'Home',     route: '/dashboard', onTap: onTap),
-          _NavItem(index: 1, current: currentIndex, iconOutlined: Icons.rocket_launch_outlined, iconFilled: Icons.rocket_launch,  label: 'Startups', route: '/catalog',   onTap: onTap),
-          _NavItem(index: 2, current: currentIndex, iconOutlined: Icons.wallet_outlined,        iconFilled: Icons.wallet,         label: 'Carteira', route: '/carteira',  onTap: onTap),
-          _NavItem(index: 3, current: currentIndex, iconOutlined: Icons.storefront_outlined,    iconFilled: Icons.storefront,     label: 'Balcão',   route: '/balcao',    onTap: onTap),
-          _NavItem(index: 4, current: currentIndex, iconOutlined: Icons.person_outline,         iconFilled: Icons.person,         label: 'Perfil',   route: '/profile',   onTap: onTap),
+          _NavItem(
+            index: 0,
+            current: currentIndex,
+            iconOutlined: Icons.home_outlined,
+            iconFilled: Icons.home,
+            label: 'Home',
+            route: '/dashboard',
+            onTap: onTap,
+          ),
+          _NavItem(
+            index: 1,
+            current: currentIndex,
+            iconOutlined: Icons.rocket_launch_outlined,
+            iconFilled: Icons.rocket_launch,
+            label: 'Startups',
+            route: '/catalog',
+            onTap: onTap,
+          ),
+          _NavItem(
+            index: 2,
+            current: currentIndex,
+            iconOutlined: Icons.wallet_outlined,
+            iconFilled: Icons.wallet,
+            label: 'Carteira',
+            route: '/carteira',
+            onTap: onTap,
+          ),
+          _NavItem(
+            index: 3,
+            current: currentIndex,
+            iconOutlined: Icons.storefront_outlined,
+            iconFilled: Icons.storefront,
+            label: 'Balcão',
+            route: '/balcao',
+            onTap: onTap,
+          ),
+          _NavItem(
+            index: 4,
+            current: currentIndex,
+            iconOutlined: Icons.person_outline,
+            iconFilled: Icons.person,
+            label: 'Perfil',
+            route: '/profile',
+            onTap: onTap,
+          ),
         ],
       ),
     );
   }
 }
 
-
 class _NavItem extends StatefulWidget {
-
   final int index;
   final int current;
   final IconData iconOutlined;
@@ -71,7 +111,6 @@ class _NavItem extends StatefulWidget {
 }
 
 class _NavItemState extends State<_NavItem> {
-
   double _scale = 1.0;
 
   bool get _isActive => widget.index == widget.current;
@@ -83,7 +122,6 @@ class _NavItemState extends State<_NavItem> {
   void _onTapCancel() => setState(() => _scale = 1.0);
 
   void _onTap(BuildContext context) {
-    if (_isActive) return;
     if (widget.onTap != null) {
       widget.onTap!(widget.index);
     } else {

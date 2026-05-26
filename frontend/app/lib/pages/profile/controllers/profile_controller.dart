@@ -1,6 +1,7 @@
+// --- Profile controller ---
+//
 // Eduardo Kairalla - 24024241
-
-// Controller for the profile screen.
+// Controller for profile actions, account stats and sign-out flow.
 
 // --- IMPORTS ---
 import 'package:flutter/material.dart';
@@ -10,11 +11,12 @@ import 'package:mesclainvest/pages/dashboard/models/dashboard_data.dart';
 import 'package:mesclainvest/pages/dashboard/services/dashboard_service.dart';
 import 'package:mesclainvest/pages/profile/services/profile_service.dart';
 
-// --- CONTROLLER ---
+// --- CODE ---
 
+/// I manage profile screen state and user account actions.
 class ProfileController extends ChangeNotifier {
   final ProfileService _service = ProfileService();
-  final AuthService _authService = AuthService();
+  final AuthService _authService = AuthService.instance;
   final DashboardService _dashboardService = DashboardService();
 
   bool isTogglingTwoFA = false;

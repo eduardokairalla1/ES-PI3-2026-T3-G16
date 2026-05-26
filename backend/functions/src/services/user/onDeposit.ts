@@ -1,34 +1,26 @@
-/* Function callable onDeposit.
- * Serviço para realização de depósitos virtuais na carteira digital do usuário.
- *
- * Alex Gabriel Soares Sousa - 24802449
- */
+// --- Function callable onDeposit ---
+//
+// Alex Gabriel Soares Sousa - 24802449
+// Serviço para realização de depósitos virtuais na carteira digital do usuário.
 
-/**
- * IMPORTS
- */
+// --- IMPORTS ---
 import {HttpsError} from 'firebase-functions/v2/https';
-import {depositToWallet, getWalletBalance} from '../../db/wallets/storage';
-import {recordTransaction} from '../../db/transactions/storage';
+import {getWalletBalance} from '../../db/wallets/storage';
+import {getUserDocId} from '../../db/users/storage';
 import {logger} from '../../utils/logger';
 import {verifyAuth} from '../../utils/auth';
+import db from '../../configs';
 
 
-/**
- * ERRORS
- */
+// --- ERRORS ---
 import {AuthError} from '../../errors/authError';
 
 
-/**
- * TYPES
- */
+// --- TYPES ---
 import type {CallableRequest} from 'firebase-functions/v2/https';
 
 
-/**
- * CODE
- */
+// --- CODE ---
 
 /**
  * Manipula a requisição da Cloud Function Callable 'onDeposit'.
@@ -43,7 +35,7 @@ export async function handleOnDeposit(request: CallableRequest)
     {
         // 1. Valida se a requisição provém de um usuário autenticado no Firebase
         const uid = verifyAuth(request);
-        let {amount} = request.data;
+        let {amount, depositId} = request.data;
 
         // 2. Validação de regras de negócio para o valor de depósito
         // Garante que o valor informado é numérico e estritamente positivo
@@ -61,20 +53,67 @@ export async function handleOnDeposit(request: CallableRequest)
         // 3. Arredonda o valor para garantir precisão exata de duas casas decimais (centavos)
         amount = Math.round(amount * 100) / 100;
 
-        logger.info(`Processando depósito de R$ ${amount} para o usuário "${uid}"...`);
+        const userDocId = await getUserDocId(uid);
+        if (!userDocId)
+        {
+            throw new HttpsError('not-found', `Documento do usuário com UID "${uid}" não encontrado.`);
+        }
 
-        // 4. Incrementa o saldo do usuário na carteira digital (Firestore)
-        await depositToWallet(uid, amount);
+        // 4. Executa o depósito e o registro histórico de forma atômica
+        await db.runTransaction(async (tx) =>
+        {
+            const walletRef = db.collection('wallets').doc(uid);
+            const walletSnap = await tx.get(walletRef);
+            if (!walletSnap.exists)
+            {
+                throw new HttpsError('not-found', `Carteira não encontrada para o usuário "${uid}".`);
+            }
 
-        // 5. Registra o depósito no histórico geral de transações do usuário
-        await recordTransaction(uid, {
-            amount: amount,
-            description: 'Depósito em conta',
-            status: 'completed',
-            type: 'deposit',
+            // Se depositId for informado, verifica se esta transação de depósito já foi processada
+            let transactionRef;
+            if (depositId)
+            {
+                transactionRef = db.collection('users')
+                    .doc(userDocId)
+                    .collection('transactions')
+                    .doc(depositId);
+
+                const transactionSnap = await tx.get(transactionRef);
+                if (transactionSnap.exists)
+                {
+                    logger.info(`Deposit with ID "${depositId}" was already processed. Skipping balance increment...`);
+                    return;
+                }
+            }
+            else
+            {
+                transactionRef = db.collection('users')
+                    .doc(userDocId)
+                    .collection('transactions')
+                    .doc();
+            }
+
+            const currentBalance = (walletSnap.data()?.balance as number) ?? 0;
+            const newBalance = currentBalance + amount;
+
+            // Incrementa o saldo do usuário na carteira digital (Firestore)
+            tx.update(walletRef, {
+                balance: newBalance,
+                updated_at: new Date(),
+            });
+
+            // Registra o depósito no histórico geral de transações do usuário
+            tx.set(transactionRef, {
+                id: transactionRef.id,
+                amount: amount,
+                description: 'Depósito em conta',
+                status: 'completed',
+                type: 'deposit',
+                created_at: new Date(),
+            });
         });
 
-        // 6. Consulta o saldo atualizado pós-transação para retorno da interface
+        // 5. Consulta o saldo atualizado pós-transação para retorno da interface
         const newBalance = await getWalletBalance(uid);
 
         return {

@@ -17,15 +17,16 @@ import 'package:mesclainvest/pages/balcao/models/order_book_model.dart';
 import 'package:mesclainvest/pages/startup/controllers/startup_order_book_controller.dart';
 import 'package:mesclainvest/pages/startup/models/startup_model.dart';
 import 'package:mesclainvest/shared/styles/app_colors.dart';
+import 'package:mesclainvest/shared/widgets/app_button.dart';
 
 // --- CONSTANTS ---
 
-const _kBuyColor  = Color(0xFF16A34A);  // green-600
-const _kSellColor = Color(0xFFDC2626);  // red-600
-const _kBuyBg     = Color(0x1416A34A);  // green tint
-const _kSellBg    = Color(0x14DC2626);  // red tint
+const _kBuyColor = Color(0xFF16A34A); // green-600
+const _kSellColor = Color(0xFFDC2626); // red-600
+const _kBuyBg = Color(0x1416A34A); // green tint
+const _kSellBg = Color(0x14DC2626); // red tint
 
-// --- WIDGET ---
+// --- CODE ---
 
 /// Full balcão panel for a single startup.
 ///
@@ -110,16 +111,18 @@ class _StartupOrderBookPanelState extends State<StartupOrderBookPanel> {
 
   Future<void> _submit() async {
     final price = _parsePrice(_priceCtrl.text);
-    final qty   = _parseQty(_qtyCtrl.text);
+    final qty = _parseQty(_qtyCtrl.text);
 
-    final ok = await _controller.submitOrder(quantity: qty, unitPrice: price);
+    final ok = await _controller.submitOrder(
+      quantity: qty,
+      unitPrice: price,
+      marketPrice: widget.startup.tokenPrice,
+    );
     if (!mounted) return;
 
     if (ok) {
       final msg = _controller.lastResultMessage ?? 'Ordem criada.';
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(msg)),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
       _qtyCtrl.clear();
     }
   }
@@ -239,7 +242,7 @@ class _StartupOrderBookPanelState extends State<StartupOrderBookPanel> {
         : widget.startup.tokenName;
 
     final price = _parsePrice(_priceCtrl.text);
-    final qty   = _parseQty(_qtyCtrl.text);
+    final qty = _parseQty(_qtyCtrl.text);
     final total = price * qty;
 
     return Container(
@@ -422,7 +425,10 @@ class _StartupOrderBookPanelState extends State<StartupOrderBookPanel> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: AppColors.textPrimary(context), width: 1.5),
+              borderSide: BorderSide(
+                color: AppColors.textPrimary(context),
+                width: 1.5,
+              ),
             ),
           ),
         ),
@@ -441,7 +447,9 @@ class _StartupOrderBookPanelState extends State<StartupOrderBookPanel> {
         height: 52,
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: _controller.isSubmitting ? color.withValues(alpha: 0.5) : color,
+          color: _controller.isSubmitting
+              ? color.withValues(alpha: 0.5)
+              : color,
           borderRadius: BorderRadius.circular(14),
         ),
         child: _controller.isSubmitting
@@ -470,25 +478,25 @@ class _StartupOrderBookPanelState extends State<StartupOrderBookPanel> {
 
   Widget _sellSection() {
     return _section(
-      title:       'Ofertas de venda',
-      count:       _controller.book.sellOrders.length,
-      color:       _kSellColor,
-      bg:          _kSellBg,
-      isSellSide:  true,
-      orders:      _controller.book.sellOrders,
-      emptyLabel:  'Ninguém está vendendo agora.',
+      title: 'Ofertas de venda',
+      count: _controller.book.sellOrders.length,
+      color: _kSellColor,
+      bg: _kSellBg,
+      isSellSide: true,
+      orders: _controller.book.sellOrders,
+      emptyLabel: 'Ninguém está vendendo agora.',
     );
   }
 
   Widget _buySection() {
     return _section(
-      title:       'Ofertas de compra',
-      count:       _controller.book.buyOrders.length,
-      color:       _kBuyColor,
-      bg:          _kBuyBg,
-      isSellSide:  false,
-      orders:      _controller.book.buyOrders,
-      emptyLabel:  'Ninguém está comprando agora.',
+      title: 'Ofertas de compra',
+      count: _controller.book.buyOrders.length,
+      color: _kBuyColor,
+      bg: _kBuyBg,
+      isSellSide: false,
+      orders: _controller.book.buyOrders,
+      emptyLabel: 'Ninguém está comprando agora.',
     );
   }
 
@@ -504,7 +512,11 @@ class _StartupOrderBookPanelState extends State<StartupOrderBookPanel> {
     if (_controller.isLoading) {
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: 16),
-        child: Center(child: CircularProgressIndicator(color: AppColors.textPrimary(context))),
+        child: Center(
+          child: CircularProgressIndicator(
+            color: AppColors.textPrimary(context),
+          ),
+        ),
       );
     }
 
@@ -518,10 +530,7 @@ class _StartupOrderBookPanelState extends State<StartupOrderBookPanel> {
               Container(
                 width: 8,
                 height: 8,
-                decoration: BoxDecoration(
-                  color: color,
-                  shape: BoxShape.circle,
-                ),
+                decoration: BoxDecoration(color: color, shape: BoxShape.circle),
               ),
               const SizedBox(width: 8),
               Text(
@@ -547,18 +556,21 @@ class _StartupOrderBookPanelState extends State<StartupOrderBookPanel> {
         if (orders.isEmpty)
           _emptyState(emptyLabel)
         else
-          ...orders.map((o) => _OrderCard(
-                entry:        o,
-                color:        color,
-                bg:           bg,
-                marketPrice:  _controller.book.currentMarketPrice == 0
-                    ? widget.startup.tokenPrice
-                    : _controller.book.currentMarketPrice,
-                isSellSide:   isSellSide,
-                currencyFmt:  _currencyFmt,
-                intFmt:       _intFmt,
-                onTap:        () => _onOrderTap(o, isSellOffer: isSellSide),
-              )),
+          ...orders.map(
+            (o) => _OrderCard(
+              entry: o,
+              color: color,
+              bg: bg,
+              marketPrice: _controller.book.currentMarketPrice == 0
+                  ? widget.startup.tokenPrice
+                  : _controller.book.currentMarketPrice,
+              isSellSide: isSellSide,
+              currencyFmt: _currencyFmt,
+              intFmt: _intFmt,
+              onTap: () =>
+                  _mostrarDialogoExecucaoOrdem(o, isSellOffer: isSellSide),
+            ),
+          ),
       ],
     );
   }
@@ -583,8 +595,178 @@ class _StartupOrderBookPanelState extends State<StartupOrderBookPanel> {
       ),
     );
   }
-}
 
+  Future<void> _mostrarDialogoExecucaoOrdem(
+    OpenOrderEntry entry, {
+    required bool isSellOffer,
+  }) async {
+    _onOrderTap(entry, isSellOffer: isSellOffer);
+
+    final qtyCtrl = TextEditingController(text: entry.remaining.toString());
+    bool isProcessing = false;
+    final isBuy = isSellOffer; // If it's a sell offer, I want to BUY.
+    final actionName = isBuy ? 'Comprar' : 'Vender';
+    final tokenName = widget.startup.tokenName.isEmpty
+        ? widget.startup.name
+        : widget.startup.tokenName;
+
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: !isProcessing,
+      builder: (dialogCtx) => StatefulBuilder(
+        builder: (dialogCtx, setState) {
+          final qty = int.tryParse(qtyCtrl.text) ?? 0;
+          final total = entry.price * qty;
+          final hasError = qty <= 0 || qty > entry.remaining;
+
+          Future<void> confirm() async {
+            if (hasError) return;
+            setState(() => isProcessing = true);
+            final messenger = ScaffoldMessenger.of(context);
+            final navigator = Navigator.of(dialogCtx);
+            try {
+              // We must set the selectedType on the controller to match the execution side
+              _controller.selectType(isBuy ? 'buy' : 'sell');
+              final ok = await _controller.submitOrder(
+                quantity: qty,
+                unitPrice: entry.price,
+                marketPrice: widget.startup.tokenPrice,
+              );
+              if (dialogCtx.mounted) {
+                navigator.pop();
+                if (ok) {
+                  messenger.showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        _controller.lastResultMessage ??
+                            'Ordem executada com sucesso!',
+                      ),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                } else {
+                  messenger.showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        _controller.submitError ?? 'Erro ao executar ordem.',
+                      ),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              }
+            } catch (e) {
+              if (dialogCtx.mounted) {
+                setState(() => isProcessing = false);
+                messenger.showSnackBar(
+                  SnackBar(
+                    content: Text('Erro: $e'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            }
+          }
+
+          return AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            title: Text('$actionName $tokenName'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  isBuy
+                      ? 'Você está aceitando uma oferta de venda (comprando tokens).'
+                      : 'Você está aceitando uma oferta de compra (vendendo tokens).',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: AppColors.textSecondary(dialogCtx),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Preço por token: ${_currencyFmt.format(entry.price)}',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary(dialogCtx),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: qtyCtrl,
+                  keyboardType: TextInputType.number,
+                  onChanged: (_) => setState(() {}),
+                  decoration: InputDecoration(
+                    labelText: 'Quantidade de tokens',
+                    hintText: 'Máx: ${entry.remaining}',
+                    errorText: hasError
+                        ? 'Quantidade inválida (máximo ${entry.remaining})'
+                        : null,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 12,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceMuted(dialogCtx),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        isBuy ? 'Total a pagar:' : 'Total a receber:',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textSecondary(dialogCtx),
+                        ),
+                      ),
+                      Text(
+                        _currencyFmt.format(total),
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary(dialogCtx),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              AppButton(
+                label: 'Cancelar',
+                variant: AppButtonVariant.text,
+                size: AppButtonSize.small,
+                fullWidth: false,
+                onPressed: isProcessing ? null : () => Navigator.pop(dialogCtx),
+              ),
+              AppButton(
+                label: actionName,
+                size: AppButtonSize.small,
+                fullWidth: false,
+                isLoading: isProcessing,
+                onPressed: isProcessing || hasError ? null : confirm,
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
 
 // --- ORDER CARD ---
 // One card per individual open order. Tapping prefills the form.
@@ -616,7 +798,8 @@ class _OrderCard extends StatelessWidget {
     final variance = marketPrice == 0
         ? 0.0
         : ((entry.price - marketPrice) / marketPrice) * 100;
-    final varianceLabel = '${variance >= 0 ? '+' : ''}${variance.toStringAsFixed(2)}%';
+    final varianceLabel =
+        '${variance >= 0 ? '+' : ''}${variance.toStringAsFixed(2)}%';
     // for sells, a NEGATIVE variance is "cheaper than market" → good for buyer
     // for buys,  a POSITIVE variance is "more than market"   → good for seller
     final isFavorable = isSellSide ? variance < 0 : variance > 0;
@@ -701,14 +884,19 @@ class _OrderCard extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w800,
-                    color: isFavorable ? _kBuyColor : AppColors.textSecondary(context),
+                    color: isFavorable
+                        ? _kBuyColor
+                        : AppColors.textSecondary(context),
                     letterSpacing: 0.2,
                   ),
                 ),
               ),
               // action hint
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: bg,
                   borderRadius: BorderRadius.circular(8),

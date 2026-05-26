@@ -1,30 +1,18 @@
-/*
- * Widget do Cartão de Patrimônio do Dashboard.
- * Exibe o saldo total, rendimento diário e saldo disponível na carteira do investidor.
- *
- * É o principal ponto de foco financeiro da Home, resumindo a custódia do usuário.
- * Oferece um botão para ligar/desligar a visibilidade dos saldos (olho aberto/fechado),
- * aplicando uma máscara visual aos valores sensíveis caso o usuário queira privacidade.
- * Renderiza tendências de rentabilidade diária com variações nominais (R$) e percentuais (%),
- * usando esquemas de cores semânticos (verde para alta e vermelho para queda).
- *
- * Alex Gabriel Soares Sousa - 24802449
- */
+// --- Cartão de patrimônio ---
+//
+// Alex Gabriel Soares Sousa - 24802449
+// Exibe patrimônio total, rendimento diário e saldo disponível do investidor.
 
 library;
 
-/*
- * IMPORTS
- */
-
+// --- IMPORTS ---
 import 'package:flutter/material.dart';
+import 'package:mesclainvest/app/app_state.dart';
 import 'package:mesclainvest/pages/dashboard/controllers/dashboard_controller.dart';
 import 'package:mesclainvest/shared/styles/app_colors.dart';
 import 'package:intl/intl.dart';
 
-/*
- * CODE
- */
+// --- CODE ---
 
 /// Exibição visual do patrimônio consolidado e rendimentos.
 /// Consome propriedades do [DashboardController] e reage a mudanças na visibilidade dos valores.
@@ -48,9 +36,14 @@ class CartaoPatrimonio extends StatelessWidget {
     if (data == null) return const SizedBox();
 
     // Formatação prévia dos saldos e rendimentos diários
-    final String valPatrimonio = formatter.format(data.patrimonioTotal);
+    final patrimonioTotal =
+        AppState.instance.patrimonioTotal ?? data.patrimonioTotal;
+    final saldoDisponivel =
+        AppState.instance.saldoDisponivelAtual ?? data.saldoDisponivel;
+    final String valPatrimonio = formatter.format(patrimonioTotal);
     final String valLucroDiario = formatter.format(data.rendimentoDiarioValor);
-    final String valLucroPorcentagem = data.rendimentoDiarioPorcentagem.toStringAsFixed(2);
+    final String valLucroPorcentagem = data.rendimentoDiarioPorcentagem
+        .toStringAsFixed(2);
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
@@ -164,14 +157,20 @@ class CartaoPatrimonio extends StatelessWidget {
                       : '(****) ****',
                   style: TextStyle(
                     fontSize: 14,
-                    color: visivel ? AppColors.textSecondary(context) : AppColors.textMuted(context),
+                    color: visivel
+                        ? AppColors.textSecondary(context)
+                        : AppColors.textMuted(context),
                   ),
                 ),
               ],
             ),
           ),
 
-          Divider(height: 32, thickness: 1, color: AppColors.borderSoft(context)),
+          Divider(
+            height: 32,
+            thickness: 1,
+            color: AppColors.borderSoft(context),
+          ),
 
           // --- Saldo Disponível na Carteira (Wallet) ---
           Row(
@@ -190,9 +189,7 @@ class CartaoPatrimonio extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    visivel
-                        ? formatter.format(data.saldoDisponivel)
-                        : 'R\$ ****',
+                    visivel ? formatter.format(saldoDisponivel) : 'R\$ ****',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,

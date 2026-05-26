@@ -1,35 +1,27 @@
-/**
- * Function callable onGetPortfolio.
- *
- * Davi da Cruz Shieh - 24798076
- */
+// --- Function callable onGetPortfolio ---
+//
+// Davi da Cruz Shieh - 24798076
+// Returns the authenticated user's current startup holdings.
 
-/**
- * IMPORTS
- */
+// --- IMPORTS ---
 import {HttpsError} from 'firebase-functions/v2/https';
 import {getStartup} from '../../db/startups/storage';
+import {getUserDocId} from '../../db/users/storage';
 import {verifyAuth} from '../../utils/auth';
 import {logger} from '../../utils/logger';
 import db from '../../configs';
 
 
-/**
- * ERRORS
- */
+// --- ERRORS ---
 import {AuthError} from '../../errors/authError';
 import {InternalError} from '../../errors/internalError';
 
 
-/**
- * TYPES
- */
+// --- TYPES ---
 import type {CallableRequest} from 'firebase-functions/v2/https';
 
 
-/**
- * CODE
- */
+// --- CODE ---
 
 /**
  * I handle the onGetPortfolio callable.
@@ -48,95 +40,41 @@ export async function handleOnGetPortfolio(request: CallableRequest)
 
         logger.info(`Fetching portfolio for user "${uid}"...`);
 
-        // fetch all buy orders for this user
-        const ordersSnap = await db
-            .collection('orders')
-            .where('uid', '==', uid)
-            .where('type', '==', 'buy')
-            .get();
-
-        // pull all sell orders and aggregate below
-        const sellOrdersSnap = await db
-            .collection('orders')
-            .where('uid',  '==', uid)
-            .where('type', '==', 'sell')
-            .get();
-
-        if (ordersSnap.empty)
+        const userDocId = await getUserDocId(uid);
+        if (!userDocId)
         {
             return {holdings: []};
         }
 
-        // group orders by startup: total quantity + first purchase price
-        const byStartup = new Map<string, {quantity: number; firstUnitPrice: number}>();
+        const investmentsSnap = await db
+            .collection('users')
+            .doc(userDocId)
+            .collection('investments')
+            .get();
 
-        // Sort buy orders in memory by created_at to correctly identify the first purchase price
-        const buyDocs = ordersSnap.docs.map(doc =>
+        if (investmentsSnap.empty)
         {
-            const data = doc.data();
-            return {
-                id: doc.id,
-                startup_id: data.startup_id as string,
-                filled_quantity: (data.filled_quantity as number) ?? 0,
-                unit_price: data.unit_price as number,
-                created_at: data.created_at,
-            };
-        }).sort((a, b) =>
-        {
-            const timeA = a.created_at?.toDate?.()?.getTime() || 0;
-            const timeB = b.created_at?.toDate?.()?.getTime() || 0;
-            return timeA - timeB;
-        });
-
-        for (const data of buyDocs)
-        {
-            const startupId = data.startup_id;
-            const filled    = data.filled_quantity;
-            const unitPrice = data.unit_price;
-
-            if (filled <= 0) continue;
-
-            if (byStartup.has(startupId))
-            {
-                byStartup.get(startupId)!.quantity += filled;
-            }
-            else
-            {
-                // first order for this startup = first purchase price
-                byStartup.set(startupId, {quantity: filled, firstUnitPrice: unitPrice});
-            }
-        }
-
-        // subtract tokens that left the user's holdings via sells
-        for (const doc of sellOrdersSnap.docs)
-        {
-            const data      = doc.data();
-            const startupId = data.startup_id as string;
-            const filled    = (data.filled_quantity as number) ?? 0;
-
-            if (filled <= 0) continue;
-            if (!byStartup.has(startupId)) continue;
-
-            byStartup.get(startupId)!.quantity -= filled;
-        }
-
-        // drop startups whose net quantity dropped to zero or less (fully sold)
-        for (const [sid, agg] of Array.from(byStartup.entries()))
-        {
-            if (agg.quantity <= 0) byStartup.delete(sid);
+            return {holdings: []};
         }
 
         // fetch startup details and build holdings
         const holdings = await Promise.all(
-            Array.from(byStartup.entries()).map(async ([startupId, {quantity, firstUnitPrice}]) =>
+            investmentsSnap.docs.map(async (doc) =>
             {
+                const invData = doc.data();
+                const startupId = invData.startup_id;
+                const tokenQuantity = (invData.token_quantity as number) ?? 0;
+                const purchasePrice = (invData.avg_purchase_price as number) ?? 0;
+
+                if (tokenQuantity <= 0) return null;
+
                 const startup = await getStartup(startupId);
                 if (startup === null) return null;
 
                 const currentPrice  = startup.token_price;
-                const totalValue    = quantity * currentPrice;
-                const changePercent = firstUnitPrice > 0
-                    ? ((currentPrice - firstUnitPrice) / firstUnitPrice) * 100
+                const totalValue    = tokenQuantity * currentPrice;
+                const changePercent = purchasePrice > 0
+                    ? ((currentPrice - purchasePrice) / purchasePrice) * 100
                     : 0;
 
                 return {
@@ -146,9 +84,9 @@ export async function handleOnGetPortfolio(request: CallableRequest)
                     stage:         startup.stage,
                     tagline:       startup.tagline,
                     tokenPrice:    currentPrice,
-                    tokenQuantity: quantity,
+                    tokenQuantity,
                     totalValue,
-                    purchasePrice: firstUnitPrice,
+                    purchasePrice,
                     changePercent,
                 };
             }),

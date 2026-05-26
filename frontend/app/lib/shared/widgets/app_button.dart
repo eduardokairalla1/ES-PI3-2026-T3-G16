@@ -6,8 +6,11 @@
 // Chips, stepper +/-, menu rows, icon-only buttons and bottom-nav items are
 // intentionally NOT covered — they have very different semantics.
 
+// --- IMPORTS ---
 import 'package:flutter/material.dart';
 import 'package:mesclainvest/shared/styles/app_colors.dart';
+
+// --- TYPES ---
 
 /// Visual + semantic variant of the button.
 enum AppButtonVariant {
@@ -36,6 +39,9 @@ enum AppButtonSize {
   small,
 }
 
+// --- CODE ---
+
+/// Shared textual button used by forms, dialogs and page-level actions.
 class AppButton extends StatefulWidget {
   final String label;
   final VoidCallback? onPressed;
@@ -62,26 +68,38 @@ class AppButton extends StatefulWidget {
 
 class _AppButtonState extends State<AppButton> {
   bool _pressed = false;
+  bool _isThrottled = false;
 
   bool get _enabled => widget.onPressed != null && !widget.isLoading;
 
+  void _handleTap() {
+    if (!_enabled || _isThrottled) return;
+    _isThrottled = true;
+    widget.onPressed!();
+    Future.delayed(const Duration(milliseconds: 600), () {
+      if (mounted) {
+        _isThrottled = false;
+      }
+    });
+  }
+
   double get _height => switch (widget.size) {
-        AppButtonSize.large  => 58,
-        AppButtonSize.medium => 52,
-        AppButtonSize.small  => 44,
-      };
+    AppButtonSize.large => 58,
+    AppButtonSize.medium => 52,
+    AppButtonSize.small => 44,
+  };
 
   double get _fontSize => switch (widget.size) {
-        AppButtonSize.large  => 16,
-        AppButtonSize.medium => 15,
-        AppButtonSize.small  => 14,
-      };
+    AppButtonSize.large => 16,
+    AppButtonSize.medium => 15,
+    AppButtonSize.small => 14,
+  };
 
   EdgeInsets get _padding => switch (widget.size) {
-        AppButtonSize.large  => const EdgeInsets.symmetric(horizontal: 24),
-        AppButtonSize.medium => const EdgeInsets.symmetric(horizontal: 20),
-        AppButtonSize.small  => const EdgeInsets.symmetric(horizontal: 16),
-      };
+    AppButtonSize.large => const EdgeInsets.symmetric(horizontal: 24),
+    AppButtonSize.medium => const EdgeInsets.symmetric(horizontal: 20),
+    AppButtonSize.small => const EdgeInsets.symmetric(horizontal: 16),
+  };
 
   _ButtonColors get _colors {
     if (!_enabled && !widget.isLoading) {
@@ -95,25 +113,25 @@ class _AppButtonState extends State<AppButton> {
 
     return switch (widget.variant) {
       AppButtonVariant.primary => const _ButtonColors(
-          background: AppColors.buttonPrimaryBg,
-          foreground: AppColors.buttonPrimaryFg,
-          border: Colors.transparent,
-        ),
+        background: AppColors.buttonPrimaryBg,
+        foreground: AppColors.buttonPrimaryFg,
+        border: Colors.transparent,
+      ),
       AppButtonVariant.secondary => const _ButtonColors(
-          background: AppColors.buttonSecondaryBg,
-          foreground: AppColors.buttonSecondaryFg,
-          border: AppColors.buttonSecondaryBorder,
-        ),
+        background: AppColors.buttonSecondaryBg,
+        foreground: AppColors.buttonSecondaryFg,
+        border: AppColors.buttonSecondaryBorder,
+      ),
       AppButtonVariant.text => const _ButtonColors(
-          background: Colors.transparent,
-          foreground: AppColors.buttonTextFg,
-          border: Colors.transparent,
-        ),
+        background: Colors.transparent,
+        foreground: AppColors.buttonTextFg,
+        border: Colors.transparent,
+      ),
       AppButtonVariant.destructive => const _ButtonColors(
-          background: AppColors.buttonSecondaryBg,
-          foreground: AppColors.buttonDestructiveFg,
-          border: AppColors.buttonSecondaryBorder,
-        ),
+        background: AppColors.buttonSecondaryBg,
+        foreground: AppColors.buttonDestructiveFg,
+        border: AppColors.buttonSecondaryBorder,
+      ),
     };
   }
 
@@ -130,7 +148,7 @@ class _AppButtonState extends State<AppButton> {
     final content = widget.isLoading
         ? SizedBox(
             height: _fontSize + 4,
-            width:  _fontSize + 4,
+            width: _fontSize + 4,
             child: CircularProgressIndicator(
               strokeWidth: 2,
               valueColor: AlwaysStoppedAnimation<Color>(colors.foreground),
@@ -141,7 +159,11 @@ class _AppButtonState extends State<AppButton> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               if (widget.icon != null) ...[
-                Icon(widget.icon, size: _fontSize + 4, color: colors.foreground),
+                Icon(
+                  widget.icon,
+                  size: _fontSize + 4,
+                  color: colors.foreground,
+                ),
                 const SizedBox(width: 10),
               ],
               Text(
@@ -180,10 +202,10 @@ class _AppButtonState extends State<AppButton> {
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTapDown:   (_) => _setPressed(true),
-      onTapUp:     (_) => _setPressed(false),
-      onTapCancel: ()  => _setPressed(false),
-      onTap: _enabled ? widget.onPressed : null,
+      onTapDown: (_) => _setPressed(true),
+      onTapUp: (_) => _setPressed(false),
+      onTapCancel: () => _setPressed(false),
+      onTap: _enabled ? _handleTap : null,
       child: scaled,
     );
   }

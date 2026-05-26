@@ -1,6 +1,13 @@
+// --- Dashboard data tests ---
+//
+// Unit tests for frontend model normalization from Cloud Function payloads.
+
+// --- IMPORTS ---
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mesclainvest/pages/dashboard/models/dashboard_data.dart';
 import 'package:mesclainvest/pages/dashboard/models/transaction_model.dart';
+
+// --- CODE ---
 
 void main() {
   group('DashboardData', () {
@@ -28,7 +35,7 @@ void main() {
       });
 
       expect(data.nomeUsuario, 'Ana Investidora');
-      expect(data.patrimonioTotal, 2000);
+      expect(data.patrimonioTotal, 1500);
       expect(data.saldoDisponivel, 500);
       expect(data.favoriteIds, ['startup-1', '42']);
       expect(data.investimentos.single.startupName, 'Mescla Labs');

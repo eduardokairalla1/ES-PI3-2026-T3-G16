@@ -1,14 +1,16 @@
 // --- Startup detail controller ---
 //
 // Eduardo Kairalla - 24024241
+// Manages startup detail loading, Q&A submission and primary token purchase.
 
 // --- IMPORTS ---
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
+import 'package:mesclainvest/app/app_state.dart';
 import 'package:mesclainvest/pages/startup/models/startup_model.dart';
 import 'package:mesclainvest/pages/startup/services/startup_service.dart';
 
-// --- CONTROLLER ---
+// --- CODE ---
 
 /// I manage state and logic for the startup detail screen.
 class StartupController extends ChangeNotifier {
@@ -16,9 +18,9 @@ class StartupController extends ChangeNotifier {
 
   bool isLoading = true;
   bool isSendingQuestion = false;
-  bool isBuyingTokens    = false;
-  bool showOrderPanel    = false;
-  int  orderQuantity     = 1;
+  bool isBuyingTokens = false;
+  bool showOrderPanel = false;
+  int orderQuantity = 1;
   String? buyErrorMessage;
 
   StartupModel? startup;
@@ -54,9 +56,9 @@ class StartupController extends ChangeNotifier {
   }
 
   void openOrderPanel() {
-    orderQuantity   = 1;
+    orderQuantity = 1;
     buyErrorMessage = null;
-    showOrderPanel  = true;
+    showOrderPanel = true;
     notifyListeners();
   }
 
@@ -77,7 +79,7 @@ class StartupController extends ChangeNotifier {
 
   /// I buy tokens and return true on success.
   Future<bool> buyTokens(String startupId) async {
-    isBuyingTokens  = true;
+    isBuyingTokens = true;
     buyErrorMessage = null;
     notifyListeners();
 
@@ -85,15 +87,18 @@ class StartupController extends ChangeNotifier {
       await _service.buyTokens(startupId, orderQuantity);
       showOrderPanel = false;
       await load(startupId, silent: true);
+      AppState.instance.triggerGlobalRefresh();
       return true;
     } on FirebaseFunctionsException catch (e) {
       switch (e.code) {
         case 'invalid-argument':
           final msg = e.message ?? '';
           if (msg.toLowerCase().contains('balance')) {
-            buyErrorMessage = 'Saldo insuficiente para realizar este investimento.';
+            buyErrorMessage =
+                'Saldo insuficiente para realizar este investimento.';
           } else if (msg.toLowerCase().contains('token')) {
-            buyErrorMessage = 'Tokens insuficientes disponíveis para esta startup.';
+            buyErrorMessage =
+                'Tokens insuficientes disponíveis para esta startup.';
           } else {
             buyErrorMessage = e.message ?? 'Dados inválidos.';
           }
@@ -102,7 +107,8 @@ class StartupController extends ChangeNotifier {
         case 'unauthenticated':
           buyErrorMessage = 'Sessão expirada. Faça login novamente.';
         default:
-          buyErrorMessage = 'Não foi possível realizar o investimento. Tente novamente.';
+          buyErrorMessage =
+              'Não foi possível realizar o investimento. Tente novamente.';
       }
       return false;
     } finally {
