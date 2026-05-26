@@ -1,30 +1,20 @@
-/*
- * Widget de cabeçalho do Dashboard, exibindo informações do perfil do usuário.
- *
- * Renderiza o cabeçalho superior da página principal, contendo o avatar do investidor,
- * o nome completo de perfil e o sino de alertas/notificações com badge indicador.
- * Sincroniza-se com o singleton global [AppState] para refletir instantaneamente
- * alterações de foto ou nome feitas na tela de Perfil.
- *
- * Alex Gabriel Soares Sousa - 24802449
- */
+// --- Cabeçalho do Dashboard ---
+//
+// Alex Gabriel Soares Sousa - 24802449
+// Exibe avatar, nome do usuário e acesso às notificações do Dashboard.
 
 library;
 
-/*
- * IMPORTS
- */
-
+// --- IMPORTS ---
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:mesclainvest/app/app_state.dart';
 import 'package:mesclainvest/shared/styles/app_colors.dart';
+import 'package:mesclainvest/shared/widgets/notifications_sheet.dart';
 
 import 'package:mesclainvest/pages/dashboard/controllers/dashboard_controller.dart';
 
-/*
- * CODE
- */
+// --- CODE ---
 
 /// Barra superior com dados do usuário (Avatar e Nome) e botão de notificações.
 /// Reage reativamente às atualizações do perfil através do controlador de estado.
@@ -39,11 +29,12 @@ class CabecalhoDashboard extends StatelessWidget {
   Widget build(BuildContext context) {
     // Busca dados atualizados do perfil no singleton global (persistência temporária em RAM)
     final profile = AppState.instance.profile;
-    
+
     // Fallback inteligente: se o perfil global estiver nulo (ex: refresh na página web),
     // tenta usar o nome retornado pela chamada do Dashboard no backend. Senão, mostra 'Usuário'.
-    final userName = profile?.fullName ?? controller.data?.nomeUsuario ?? 'Usuário';
-    
+    final userName =
+        profile?.fullName ?? controller.data?.nomeUsuario ?? 'Usuário';
+
     // Obtém a primeira letra do nome do usuário para compor o avatar textual caso não haja foto definida
     final initial = userName.isNotEmpty ? userName[0].toUpperCase() : 'U';
     final photoUrl = profile?.photoUrl;
@@ -108,7 +99,11 @@ class CabecalhoDashboard extends StatelessWidget {
             Stack(
               children: [
                 IconButton(
-                  onPressed: () {},
+                  onPressed: () => showAppNotificationsSheet(
+                    context: context,
+                    data: controller.data,
+                    loadTransactions: controller.getTransactions,
+                  ),
                   icon: Icon(
                     Icons.notifications_outlined,
                     color: AppColors.textPrimary(context),

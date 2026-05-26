@@ -1,23 +1,11 @@
-/*
- * Widgets para os botões de ação do Dashboard (Depositar, Comprar, Vender, Extrato).
- *
- * Este arquivo reúne a barra de atalhos rápidos do usuário na tela principal.
- * Ele provê botões funcionais para:
- * 1. Carteira: Abre o painel de custódia consolidada.
- * 2. Depositar: Abre um modal interativo de dois passos (Digitação -> Confirmação) para injetar saldo na conta fictícia.
- * 3. Comprar: Redireciona para o catálogo de startups disponíveis para receber aportes.
- * 4. Vender: Abre o mercado secundário descentralizado (Balcão P2P) para cadastrar ordens de venda.
- * 5. Extrato: Exibe o histórico recente de depósitos, compras e vendas utilizando consultas assíncronas.
- *
- * Alex Gabriel Soares Sousa - 24802449
- */
+// --- Botões de ação do Dashboard ---
+//
+// Alex Gabriel Soares Sousa - 24802449
+// Reúne os atalhos rápidos da Home: carteira, depósito, compra, venda e extrato.
 
 library;
 
-/*
- * IMPORTS
- */
-
+// --- IMPORTS ---
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
@@ -27,9 +15,7 @@ import 'package:mesclainvest/pages/dashboard/models/transaction_model.dart';
 import 'package:mesclainvest/shared/styles/app_colors.dart';
 import 'package:mesclainvest/shared/widgets/app_button.dart';
 
-/*
- * HELPERS
- */
+// --- HELPERS ---
 
 /// Formata a entrada do usuário em tempo real como moeda brasileira (R$ X.XXX,XX).
 /// Os dígitos entram da direita para a esquerda (estilo caixa registradora - centavos primeiro).
@@ -66,9 +52,7 @@ class _CurrencyInputFormatter extends TextInputFormatter {
   }
 }
 
-/*
- * CODE
- */
+// --- CODE ---
 
 /// Widget principal que agrupa os botões de atalho da dashboard em uma linha horizontal rolável/ajustável.
 class BotoesAcao extends StatelessWidget {
@@ -78,15 +62,17 @@ class BotoesAcao extends StatelessWidget {
   /// Construtor injetando o controller.
   const BotoesAcao({super.key, required this.controller});
 
-  /**
-   * MÉTODOS PRIVADOS
-   */
+  // --- MÉTODOS PRIVADOS ---
+  static bool _isDialogShowing = false;
 
   /// Abre o pop-up de depósito (Simulação bancária de entrada de recursos na carteira).
   /// Possui fluxo de dois passos usando um [StatefulBuilder] interno para gerenciar a transição:
   /// - Passo 1: Digitação do valor com máscara de moeda e validações de teto (limite R$ 100k).
   /// - Passo 2: Tela de confirmação e processamento de chamada assíncrona ao backend com feedback visual.
   void _mostrarDialogoDeposito(BuildContext context) {
+    if (_isDialogShowing) return;
+    _isDialogShowing = true;
+
     final TextEditingController valorController = TextEditingController();
     bool isProcessando = false;
     bool mostrarConfirmacao = false;
@@ -178,71 +164,77 @@ class BotoesAcao extends StatelessWidget {
                 size: AppButtonSize.small,
                 fullWidth: false,
                 isLoading: isProcessando,
-                onPressed: isProcessando ? null : () async {
-                  if (isProcessando) return;
-                  if (!noPassoConfirmacao) {
-                    final raw = valorController.text
-                        .replaceAll('.', '')
-                        .replaceAll(',', '.');
-                    final double? parsedValue = double.tryParse(raw);
+                onPressed: isProcessando
+                    ? null
+                    : () async {
+                        if (isProcessando) return;
+                        if (!noPassoConfirmacao) {
+                          final raw = valorController.text
+                              .replaceAll('.', '')
+                              .replaceAll(',', '.');
+                          final double? parsedValue = double.tryParse(raw);
 
-                    if (parsedValue != null && parsedValue > 0) {
-                      if (parsedValue > 100000) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              'O valor máximo para depósito é R\$ 100.000,00.',
-                            ),
-                            backgroundColor: Colors.orange,
-                          ),
-                        );
-                        return;
-                      }
-                      setState(() {
-                        valorFinal = parsedValue;
-                        mostrarConfirmacao = true;
-                      });
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Por favor, insira um valor válido.'),
-                        ),
-                      );
-                    }
-                  } else {
-                    setState(() => isProcessando = true);
-                    try {
-                      await controller.deposit(valorFinal!);
-                      if (context.mounted) {
-                        Navigator.pop(context);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              'Depósito de R\$ ${valorFinal!.toStringAsFixed(2)} realizado com sucesso!',
-                            ),
-                            backgroundColor: Colors.green,
-                          ),
-                        );
-                      }
-                    } catch (e) {
-                      setState(() => isProcessando = false);
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Erro: $e'),
-                            backgroundColor: Colors.red,
-                          ),
-                        );
-                      }
-                    }
-                  }
-                },
+                          if (parsedValue != null && parsedValue > 0) {
+                            if (parsedValue > 100000) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    'O valor máximo para depósito é R\$ 100.000,00.',
+                                  ),
+                                  backgroundColor: Colors.orange,
+                                ),
+                              );
+                              return;
+                            }
+                            setState(() {
+                              valorFinal = parsedValue;
+                              mostrarConfirmacao = true;
+                            });
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  'Por favor, insira um valor válido.',
+                                ),
+                              ),
+                            );
+                          }
+                        } else {
+                          setState(() => isProcessando = true);
+                          try {
+                            await controller.deposit(valorFinal!);
+                            if (context.mounted) {
+                              Navigator.pop(context);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'Depósito de R\$ ${valorFinal!.toStringAsFixed(2)} realizado com sucesso!',
+                                  ),
+                                  backgroundColor: Colors.green,
+                                ),
+                              );
+                            }
+                          } catch (e) {
+                            setState(() => isProcessando = false);
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Erro: $e'),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            }
+                          }
+                        }
+                      },
               ),
             ],
           );
         },
       ),
-    );
+    ).then((_) {
+      _isDialogShowing = false;
+    });
   }
 
   /// Abre o pop-up de extrato contendo as movimentações recentes do usuário.
@@ -441,16 +433,16 @@ class BotoesAcao extends StatelessWidget {
 }
 
 /// Widget interno para representar cada item de ação individual com feedbacks visuais de foco e toque.
-/// 
+///
 /// Todos os botões iniciam com cores discretas e mudam de cor dinamicamente quando focados
 /// pelo ponteiro do mouse (no Desktop) ou pressionados (no Mobile/Web), gerando uma experiência interativa rica.
 class _BotaoAcaoItem extends StatefulWidget {
   /// Ícone que ilustra a ação a ser executada.
   final IconData icon;
-  
+
   /// Texto exibido logo abaixo do ícone.
   final String label;
-  
+
   /// Callback de navegação ou abertura de diálogos disparado ao clicar no botão.
   final VoidCallback onTap;
 

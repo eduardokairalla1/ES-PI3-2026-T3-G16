@@ -1,9 +1,11 @@
+// --- Startup catalog page ---
+//
 // Eduardo Kairalla - 24024241
-
-// Startup catalog listing page.
+// Startup catalog listing with stage and favorites filters.
 
 // --- IMPORTS ---
 import 'package:flutter/material.dart';
+import 'package:mesclainvest/app/app_state.dart';
 import 'package:mesclainvest/pages/catalog/controllers/catalog_controller.dart';
 import 'package:mesclainvest/pages/catalog/widgets/startup_card.dart';
 import 'package:mesclainvest/shared/styles/app_colors.dart';
@@ -16,10 +18,12 @@ const _kStages = [
   (label: 'Nova', value: 'new'),
   (label: 'Em operação', value: 'operating'),
   (label: 'Em expansão', value: 'expanding'),
+  (label: 'Favoritas', value: 'favorites'),
 ];
 
-// --- PAGE ---
+// --- CODE ---
 
+/// I represent the startup catalog page.
 class CatalogPage extends StatefulWidget {
   const CatalogPage({super.key});
 
@@ -45,7 +49,7 @@ class _CatalogPageState extends State<CatalogPage> {
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
-      animation: _controller,
+      animation: Listenable.merge([_controller, AppState.instance]),
       builder: (context, _) {
         return Scaffold(
           backgroundColor: AppColors.pageBackground(context),
@@ -165,7 +169,10 @@ class _CatalogPageState extends State<CatalogPage> {
               Text(
                 _controller.errorMessage!,
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 15, color: AppColors.textSecondary(context)),
+                style: TextStyle(
+                  fontSize: 15,
+                  color: AppColors.textSecondary(context),
+                ),
               ),
               const SizedBox(height: 24),
               AppButton(
@@ -180,7 +187,9 @@ class _CatalogPageState extends State<CatalogPage> {
       );
     }
 
-    if (_controller.startups.isEmpty) {
+    final visibleStartups = _controller.visibleStartups;
+
+    if (visibleStartups.isEmpty) {
       return Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -194,7 +203,10 @@ class _CatalogPageState extends State<CatalogPage> {
             Text(
               'Nenhuma startup encontrada\nnesta categoria.',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 15, color: AppColors.textSecondary(context)),
+              style: TextStyle(
+                fontSize: 15,
+                color: AppColors.textSecondary(context),
+              ),
             ),
           ],
         ),
@@ -206,9 +218,9 @@ class _CatalogPageState extends State<CatalogPage> {
       onRefresh: _controller.load,
       child: ListView.builder(
         padding: const EdgeInsets.only(top: 4, bottom: 16),
-        itemCount: _controller.startups.length,
+        itemCount: visibleStartups.length,
         itemBuilder: (context, i) {
-          final startup = _controller.startups[i];
+          final startup = visibleStartups[i];
           return StartupCard(
             startup: startup,
             isFavorite: _controller.isFavorite(startup.id),

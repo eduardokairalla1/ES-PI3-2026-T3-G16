@@ -1,16 +1,19 @@
+// --- Startup catalog controller ---
+//
 // Eduardo Kairalla - 24024241
-
-// Controller for the startup catalog page.
+// Controller for startup listing, stage filters and favorite toggles.
 
 // --- IMPORTS ---
 import 'package:flutter/material.dart';
+import 'package:mesclainvest/app/app_state.dart';
 import 'package:mesclainvest/pages/catalog/services/catalog_service.dart';
 import 'package:mesclainvest/pages/dashboard/models/dashboard_data.dart';
 import 'package:mesclainvest/pages/dashboard/services/dashboard_service.dart';
 import 'package:mesclainvest/pages/startup/models/startup_model.dart';
 
-// --- CONTROLLER ---
+// --- CODE ---
 
+/// I manage startup catalog state and user favorite interactions.
 class CatalogController extends ChangeNotifier {
   bool _disposed = false;
 
@@ -35,7 +38,12 @@ class CatalogController extends ChangeNotifier {
   String? selectedStage; // null = all
   String? errorMessage;
 
-  final Set<String> _favoriteIds = {};
+  List<StartupModel> get visibleStartups {
+    if (selectedStage != 'favorites') return startups;
+    return startups
+        .where((s) => AppState.instance.favoriteIds.contains(s.id))
+        .toList();
+  }
 
   /// I load startups for the current stage filter.
   Future<void> load() async {
@@ -44,16 +52,19 @@ class CatalogController extends ChangeNotifier {
     notifyListeners();
 
     try {
+      final stage = selectedStage == 'favorites' ? null : selectedStage;
       final results = await Future.wait([
-        _service.fetchStartups(stage: selectedStage),
+        _service.fetchStartups(stage: stage),
         _dashboardService.fetchUserDashboardData(),
       ]);
       startups = results[0] as List<StartupModel>;
       final dashboardData = results[1] as DashboardData;
-      
-      _favoriteIds
-        ..clear()
-        ..addAll(dashboardData.favoriteIds);
+
+      AppState.instance.setFinancialSummary(
+        saldoDisponivel: dashboardData.saldoDisponivel,
+        patrimonioTotal: dashboardData.patrimonioTotal,
+      );
+      AppState.instance.setFavoriteIds(dashboardData.favoriteIds.toSet());
     } catch (_) {
       errorMessage = 'Não foi possível carregar as startups. Tente novamente.';
     } finally {
@@ -69,35 +80,33 @@ class CatalogController extends ChangeNotifier {
     await load();
   }
 
+  final Set<String> _togglingFavoriteIds = {};
+
+  bool isTogglingFavorite(String startupId) {
+    return _togglingFavoriteIds.contains(startupId);
+  }
+
   /// Retorna se a startup correspondente ao ID informado está favoritada.
   bool isFavorite(String startupId) {
-    return _favoriteIds.contains(startupId);
+    return AppState.instance.favoriteIds.contains(startupId);
   }
 
   /// Adiciona ou remove uma startup dos favoritos do usuário.
   Future<void> toggleFavorite(String startupId) async {
-    final wasFav = _favoriteIds.contains(startupId);
-    if (wasFav) {
-      _favoriteIds.remove(startupId);
-    } else {
-      _favoriteIds.add(startupId);
-    }
+    if (_togglingFavoriteIds.contains(startupId)) return;
+    _togglingFavoriteIds.add(startupId);
     notifyListeners();
+
+    final wasFav = AppState.instance.favoriteIds.contains(startupId);
+    AppState.instance.setFavorite(startupId, !wasFav);
 
     try {
       final newStatus = await _dashboardService.toggleFavorite(startupId);
-      if (newStatus) {
-        _favoriteIds.add(startupId);
-      } else {
-        _favoriteIds.remove(startupId);
-      }
-      notifyListeners();
+      AppState.instance.setFavorite(startupId, newStatus);
     } catch (_) {
-      if (wasFav) {
-        _favoriteIds.add(startupId);
-      } else {
-        _favoriteIds.remove(startupId);
-      }
+      AppState.instance.setFavorite(startupId, wasFav);
+    } finally {
+      _togglingFavoriteIds.remove(startupId);
       notifyListeners();
     }
   }

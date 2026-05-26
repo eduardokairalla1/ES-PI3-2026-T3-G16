@@ -29,7 +29,7 @@ import 'package:mesclainvest/shared/styles/app_colors.dart';
 import 'package:mesclainvest/shared/widgets/app_button.dart';
 import 'package:mesclainvest/shared/widgets/delayed_shimmer.dart';
 
-// --- PAGE ---
+// --- CODE ---
 
 /// Consolidated wallet/portfolio page.
 ///
@@ -46,15 +46,25 @@ class CarteiraPage extends StatefulWidget {
 
 class _CarteiraPageState extends State<CarteiraPage> {
   final DashboardController _controller = DashboardController();
+  int _lastRefreshTicket = 0;
 
   @override
   void initState() {
     super.initState();
     _controller.loadDashboard();
+    AppState.instance.addListener(_onAppStateChanged);
+  }
+
+  void _onAppStateChanged() {
+    if (AppState.instance.refreshTicket != _lastRefreshTicket) {
+      _lastRefreshTicket = AppState.instance.refreshTicket;
+      _controller.loadDashboard(silent: true);
+    }
   }
 
   @override
   void dispose() {
+    AppState.instance.removeListener(_onAppStateChanged);
     _controller.dispose();
     super.dispose();
   }
@@ -107,17 +117,24 @@ class _CarteiraPageState extends State<CarteiraPage> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.wifi_off_outlined, size: 48, color: AppColors.textMuted(context)),
+            Icon(
+              Icons.wifi_off_outlined,
+              size: 48,
+              color: AppColors.textMuted(context),
+            ),
             const SizedBox(height: 16),
             Text(
               _controller.errorMessage!,
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 15, color: AppColors.textSecondary(context)),
+              style: TextStyle(
+                fontSize: 15,
+                color: AppColors.textSecondary(context),
+              ),
             ),
             const SizedBox(height: 24),
             AppButton(
-              label:     'Tentar novamente',
-              size:      AppButtonSize.small,
+              label: 'Tentar novamente',
+              size: AppButtonSize.small,
               fullWidth: false,
               onPressed: _controller.loadDashboard,
             ),

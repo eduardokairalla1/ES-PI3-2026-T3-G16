@@ -1,21 +1,14 @@
-/*
- * Service do Dashboard.
- * Encapsula as chamadas às Cloud Functions usadas pela tela de Dashboard.
- *
- * Alex Gabriel Soares Sousa - 24802449
- */
+// --- Dashboard service ---
+//
+// Alex Gabriel Soares Sousa - 24802449
+// Encapsula as chamadas às Cloud Functions usadas pela tela de Dashboard.
 library;
 
-/*
- * IMPORTS
- */
-
+// --- IMPORTS ---
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:mesclainvest/pages/dashboard/models/dashboard_data.dart';
 
-/*
- * CODE
- */
+// --- CODE ---
 
 /// Serviço que encapsula a integração com o Firebase Cloud Functions para a tela de Dashboard.
 /// Realiza chamadas remotas de funções callable no backend para ler e modificar dados do usuário.
@@ -43,12 +36,10 @@ class DashboardService {
     return (result.data as Map)['isFavorited'] as bool;
   }
 
-  /// Realiza uma requisição de depósito simulado por meio da Cloud Function `onDeposit`.
-  /// Retorna o saldo da carteira atualizado.
-  Future<double> deposit(double amount) async {
+  Future<double> deposit(double amount, {String? depositId}) async {
     final result = await _functions
         .httpsCallable('onDeposit')
-        .call<Map<String, dynamic>>({'amount': amount});
+        .call<Map<String, dynamic>>({'amount': amount, 'depositId': depositId});
 
     return (result.data['newBalance'] as num).toDouble();
   }
@@ -66,7 +57,9 @@ class DashboardService {
 
   /// Busca o histórico de evolução patrimonial real do usuário pela Cloud Function `onGetPatrimonyHistory`.
   /// Retorna os pontos do histórico do patrimônio do usuário.
-  Future<List<Map<String, dynamic>>> fetchPatrimonyHistory(String period) async {
+  Future<List<Map<String, dynamic>>> fetchPatrimonyHistory(
+    String period,
+  ) async {
     final result = await _functions
         .httpsCallable('onGetPatrimonyHistory')
         .call<Map<String, dynamic>>({'period': period});

@@ -1,11 +1,11 @@
-/*
- * Página principal do Dashboard do usuário.
- * Centraliza o acesso às principais funcionalidades e resumos da conta.
- *
- * Alex Gabriel Soares Sousa - 24802449
- */
+// --- Página principal do Dashboard ---
+//
+// Alex Gabriel Soares Sousa - 24802449
+// Centraliza o acesso às principais funcionalidades e resumos da conta.
 
+// --- IMPORTS ---
 import 'package:flutter/material.dart';
+import 'package:mesclainvest/app/app_state.dart';
 import 'package:mesclainvest/pages/dashboard/controllers/dashboard_controller.dart';
 import 'package:mesclainvest/pages/dashboard/widgets/dashboard_skeleton.dart';
 import 'package:mesclainvest/pages/dashboard/widgets/deposit_prompt_card.dart';
@@ -13,6 +13,8 @@ import 'package:mesclainvest/pages/dashboard/widgets/widgets.dart';
 import 'package:mesclainvest/shared/styles/app_colors.dart';
 import 'package:mesclainvest/shared/widgets/app_button.dart';
 import 'package:mesclainvest/shared/widgets/delayed_shimmer.dart';
+
+// --- CODE ---
 
 /// Componente de página (Widget com estado) do Dashboard.
 /// Esta tela serve como hub principal para os investidores do Mescla, exibindo
@@ -29,6 +31,7 @@ class PaginaDashboard extends StatefulWidget {
 class _PaginaDashboardState extends State<PaginaDashboard> {
   // Controlador responsável pela lógica de negócios da página (MVVM)
   final DashboardController _controller = DashboardController();
+  int _lastRefreshTicket = 0;
 
   @override
   void initState() {
@@ -38,6 +41,14 @@ class _PaginaDashboardState extends State<PaginaDashboard> {
     }
     // Inicializa a carga assíncrona dos dados do painel do usuário
     _controller.loadDashboard();
+    AppState.instance.addListener(_onAppStateChanged);
+  }
+
+  void _onAppStateChanged() {
+    if (AppState.instance.refreshTicket != _lastRefreshTicket) {
+      _lastRefreshTicket = AppState.instance.refreshTicket;
+      _controller.loadDashboard(silent: true);
+    }
   }
 
   @override
@@ -50,6 +61,7 @@ class _PaginaDashboardState extends State<PaginaDashboard> {
 
   @override
   void dispose() {
+    AppState.instance.removeListener(_onAppStateChanged);
     // Libera os recursos alocados pelo controlador ao descartar a página
     _controller.dispose();
     super.dispose();
@@ -59,7 +71,7 @@ class _PaginaDashboardState extends State<PaginaDashboard> {
   Widget build(BuildContext context) {
     // Reconstrói a UI dinamicamente sempre que o estado do controlador mudar (ex: carregamento finalizado)
     return AnimatedBuilder(
-      animation: _controller,
+      animation: Listenable.merge([_controller, AppState.instance]),
       builder: (context, _) {
         return Scaffold(
           backgroundColor: AppColors.pageBackground(context),
@@ -109,12 +121,19 @@ class _PaginaDashboardState extends State<PaginaDashboard> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.wifi_off_outlined, size: 48, color: AppColors.textMuted(context)),
+            Icon(
+              Icons.wifi_off_outlined,
+              size: 48,
+              color: AppColors.textMuted(context),
+            ),
             const SizedBox(height: 16),
             Text(
               _controller.errorMessage!,
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 15, color: AppColors.textSecondary(context)),
+              style: TextStyle(
+                fontSize: 15,
+                color: AppColors.textSecondary(context),
+              ),
             ),
             const SizedBox(height: 24),
             AppButton(

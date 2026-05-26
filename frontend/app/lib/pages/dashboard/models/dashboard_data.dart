@@ -1,32 +1,28 @@
-/*
- * Modelos de dados do Dashboard.
- * Define os contratos consumidos pela UI a partir das Cloud Functions.
- *
- * Alex Gabriel Soares Sousa - 24802449
- */
+// --- Dashboard data models ---
+//
+// Alex Gabriel Soares Sousa - 24802449
+// Modelos de dados do Dashboard consumidos pela UI a partir das Cloud Functions.
 library;
 
-/*
- * TYPES
- */
+// --- TYPES ---
 
 /// Modelo que representa o resumo da posição de investimentos de um investidor em uma startup específica.
 class InvestimentoResumo {
   /// Identificador único da startup (Doc ID do Firestore).
   final String startupId;
-  
+
   /// Nome de exibição da startup.
   final String startupName;
-  
+
   /// URL contendo a imagem do logotipo da startup.
   final String startupLogoUrl;
-  
+
   /// Quantidade total de tokens em custódia.
   final int tokenQuantity;
-  
+
   /// Cotação/Preço atual do token no mercado.
   final double currentPrice;
-  
+
   /// Variação percentual ponderada de valorização/desvalorização do ativo (com base no preço médio).
   final double variation;
 
@@ -56,31 +52,31 @@ class InvestimentoResumo {
 class DashboardData {
   /// Nome completo do investidor logado.
   final String nomeUsuario;
-  
+
   /// Patrimônio total do investidor (Soma dos ativos em custódia + saldo disponível líquido).
   final double patrimonioTotal;
-  
+
   /// Saldo líquido disponível em conta para novos investimentos e saques.
   final double saldoDisponivel;
-  
+
   /// Rendimento bruto em valor monetário acumulado no portfólio do usuário na última semana.
   final double rendimentoDiarioValor;
-  
+
   /// Variação percentual de rendimento do portfólio na última semana.
   final double rendimentoDiarioPorcentagem;
-  
+
   /// Número total de startups ativas registradas e disponíveis para investimento no ecossistema.
   final int totalStartupsMercado;
-  
+
   /// Rentabilidade média geral calculada das startups do ecossistema nos últimos 30 dias.
   final double rentabilidadeMediaMercado;
-  
+
   /// Contagem total de investidores ativos (que possuem ordens de compra completadas) no ecossistema.
   final int totalInvestidoresMercado;
-  
+
   /// Lista contendo as posições de investimento ativas do usuário.
   final List<InvestimentoResumo> investimentos;
-  
+
   /// Lista contendo os identificadores de startups favoritadas pelo investidor.
   final List<String> favoriteIds;
 
@@ -103,12 +99,12 @@ class DashboardData {
     final rawInvestimentos = (map['investimentos'] as List<dynamic>?) ?? [];
     final rawFavorites = (map['favoriteIds'] as List<dynamic>?) ?? [];
 
-    final patrimonioAtivos = (map['patrimonioTotal'] as num?)?.toDouble() ?? 0;
+    final patrimonioTotal = (map['patrimonioTotal'] as num?)?.toDouble() ?? 0;
     final saldo = (map['saldoDisponivel'] as num?)?.toDouble() ?? 0;
 
     return DashboardData(
       nomeUsuario: map['nomeUsuario'] as String? ?? '',
-      patrimonioTotal: patrimonioAtivos + saldo,
+      patrimonioTotal: patrimonioTotal,
       saldoDisponivel: saldo,
       rendimentoDiarioValor:
           (map['rendimentoDiarioValor'] as num?)?.toDouble() ?? 0,

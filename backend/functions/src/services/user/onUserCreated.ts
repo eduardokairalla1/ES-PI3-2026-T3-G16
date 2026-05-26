@@ -1,38 +1,29 @@
-/**
- * Function callable onUserCreated.
- *
- * Davi da Cruz Shieh - 24798076
- */
+// --- Function callable onUserCreated ---
+//
+// Davi da Cruz Shieh - 24798076
+// Creates the user profile and wallet after Firebase Auth registration.
 
-/**
- * IMPORTS
- */
+// --- IMPORTS ---
 import {HttpsError} from 'firebase-functions/v2/https';
-import {addUser, getUser, getUserByCpf} from '../../db/users/storage';
-import {createWallet} from '../../db/wallets/storage';
 import {verifyAuth} from '../../utils/auth';
 import {logger} from '../../utils/logger';
 import {parseRequest} from '../../utils/validation';
+import db from '../../configs';
+import type {userDocument} from '../../db/users/model';
 
 
-/**
- * ERRORS
- */
+// --- ERRORS ---
 import {AuthError} from '../../errors/authError';
 import {InternalError} from '../../errors/internalError';
 import {ValidationError} from '../../errors/validationError';
 
 
-/**
- * TYPES
- */
+// --- TYPES ---
 import type {CallableRequest} from 'firebase-functions/v2/https';
 import {CreateUserRequest} from '../../types/responders/user';
 
 
-/**
- * CODE
- */
+// --- CODE ---
 
 /**
  * I handle the onUserCreated callable.
@@ -61,34 +52,56 @@ export async function handleOnUserCreated(request: CallableRequest)
         // validate request data
         const parsed = parseRequest(CreateUserRequest, request.data);
 
-        // reject duplicate UID (prevents duplicate docs on retries)
-        const existingUid = await getUser(uid);
-        if (existingUid !== null)
+        // reject duplicates and create user + wallet atomically
+        logger.info(`Checking duplicates and creating user/wallet for "${uid}" atomically...`);
+        const addedUser = await db.runTransaction(async (tx) =>
         {
-            throw new ValidationError('Usuário já cadastrado.');
-        }
+            const userRef = db.collection('users').doc(uid);
+            const userSnap = await tx.get(userRef);
+            if (userSnap.exists)
+            {
+                throw new ValidationError('Usuário já cadastrado.');
+            }
 
-        // reject duplicate CPF
-        const existing = await getUserByCpf(parsed.cpf);
-        if (existing !== null)
-        {
-            throw new ValidationError('CPF já cadastrado.');
-        }
+            const cpfQuery = db.collection('users').where('cpf', '==', parsed.cpf).limit(1);
+            const cpfSnap = await tx.get(cpfQuery);
+            if (!cpfSnap.empty)
+            {
+                throw new ValidationError('CPF já cadastrado.');
+            }
 
-        // add user
-        logger.info(`Adding user "${uid}"...`, {data: {email, uid}});
-        const addedUser = await addUser(
-            parsed.birthDate,
-            parsed.cpf,
-            email,
-            parsed.fullName,
-            parsed.phone,
-            uid,
-        );
-        logger.info(`User "${uid}" added successfully.`, {data: addedUser});
+            // build user document
+            const user: userDocument = {
+                'birth_date': parsed.birthDate,
+                'cpf': parsed.cpf,
+                'created_at': new Date(),
+                'email': email,
+                'favorite_ids': [],
+                'full_name': parsed.fullName,
+                'phone': parsed.phone,
+                'photo_url': null,
+                'status': 'active',
+                'two_fa_enabled': false,
+                'uid': uid,
+                'updated_at': null,
+            };
 
-        await createWallet(uid);
-        logger.info(`Wallet created for user "${uid}".`);
+            // build wallet document
+            const walletRef = db.collection('wallets').doc(uid);
+            const wallet = {
+                uid,
+                balance:    0,
+                created_at: new Date(),
+                updated_at: null,
+            };
+
+            tx.set(userRef, user);
+            tx.set(walletRef, wallet);
+
+            return user;
+        });
+
+        logger.info(`User "${uid}" and wallet added successfully.`);
 
         return {
             birthDate: addedUser.birth_date,
