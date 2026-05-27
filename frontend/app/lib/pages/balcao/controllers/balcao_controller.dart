@@ -108,43 +108,44 @@ class BalcaoController extends ChangeNotifier {
   }
 
   /// Loads everything in parallel: startups, orders and wallet + holdings.
-  /// Used on first page enter.
-  Future<void> load() async {
+  Future<void> load({bool silent = false}) async {
     await Future.wait([
-      loadStartups(),
-      loadMyOrders(),
-      loadWalletAndHoldings(),
+      loadStartups(silent: silent),
+      loadMyOrders(silent: silent),
+      loadWalletAndHoldings(silent: silent),
     ]);
   }
 
-  /// Reloads the "Mercado" tab. Sets [isLoadingStartups]/[startupsError] and
-  /// notifies listeners around the fetch.
-  Future<void> loadStartups() async {
-    isLoadingStartups = true;
-    startupsError = null;
-    notifyListeners();
+  /// Reloads the "Mercado" tab.
+  Future<void> loadStartups({bool silent = false}) async {
+    if (!silent) {
+      isLoadingStartups = true;
+      startupsError = null;
+      notifyListeners();
+    }
 
     try {
       startups = await _catalogService.fetchStartups();
     } catch (_) {
-      startupsError = 'Não foi possível carregar as startups.';
+      if (!silent) startupsError = 'Não foi possível carregar as startups.';
     } finally {
       isLoadingStartups = false;
       notifyListeners();
     }
   }
 
-  /// Reloads the "Minhas ordens" tab. Sets [isLoadingOrders]/[ordersError]
-  /// and notifies listeners around the fetch.
-  Future<void> loadMyOrders() async {
-    isLoadingOrders = true;
-    ordersError = null;
-    notifyListeners();
+  /// Reloads the "Minhas ordens" tab.
+  Future<void> loadMyOrders({bool silent = false}) async {
+    if (!silent) {
+      isLoadingOrders = true;
+      ordersError = null;
+      notifyListeners();
+    }
 
     try {
       orders = await _orderService.getMyOrders();
     } catch (_) {
-      ordersError = 'Não foi possível carregar suas ordens.';
+      if (!silent) ordersError = 'Não foi possível carregar suas ordens.';
     } finally {
       isLoadingOrders = false;
       notifyListeners();
@@ -152,12 +153,12 @@ class BalcaoController extends ChangeNotifier {
   }
 
   /// Loads wallet balance and per-startup variation from the dashboard
-  /// payload. The dashboard endpoint already computes the variation since the
-  /// user's average purchase price for every owned startup, so we just copy
-  /// the map across — no extra backend work needed.
-  Future<void> loadWalletAndHoldings() async {
-    isLoadingWallet = true;
-    notifyListeners();
+  /// payload.
+  Future<void> loadWalletAndHoldings({bool silent = false}) async {
+    if (!silent) {
+      isLoadingWallet = true;
+      notifyListeners();
+    }
 
     try {
       final data = await _dashboardService.fetchUserDashboardData();

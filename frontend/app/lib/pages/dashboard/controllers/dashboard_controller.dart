@@ -50,13 +50,14 @@ class DashboardController extends ChangeNotifier {
 
   /// Carrega os dados consolidados do dashboard do usuário e a lista de startups em paralelo.
   /// Atualiza os estados de carregamento e notifica os ouvintes da View.
-  Future<void> loadDashboard() async {
-    isLoading    = true;
-    errorMessage = null;
-    notifyListeners();
+  Future<void> loadDashboard({bool silent = false}) async {
+    if (!silent) {
+      isLoading    = true;
+      errorMessage = null;
+      notifyListeners();
+    }
 
     try {
-      // Dispara as consultas da API em paralelo para diminuir a latência do app
       final results = await Future.wait([
         _dashboardService.fetchUserDashboardData(),
         _catalogService.fetchStartups(),
@@ -65,12 +66,13 @@ class DashboardController extends ChangeNotifier {
       data        = results[0] as DashboardData;
       allStartups = results[1] as List<StartupModel>;
 
-      // Sincroniza o conjunto local de favoritos
       _favoriteIds
         ..clear()
         ..addAll(data!.favoriteIds);
     } catch (e) {
-      errorMessage = 'Não foi possível carregar os dados.\nVerifique sua conexão e tente novamente.';
+      if (!silent) {
+        errorMessage = 'Não foi possível carregar os dados.\nVerifique sua conexão e tente novamente.';
+      }
     } finally {
       isLoading = false;
       notifyListeners();

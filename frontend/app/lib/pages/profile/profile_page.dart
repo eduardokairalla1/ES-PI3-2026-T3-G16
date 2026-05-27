@@ -27,17 +27,30 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   final ProfileController _controller = ProfileController();
+  int _lastNavVersion = 0;
 
   @override
   void initState() {
     super.initState();
+    _lastNavVersion = AppState.instance.navVersion;
     _controller.loadStats();
+    AppState.instance.addListener(_onNavChanged);
   }
 
   @override
   void dispose() {
+    AppState.instance.removeListener(_onNavChanged);
     _controller.dispose();
     super.dispose();
+  }
+
+  void _onNavChanged() {
+    if (!mounted) return;
+    final v = AppState.instance.navVersion;
+    if (v != _lastNavVersion) {
+      _lastNavVersion = v;
+      _controller.loadStats(silent: true);
+    }
   }
 
   @override

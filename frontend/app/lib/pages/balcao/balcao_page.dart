@@ -56,18 +56,31 @@ class _BalcaoPageState extends State<BalcaoPage> {
   final BalcaoController _controller = BalcaoController();
   final TextEditingController _searchCtrl = TextEditingController();
   int _activeTab = 0; // 0 = Mercado, 1 = Minhas Ordens
+  int _lastNavVersion = 0;
 
   @override
   void initState() {
     super.initState();
+    _lastNavVersion = AppState.instance.navVersion;
     _controller.load();
+    AppState.instance.addListener(_onNavChanged);
   }
 
   @override
   void dispose() {
+    AppState.instance.removeListener(_onNavChanged);
     _controller.dispose();
     _searchCtrl.dispose();
     super.dispose();
+  }
+
+  void _onNavChanged() {
+    if (!mounted) return;
+    final v = AppState.instance.navVersion;
+    if (v != _lastNavVersion) {
+      _lastNavVersion = v;
+      _controller.load(silent: true);
+    }
   }
 
   @override

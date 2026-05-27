@@ -22,14 +22,16 @@ class ProfileController extends ChangeNotifier {
   DashboardData? _dashboardData;
 
   /// Carrega dados do dashboard para exibir estatísticas.
-  Future<void> loadStats() async {
-    isLoadingStats = true;
-    notifyListeners();
+  Future<void> loadStats({bool silent = false}) async {
+    if (!silent) {
+      isLoadingStats = true;
+      notifyListeners();
+    }
 
     try {
       _dashboardData = await _dashboardService.fetchUserDashboardData();
     } catch (_) {
-      _dashboardData = null;
+      if (!silent) _dashboardData = null;
     } finally {
       isLoadingStats = false;
       notifyListeners();

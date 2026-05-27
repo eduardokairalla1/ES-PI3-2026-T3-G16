@@ -16,10 +16,19 @@ class AppState extends ChangeNotifier {
   UserProfile? _profile;
   bool         _pendingTwoFa  = false;
   bool         _isRegistering = false;
+  int          _navVersion    = 0;
 
   UserProfile? get profile        => _profile;
   bool         get pendingTwoFa   => _pendingTwoFa;
   bool         get isRegistering  => _isRegistering;
+  int          get navVersion     => _navVersion;
+
+  /// Increments the navigation version, causing pages that listen to this
+  /// to silently reload their data from the backend.
+  void onNavigate() {
+    _navVersion++;
+    notifyListeners();
+  }
 
   void setRegistering(bool value) {
     _isRegistering = value;
