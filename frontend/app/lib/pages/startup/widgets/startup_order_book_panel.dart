@@ -118,7 +118,10 @@ class _StartupOrderBookPanelState extends State<StartupOrderBookPanel> {
     if (ok) {
       final msg = _controller.lastResultMessage ?? 'Ordem criada.';
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(msg)),
+        SnackBar(
+          content: Text(msg),
+          backgroundColor: Colors.green.shade700,
+        ),
       );
       _qtyCtrl.clear();
     }
