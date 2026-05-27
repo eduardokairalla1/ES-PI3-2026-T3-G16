@@ -74,11 +74,11 @@ export async function handleOnGetDashboard(request: CallableRequest)
 
         // 3. Constrói mapas de busca (lookup maps) para otimizar a associação de startups por ID (complexidade O(1))
         const startupPriceMap = new Map<string, number>();
-        const startupNameMap  = new Map<string, {name: string; logoUrl: string}>();
+        const startupNameMap  = new Map<string, {name: string; logoUrl: string; tokenName: string}>();
         for (const s of startups)
         {
             startupPriceMap.set(s.id, s.token_price);
-            startupNameMap.set(s.id, {name: s.name, logoUrl: s.logo_url ?? ''});
+            startupNameMap.set(s.id, {name: s.name, logoUrl: s.logo_url ?? '', tokenName: s.token_name ?? ''});
         }
 
         // 4. Calcula a custódia (holdings) atual do usuário e o rendimento semanal utilizando a nova função com fluxo de caixa
@@ -101,13 +101,14 @@ export async function handleOnGetDashboard(request: CallableRequest)
             // Incrementa o patrimônio total investido em ativos
             assetsValue += currentValue;
 
-            const details = startupNameMap.get(startupId) ?? {name: '', logoUrl: ''};
+            const details = startupNameMap.get(startupId) ?? {name: '', logoUrl: '', tokenName: ''};
 
             return {
                 currentPrice,
                 startupId,
                 startupLogoUrl: details.logoUrl,
                 startupName:    details.name,
+                tokenName:      details.tokenName,
                 tokenQuantity:  holding.quantity,
                 variation:      Math.round(variation * 100) / 100, // Arredonda para 2 casas decimais
             };
