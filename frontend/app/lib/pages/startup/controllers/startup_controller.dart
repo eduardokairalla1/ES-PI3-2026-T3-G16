@@ -66,13 +66,20 @@ class StartupController extends ChangeNotifier {
   }
 
   void incrementOrder() {
-    orderQuantity++;
+    if (orderQuantity < 10000) orderQuantity++;
     notifyListeners();
   }
 
   void decrementOrder() {
     if (orderQuantity > 1) orderQuantity--;
     notifyListeners();
+  }
+
+  void setOrderQuantity(int qty) {
+    if (qty >= 1 && qty <= 10000) {
+      orderQuantity = qty;
+      notifyListeners();
+    }
   }
 
   /// I buy tokens and return true on success.
