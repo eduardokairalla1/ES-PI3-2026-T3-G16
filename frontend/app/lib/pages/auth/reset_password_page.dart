@@ -3,7 +3,9 @@
 // Page where the user sets a new password after clicking the reset link.
 
 // --- IMPORTS ---
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:mesclainvest/core/exceptions/auth.dart';
+import 'package:mesclainvest/core/exceptions/infrastructure.dart';
+import 'package:mesclainvest/core/services/auth.dart';
 import 'package:mesclainvest/pages/auth/widgets/auth_constants.dart';
 import 'package:mesclainvest/shared/widgets/app_button.dart';
 import 'package:flutter/material.dart';
@@ -29,10 +31,12 @@ class _ResetPasswordPageState extends State<ResetPasswordPage>
   final _passwordCtrl = TextEditingController();
   final _confirmCtrl = TextEditingController();
 
-  bool _isLoading = false;
+  final _authService  = AuthService();
+
+  bool _isLoading    = false;
   bool _showPassword = false;
-  bool _showConfirm = false;
-  bool _done = false;
+  bool _showConfirm  = false;
+  bool _done         = false;
   String? _error;
 
   late final AnimationController _entranceCtrl;
@@ -90,22 +94,12 @@ class _ResetPasswordPageState extends State<ResetPasswordPage>
     });
 
     try {
-      await FirebaseAuth.instance.confirmPasswordReset(
-        code: widget.oobCode,
-        newPassword: _passwordCtrl.text,
-      );
+      await _authService.confirmPasswordReset(widget.oobCode, _passwordCtrl.text);
       if (mounted) setState(() => _done = true);
-    } on FirebaseAuthException catch (e) {
-      setState(
-        () => _error = switch (e.code) {
-          'expired-action-code' => 'O link expirou. Solicite um novo.',
-          'invalid-action-code' => 'Link inválido ou já utilizado.',
-          'user-disabled' => 'Esta conta foi desativada.',
-          'user-not-found' => 'Usuário não encontrado.',
-          'weak-password' => 'Senha muito fraca.',
-          _ => 'Ocorreu um erro. Tente novamente.',
-        },
-      );
+    } on AuthException catch (e) {
+      setState(() => _error = e.message);
+    } on InfrastructureException {
+      setState(() => _error = 'Ocorreu um erro inesperado. Tente novamente.');
     } catch (_) {
       setState(() => _error = 'Ocorreu um erro inesperado. Tente novamente.');
     } finally {
