@@ -8,17 +8,16 @@ import 'package:mesclainvest/app/app_state.dart';
 import 'package:mesclainvest/core/services/auth.dart';
 import 'package:mesclainvest/pages/dashboard/models/dashboard_data.dart';
 import 'package:mesclainvest/pages/dashboard/services/dashboard_service.dart';
-import 'package:mesclainvest/pages/profile/services/profile_service.dart';
 
 // --- CONTROLLER ---
 
 class ProfileController extends ChangeNotifier {
-  final ProfileService _service = ProfileService();
+
   final AuthService _authService = AuthService();
   final DashboardService _dashboardService = DashboardService();
 
-  bool isTogglingTwoFA = false;
-  bool isSigningOut = false;
+  bool isDisabling2FA = false;
+  bool isSigningOut   = false;
   bool isLoadingStats = true;
   DashboardData? _dashboardData;
 
@@ -46,16 +45,16 @@ class ProfileController extends ChangeNotifier {
   /// Retorna o número de startups favoritadas.
   int get totalFavoritas => _dashboardData?.favoriteIds.length ?? 0;
 
-  /// I toggle 2FA and update AppState locally.
-  Future<void> toggle2FA() async {
-    isTogglingTwoFA = true;
+  /// I disable 2FA after verifying the given TOTP code.
+  Future<void> disable2FA(String code) async {
+    isDisabling2FA = true;
     notifyListeners();
 
     try {
-      final newState = await _service.toggle2FA();
-      AppState.instance.updateProfileLocally(twoFaEnabled: newState);
+      await _authService.disable2FA(code);
+      AppState.instance.updateProfileLocally(twoFaEnabled: false);
     } finally {
-      isTogglingTwoFA = false;
+      isDisabling2FA = false;
       notifyListeners();
     }
   }
