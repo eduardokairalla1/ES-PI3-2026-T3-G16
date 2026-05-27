@@ -234,8 +234,9 @@ class _Chart extends StatelessWidget {
       );
     }
 
-    final minY = spots.map((s) => s.y).reduce(min) * 0.97;
-    final maxY = spots.map((s) => s.y).reduce(max) * 1.03;
+    final rawMin = spots.map((s) => s.y).reduce(min);
+    final minY   = rawMin <= 0 ? rawMin * 1.03 : rawMin * 0.97;
+    final maxY   = spots.map((s) => s.y).reduce(max) * 1.03;
 
     // Trend colour: green if the curve ends higher than it started, red otherwise.
     final isUp = spots.last.y >= spots.first.y;
@@ -316,8 +317,9 @@ class _Chart extends StatelessWidget {
         lineBarsData: [
           LineChartBarData(
             spots:           spots,
-            isCurved:        true,
-            curveSmoothness: 0.3,
+            isCurved:                   true,
+            curveSmoothness:            0.3,
+            preventCurveOverShooting:   true,
             color:           color,
             barWidth:        2.5,
             dotData: FlDotData(
