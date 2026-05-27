@@ -69,11 +69,43 @@ class StartupTokenInfo extends StatelessWidget {
               ),
               const SizedBox(width: 10),
               Text(
-                'Token oficial da startup',
+                'Tokens oficiais da startup',
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
                   color: AppColors.textSecondary(context),
+                ),
+              ),
+              const SizedBox(width: 6),
+              GestureDetector(
+                onTap: () => showDialog<void>(
+                  context: context,
+                  builder: (_) => AlertDialog(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    title: const Text(
+                      'O que é um token?',
+                      style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
+                    ),
+                    content: const Text(
+                      'Cada startup emite uma quantidade fixa de tokens que representam uma fração do seu valor.\n\n'
+                      'Você compra tokens aqui (mercado primário) a um preço que sobe conforme mais tokens são vendidos — quem compra antes paga menos.\n\n'
+                      'Quando todos os tokens forem vendidos, a negociação acontece apenas no Balcão, entre investidores.',
+                      style: TextStyle(fontSize: 14, height: 1.5),
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: const Text('Entendi'),
+                      ),
+                    ],
+                  ),
+                ),
+                child: Icon(
+                  Icons.help_outline,
+                  size: 16,
+                  color: AppColors.textMuted(context),
                 ),
               ),
             ],
