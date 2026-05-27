@@ -180,10 +180,12 @@ class DashboardController extends ChangeNotifier {
   }
 
   /// Retorna o histórico consolidado recente de movimentações (extrato unificado) do investidor.
-  Future<List<TransactionModel>> getTransactions() async {
+  Future<List<TransactionModel>> getTransactions({int? month, int? year}) async {
     try {
-      final list = await _dashboardService.getTransactions();
-      return list.map((m) => TransactionModel.fromMap(m)).toList();
+      final list = await _dashboardService.getTransactions(month: month, year: year);
+      final transactions = list.map((m) => TransactionModel.fromMap(m)).toList();
+      transactions.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      return transactions;
     } catch (e) {
       errorMessage = 'Erro ao buscar extrato: $e';
       notifyListeners();
