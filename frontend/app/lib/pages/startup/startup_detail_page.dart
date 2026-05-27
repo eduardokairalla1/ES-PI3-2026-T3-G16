@@ -4,8 +4,8 @@
 
 // --- IMPORTS ---
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
-import 'package:mesclainvest/app/app_state.dart';
 import 'package:mesclainvest/pages/startup/controllers/startup_controller.dart';
 import 'package:mesclainvest/pages/startup/widgets/widgets.dart';
 import 'package:mesclainvest/shared/styles/app_colors.dart';
@@ -83,7 +83,6 @@ class _StartupDetailPageState extends State<StartupDetailPage> {
         }
 
         final startup = _controller.startup!;
-        final userName = AppState.instance.profile?.fullName ?? 'Usuário';
 
         return DefaultTabController(
           length: 4,
@@ -93,7 +92,7 @@ class _StartupDetailPageState extends State<StartupDetailPage> {
               bottom: false,
               child: Column(
                 children: [
-                  StartupHeader(startup: startup, userName: userName),
+                  StartupHeader(startup: startup),
 
                   StartupInfoCard(startup: startup),
 
@@ -174,16 +173,61 @@ class _StartupDetailPageState extends State<StartupDetailPage> {
 
 // --- INVEST PANEL ---
 
-class _InvestPanel extends StatelessWidget {
-
-  final StartupController _controller;
-  final String            _startupId;
+class _InvestPanel extends StatefulWidget {
+  final StartupController controller;
+  final String startupId;
 
   const _InvestPanel({
-    required StartupController controller,
-    required String            startupId,
-  })  : _controller = controller,
-        _startupId  = startupId;
+    required this.controller,
+    required this.startupId,
+  });
+
+  @override
+  State<_InvestPanel> createState() => _InvestPanelState();
+}
+
+class _InvestPanelState extends State<_InvestPanel> {
+  final _qtyCtrl = TextEditingController(text: '1');
+  bool _syncingFromController = false;
+
+  StartupController get _controller => widget.controller;
+  String get _startupId => widget.startupId;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller.addListener(_onControllerChanged);
+    _qtyCtrl.addListener(_onFieldChanged);
+  }
+
+  void _onControllerChanged() {
+    final expected = '${_controller.orderQuantity}';
+    if (_qtyCtrl.text != expected) {
+      _syncingFromController = true;
+      _qtyCtrl.value = _qtyCtrl.value.copyWith(
+        text: expected,
+        selection: TextSelection.collapsed(offset: expected.length),
+      );
+      _syncingFromController = false;
+    }
+  }
+
+  void _onFieldChanged() {
+    if (_syncingFromController) return;
+    final val = int.tryParse(_qtyCtrl.text);
+    if (val == null) return;
+    final clamped = val.clamp(1, 10000);
+    if (clamped != _controller.orderQuantity) {
+      _controller.setOrderQuantity(clamped);
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.removeListener(_onControllerChanged);
+    _qtyCtrl.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -254,35 +298,51 @@ class _InvestPanel extends StatelessWidget {
           const SizedBox(height: 20),
 
           // quantity stepper
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+          Column(
             children: [
-              _stepperButton(
-                icon: Icons.remove,
-                onTap: _controller.decrementOrder,
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Column(
-                  children: [
-                    Text(
-                      '${_controller.orderQuantity}',
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  _stepperButton(
+                    icon: Icons.remove,
+                    onTap: _controller.decrementOrder,
+                  ),
+                  const SizedBox(width: 28),
+                  SizedBox(
+                    width: 110,
+                    child: TextField(
+                      controller: _qtyCtrl,
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        LengthLimitingTextInputFormatter(5),
+                      ],
+                      textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 36,
                         fontWeight: FontWeight.w800,
                         color: AppColors.textPrimary(context),
                       ),
+                      decoration: const InputDecoration(
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.zero,
+                        isCollapsed: true,
+                      ),
                     ),
-                    Text(
-                      'Qtd atual: ${_controller.orderQuantity}',
-                      style: TextStyle(fontSize: 12, color: AppColors.textMuted(context)),
-                    ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(width: 28),
+                  _stepperButton(
+                    icon: Icons.add,
+                    onTap: _controller.incrementOrder,
+                  ),
+                ],
               ),
-              _stepperButton(
-                icon: Icons.add,
-                onTap: _controller.incrementOrder,
+              const SizedBox(height: 6),
+              Text(
+                'máx. 10.000 tokens',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 11, color: AppColors.textMuted(context)),
               ),
             ],
           ),
@@ -338,9 +398,9 @@ class _InvestPanel extends StatelessWidget {
               final ok = await _controller.buyTokens(_startupId);
               if (ok && context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Investimento realizado com sucesso!'),
-                    backgroundColor: Colors.black,
+                  SnackBar(
+                    content: const Text('Investimento realizado com sucesso!'),
+                    backgroundColor: Colors.green.shade700,
                   ),
                 );
               }
