@@ -28,17 +28,14 @@ import type {userDocument} from './model';
  */
 export async function getUser(uid: string): Promise<userDocument | null>
 {
-    // query user by uid
-    const user = await db.collection('users')
-        .where('uid', '==', uid)
-        .limit(1)
-        .get();
+    // get user document by uid field
+    const doc = await db.collection('users').doc(uid).get();
 
-    // user not found: return null
-    if (user.empty) return null;
+    // no document found: return null
+    if (!doc.exists) return null;
 
-    // return user document
-    return user.docs[0].data() as userDocument;
+    // return user document data
+    return doc.data() as userDocument;
 }
 
 
@@ -82,7 +79,6 @@ export async function addUser(
     const user: userDocument = {
         'birth_date': birth_date,
         'cpf': cpf,
-
         'created_at': new Date(),
         'email': email,
         'favorite_ids': [],
@@ -90,16 +86,28 @@ export async function addUser(
         'phone': phone,
         'photo_url': null,
         'status': 'active',
+        'totp_secret': null,
         'two_fa_enabled': false,
         'uid': uid,
         'updated_at': null,
     };
 
-    // persist user to Firestore
-    await db.collection('users').add(user);
+    // persist user
+    await db.collection('users').doc(uid).set(user);
 
     // return validated user
     return user;
+}
+
+
+/**
+ * I delete a user document.
+ *
+ * @param uid Firebase Auth UID of the user
+ */
+export async function deleteUser(uid: string): Promise<void>
+{
+    await db.collection('users').doc(uid).delete();
 }
 
 
@@ -114,14 +122,7 @@ export async function updateUser(
     updates: Partial<Pick<userDocument, 'full_name' | 'phone' | 'photo_url'>>,
 ): Promise<void>
 {
-    const snapshot = await db.collection('users')
-        .where('uid', '==', uid)
-        .limit(1)
-        .get();
-
-    if (snapshot.empty) throw new Error(`User "${uid}" not found.`);
-
-    await snapshot.docs[0].ref.update({...updates, 'updated_at': new Date()});
+    await db.collection('users').doc(uid).update({...updates, 'updated_at': new Date()});
 }
 
 
@@ -134,18 +135,14 @@ export async function updateUser(
  */
 export async function toggleUserTwoFA(uid: string): Promise<boolean>
 {
-    const snapshot = await db.collection('users')
-        .where('uid', '==', uid)
-        .limit(1)
-        .get();
 
-    if (snapshot.empty) throw new Error(`User "${uid}" not found.`);
+    // retrieve user and verify existence
+    const user = await getUser(uid);
+    if (!user) throw new Error(`User "${uid}" not found.`);
 
-    const doc = snapshot.docs[0];
-    const next = !((doc.data() as userDocument).two_fa_enabled ?? false);
-
-    await doc.ref.update({'two_fa_enabled': next, 'updated_at': new Date()});
-
+    // toggle two_fa_enabled and return new state
+    const next = !(user.two_fa_enabled ?? false);
+    await db.collection('users').doc(uid).update({'two_fa_enabled': next, 'updated_at': new Date()});
     return next;
 }
 
