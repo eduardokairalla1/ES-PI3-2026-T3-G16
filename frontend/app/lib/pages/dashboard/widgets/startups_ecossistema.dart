@@ -43,7 +43,7 @@ class StartupsEcossistema extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Startups do ecossistema',
+                'Startups em alta',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
@@ -53,7 +53,7 @@ class StartupsEcossistema extends StatelessWidget {
               ),
               // Botão para ver o catálogo completo via GoRouter
               GestureDetector(
-                onTap: () => context.push('/catalog'),
+                onTap: () => context.go('/catalog'),
                 child: Row(
                   children: [
                     Text(
