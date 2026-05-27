@@ -23,10 +23,13 @@ class InvestimentoResumo {
   
   /// Quantidade total de tokens em custódia.
   final int tokenQuantity;
-  
+
+  /// Ticker/nome do token emitido pela startup (ex: "AICN", "BPCK").
+  final String tokenName;
+
   /// Cotação/Preço atual do token no mercado.
   final double currentPrice;
-  
+
   /// Variação percentual ponderada de valorização/desvalorização do ativo (com base no preço médio).
   final double variation;
 
@@ -35,6 +38,7 @@ class InvestimentoResumo {
     required this.startupName,
     required this.startupLogoUrl,
     required this.tokenQuantity,
+    required this.tokenName,
     required this.currentPrice,
     required this.variation,
   });
@@ -46,6 +50,7 @@ class InvestimentoResumo {
       startupName: map['startupName'] as String? ?? '',
       startupLogoUrl: map['startupLogoUrl'] as String? ?? '',
       tokenQuantity: (map['tokenQuantity'] as num?)?.toInt() ?? 0,
+      tokenName: map['tokenName'] as String? ?? '',
       currentPrice: (map['currentPrice'] as num?)?.toDouble() ?? 0,
       variation: (map['variation'] as num?)?.toDouble() ?? 0,
     );
@@ -129,19 +134,4 @@ class DashboardData {
     );
   }
 
-  /// Instância auxiliar estática para fallback ou estados iniciais de carregamento vazio.
-  factory DashboardData.mock() {
-    return DashboardData(
-      nomeUsuario: 'Usuário',
-      patrimonioTotal: 0,
-      saldoDisponivel: 0,
-      rendimentoDiarioValor: 0,
-      rendimentoDiarioPorcentagem: 0,
-      totalStartupsMercado: 0,
-      rentabilidadeMediaMercado: 0,
-      totalInvestidoresMercado: 0,
-      investimentos: [],
-      favoriteIds: [],
-    );
-  }
 }
