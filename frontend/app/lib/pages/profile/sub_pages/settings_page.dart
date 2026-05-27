@@ -70,7 +70,10 @@ class _SettingsPageState extends State<SettingsPage> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Foto atualizada!')),
+          SnackBar(
+            content: const Text('Foto atualizada!'),
+            backgroundColor: Colors.green.shade700,
+          ),
         );
       }
     } catch (e, stack) {
@@ -112,7 +115,10 @@ class _SettingsPageState extends State<SettingsPage> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Perfil atualizado!')),
+          SnackBar(
+            content: const Text('Perfil atualizado!'),
+            backgroundColor: Colors.green.shade700,
+          ),
         );
       }
     } catch (e) {
