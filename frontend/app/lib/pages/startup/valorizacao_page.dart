@@ -5,7 +5,6 @@ import 'dart:math' show max;
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:mesclainvest/app/app_state.dart';
 import 'package:mesclainvest/pages/dashboard/models/price_snapshot_model.dart';
 import 'package:mesclainvest/pages/startup/controllers/valorizacao_controller.dart';
 import 'package:mesclainvest/pages/startup/widgets/startup_header.dart';
@@ -89,7 +88,6 @@ class _ValorizacaoPageState extends State<ValorizacaoPage> {
         }
 
         final startup  = _controller.startup!;
-        final userName = AppState.instance.profile?.fullName ?? '';
         final history  = _controller.tokenHistory;
 
         return Scaffold(
@@ -100,7 +98,7 @@ class _ValorizacaoPageState extends State<ValorizacaoPage> {
               children: [
 
                 // reusa o header da tela de detalhe da startup
-                StartupHeader(startup: startup, userName: userName),
+                StartupHeader(startup: startup),
 
                 Expanded(
                   child: SingleChildScrollView(
