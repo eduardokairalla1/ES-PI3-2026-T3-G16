@@ -5,6 +5,8 @@
 // --- IMPORTS ---
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
+import 'package:mesclainvest/app/app_state.dart';
 import 'package:mesclainvest/core/exceptions/auth.dart';
 import 'package:mesclainvest/core/exceptions/infrastructure.dart';
 import 'package:mesclainvest/core/models/user_profile.dart';
@@ -34,32 +36,43 @@ class AuthService {
   /// :throws AuthException: if the sign-in fails
   /// :throws InfrastructureException: if any other error occurs
   ///
-  /// :returns: void
-  Future<void> signIn(String email, String password) async {
+  /// :returns: true if 2FA verification is required, false otherwise
+  Future<bool> signIn(String email, String password) async {
+
     // sign in with Firebase Authentication
     try {
-      await _auth.signInWithEmailAndPassword(email: email, password: password);
+      await _auth.signInWithEmailAndPassword(
+        email: email, password: password,
+      );
     }
-    // error occurred in Firebase Authentication: trow a custom AuthException
     on FirebaseAuthException catch (e) {
       throw AuthException.fromFirebaseCode(
-            e.code,
-            originalError: e,
-            stackTrace: StackTrace.current,
-          ) ??
-          InfrastructureException(
-            originalError: e,
-            stackTrace: StackTrace.current,
-          );
-    }
-    // any other error: throw a InfrastructureException
-    catch (e) {
-      throw InfrastructureException(
-        message: e.toString(),
+        e.code,
+        originalError: e,
+        stackTrace: StackTrace.current,
+      ) ?? InfrastructureException(
         originalError: e,
         stackTrace: StackTrace.current,
       );
     }
+    catch (e) {
+      throw InfrastructureException(
+        message:      e.toString(),
+        originalError: e,
+        stackTrace:    StackTrace.current,
+      );
+    }
+
+    // fetch profile to check 2FA status
+    final profile = await getProfile();
+
+    if (profile.twoFaEnabled) {
+      AppState.instance.setPendingTwoFa();
+      return true;
+    }
+
+    AppState.instance.setProfile(profile);
+    return false;
   }
 
   /// I register a new user with email and password.
@@ -141,6 +154,9 @@ class AuthService {
         stackTrace: StackTrace.current,
       );
     }
+
+    // sign out so the user lands on /login and authenticates explicitly
+    await _auth.signOut();
   }
 
   /// I send a password reset email to the given address.
@@ -153,7 +169,9 @@ class AuthService {
   /// :returns: void
   Future<void> sendPasswordResetEmail(String email) async {
     try {
-      final resetUrl = Uri.base.resolve('/reset-password').toString();
+      final resetUrl = kIsWeb
+          ? Uri.base.resolve('/reset-password').toString()
+          : 'https://mesclainvest-eda16.firebaseapp.com/reset-password';
       await _auth.sendPasswordResetEmail(
         email: email,
         actionCodeSettings: ActionCodeSettings(
@@ -162,7 +180,6 @@ class AuthService {
         ),
       );
     }
-    // error occurred in Firebase Authentication: throw a custom AuthException
     on FirebaseAuthException catch (e) {
       throw AuthException.fromFirebaseCode(
             e.code,
@@ -174,7 +191,6 @@ class AuthService {
             stackTrace: StackTrace.current,
           );
     }
-    // any other error: throw an InfrastructureException
     catch (e) {
       throw InfrastructureException(
         message: e.toString(),
@@ -183,6 +199,7 @@ class AuthService {
       );
     }
   }
+
 
   /// I fetch the authenticated user's profile from the backend.
   ///
@@ -228,10 +245,56 @@ class AuthService {
     }
   }
 
+  /// I confirm a password reset using the oob code from the reset email.
+  ///
+  /// :param oobCode: the one-time code from the reset link
+  /// :param newPassword: the new password to set
+  ///
+  /// :throws AuthException: if the code is expired or invalid
+  /// :throws InfrastructureException: if any other error occurs
+  ///
+  /// :returns: void
+  Future<void> confirmPasswordReset(String oobCode, String newPassword) async {
+    try {
+      await _auth.confirmPasswordReset(
+        code:        oobCode,
+        newPassword: newPassword,
+      );
+    }
+    on FirebaseAuthException catch (e) {
+      throw AuthException.fromFirebaseCode(
+        e.code,
+        originalError: e,
+        stackTrace:    StackTrace.current,
+      ) ?? InfrastructureException(
+        originalError: e,
+        stackTrace:    StackTrace.current,
+      );
+    }
+    catch (e) {
+      throw InfrastructureException(
+        message:      e.toString(),
+        originalError: e,
+        stackTrace:    StackTrace.current,
+      );
+    }
+  }
+
+
   /// I sign out the current user.
+  ///
+  /// :throws InfrastructureException: if sign-out fails
   ///
   /// :returns: void
   Future<void> signOut() async {
-    await _auth.signOut();
+    try {
+      await _auth.signOut();
+    } catch (e) {
+      throw InfrastructureException(
+        message:      e.toString(),
+        originalError: e,
+        stackTrace:    StackTrace.current,
+      );
+    }
   }
 }
