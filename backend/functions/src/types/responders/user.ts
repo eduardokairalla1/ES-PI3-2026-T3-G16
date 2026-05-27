@@ -35,8 +35,14 @@ export const UpdateProfileRequest = z.object(
 );
 
 
+export const TwoFACodeRequest = z.object({
+    code: z.string().regex(/^\d{6}$/, 'Code must be exactly 6 digits'),
+});
+
+
 /**
  * EXPORTS
  */
 export type CreateUserRequest    = z.infer<typeof CreateUserRequest>;
 export type UpdateProfileRequest = z.infer<typeof UpdateProfileRequest>;
+export type TwoFACodeRequest     = z.infer<typeof TwoFACodeRequest>;
