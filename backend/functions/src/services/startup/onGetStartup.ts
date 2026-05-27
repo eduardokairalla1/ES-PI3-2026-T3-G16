@@ -76,6 +76,7 @@ export async function handleOnGetStartup(request: CallableRequest)
             partners: startup.partners,
             stage: startup.stage,
             tagline: startup.tagline,
+            availableTokens: startup.available_tokens,
             tokenPrice: startup.token_price,
             totalTokens: startup.total_tokens,
             updatedAt: startup.updated_at,
