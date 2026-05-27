@@ -199,7 +199,7 @@ async function seed(): Promise<void>
             emailVerified: true,
         });
 
-        // 2. create the Firestore user document
+        // 2. create the Firestore user document (doc ID === uid, matching getUser in storage.ts)
         const userDoc: userDocument = {
             'birth_date':     birthDate,
             'cpf':            cpf,
@@ -210,11 +210,12 @@ async function seed(): Promise<void>
             'phone':          phone,
             'photo_url':      null,
             'status':         'active',
+            'totp_secret':    null,
             'two_fa_enabled': false,
             'uid':            uid,
             'updated_at':     null,
         };
-        await db.collection('users').add(userDoc);
+        await db.collection('users').doc(uid).set(userDoc);
 
         // 3. create the wallet (doc ID === uid, matching createWallet in storage.ts)
         const walletDoc: walletDocument = {
