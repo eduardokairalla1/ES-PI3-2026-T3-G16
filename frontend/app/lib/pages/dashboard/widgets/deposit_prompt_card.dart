@@ -172,7 +172,10 @@ Future<void> showDepositDialog({
 
           if (parsed == null || parsed <= 0) {
             ScaffoldMessenger.of(dialogCtx).showSnackBar(
-              const SnackBar(content: Text('Informe um valor válido.')),
+              SnackBar(
+                content: const Text('Informe um valor válido.'),
+                backgroundColor: Colors.orange.shade700,
+              ),
             );
             return;
           }
