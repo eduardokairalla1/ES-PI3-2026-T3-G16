@@ -75,6 +75,146 @@ class AuthService {
     return false;
   }
 
+
+  /// I verify a TOTP code during login.
+  /// On success, loads the profile into AppState and clears the pending 2FA state.
+  ///
+  /// :param code: 6-digit TOTP code from the authenticator app
+  ///
+  /// :throws AuthException: if the code is invalid
+  /// :throws InfrastructureException: if any other error occurs
+  ///
+  /// :returns: void
+  Future<void> verify2FA(String code) async {
+    try {
+      await FirebaseFunctions.instance
+          .httpsCallable('onVerify2FA')
+          .call({'code': code});
+    }
+    on FirebaseFunctionsException catch (e) {
+      if (e.code == 'invalid-argument') {
+        throw AuthException.invalidTwoFACode(
+          originalError: e,
+          stackTrace:    StackTrace.current,
+        );
+      }
+      throw InfrastructureException(
+        message:      e.message ?? e.toString(),
+        originalError: e,
+        stackTrace:    StackTrace.current,
+      );
+    }
+    catch (e) {
+      throw InfrastructureException(
+        message:      e.toString(),
+        originalError: e,
+        stackTrace:    StackTrace.current,
+      );
+    }
+
+    // verified: load profile and clear pending state
+    final profile = await getProfile();
+    AppState.instance.setProfile(profile);
+    AppState.instance.clearPendingTwoFa();
+  }
+
+
+  /// I start the 2FA setup process — generates a TOTP secret on the backend
+  /// and returns the otpauth URI to display as a QR code.
+  ///
+  /// :throws InfrastructureException: if any error occurs
+  ///
+  /// :returns: the otpauth:// URI string
+  Future<String> setup2FA() async {
+    try {
+      final result = await FirebaseFunctions.instance
+          .httpsCallable('onSetup2FA')
+          .call<Map<String, dynamic>>();
+      return (result.data as Map)['otpauthUri'] as String;
+    }
+    catch (e) {
+      throw InfrastructureException(
+        message:      e.toString(),
+        originalError: e,
+        stackTrace:    StackTrace.current,
+      );
+    }
+  }
+
+
+  /// I confirm the 2FA setup by verifying the first code from the authenticator app.
+  ///
+  /// :param code: 6-digit TOTP code
+  ///
+  /// :throws AuthException: if the code is invalid
+  /// :throws InfrastructureException: if any other error occurs
+  ///
+  /// :returns: void
+  Future<void> confirmSetup2FA(String code) async {
+    try {
+      await FirebaseFunctions.instance
+          .httpsCallable('onConfirmSetup2FA')
+          .call({'code': code});
+    }
+    on FirebaseFunctionsException catch (e) {
+      if (e.code == 'invalid-argument') {
+        throw AuthException.invalidTwoFACode(
+          originalError: e,
+          stackTrace:    StackTrace.current,
+        );
+      }
+      throw InfrastructureException(
+        message:      e.message ?? e.toString(),
+        originalError: e,
+        stackTrace:    StackTrace.current,
+      );
+    }
+    catch (e) {
+      throw InfrastructureException(
+        message:      e.toString(),
+        originalError: e,
+        stackTrace:    StackTrace.current,
+      );
+    }
+  }
+
+
+  /// I disable 2FA after verifying the current TOTP code.
+  ///
+  /// :param code: 6-digit TOTP code
+  ///
+  /// :throws AuthException: if the code is invalid
+  /// :throws InfrastructureException: if any other error occurs
+  ///
+  /// :returns: void
+  Future<void> disable2FA(String code) async {
+    try {
+      await FirebaseFunctions.instance
+          .httpsCallable('onDisable2FA')
+          .call({'code': code});
+    }
+    on FirebaseFunctionsException catch (e) {
+      if (e.code == 'invalid-argument') {
+        throw AuthException.invalidTwoFACode(
+          originalError: e,
+          stackTrace:    StackTrace.current,
+        );
+      }
+      throw InfrastructureException(
+        message:      e.message ?? e.toString(),
+        originalError: e,
+        stackTrace:    StackTrace.current,
+      );
+    }
+    catch (e) {
+      throw InfrastructureException(
+        message:      e.toString(),
+        originalError: e,
+        stackTrace:    StackTrace.current,
+      );
+    }
+  }
+
   /// I register a new user with email and password.
   ///
   /// :param email: the user's email
