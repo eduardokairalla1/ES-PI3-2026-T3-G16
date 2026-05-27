@@ -277,6 +277,7 @@ class _RegisterPageState extends State<RegisterPage>
       _isLoading = true;
       _error = null;
     });
+    AppState.instance.setRegistering(true);
 
     try {
       final d = _birthDate!;
@@ -293,11 +294,7 @@ class _RegisterPageState extends State<RegisterPage>
         birthIso,
       );
 
-      // Carrega o perfil no AppState para que o nome apareça corretamente no Dashboard.
-      // O register() já autentica o usuário, então getProfile() funcionará imediatamente.
-      await AppState.instance.loadProfile(_authService);
-
-      if (mounted) context.go('/dashboard');
+      if (mounted) context.go('/login');
     } on AuthException catch (e) {
       setState(() => _error = e.message);
     } on InfrastructureException {
@@ -313,6 +310,7 @@ class _RegisterPageState extends State<RegisterPage>
             'Tente novamente em alguns minutos.'),
       );
     } finally {
+      AppState.instance.setRegistering(false);
       if (mounted) setState(() => _isLoading = false);
     }
   }
