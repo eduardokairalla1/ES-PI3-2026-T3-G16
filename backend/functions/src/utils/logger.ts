@@ -8,7 +8,12 @@
  * IMPORTS
  */
 import * as firebaseLogger from 'firebase-functions/logger';
-import {LogData} from './logger.types';
+
+
+/**
+ * TYPES
+ */
+type LogData = Record<string, unknown>;
 
 
 /**
