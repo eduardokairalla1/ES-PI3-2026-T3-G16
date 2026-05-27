@@ -21,7 +21,6 @@ import 'package:mesclainvest/pages/carteira/widgets/distribuicao_patrimonio_card
 import 'package:mesclainvest/pages/carteira/widgets/evolucao_patrimonio_card.dart';
 import 'package:mesclainvest/pages/carteira/widgets/historico_transacoes_card.dart';
 import 'package:mesclainvest/pages/dashboard/controllers/dashboard_controller.dart';
-import 'package:mesclainvest/pages/dashboard/widgets/cabecalho_dashboard.dart';
 import 'package:mesclainvest/pages/dashboard/widgets/cartao_patrimonio.dart';
 import 'package:mesclainvest/pages/dashboard/widgets/dashboard_skeleton.dart';
 import 'package:mesclainvest/pages/dashboard/widgets/meus_investimentos.dart';
@@ -84,19 +83,50 @@ class _CarteiraPageState extends State<CarteiraPage> {
   }
 
   Widget _buildContent() {
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          CabecalhoDashboard(controller: _controller),
-          CartaoPatrimonio(controller: _controller),
-          EvolucaoPatrimonioCard(controller: _controller),
-          DistribuicaoPatrimonioCard(controller: _controller),
-          MeusInvestimentos(controller: _controller),
-          HistoricoTransacoesCard(controller: _controller),
-          const SizedBox(height: 16),
-        ],
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Carteira',
+                style: TextStyle(
+                  fontSize: 26,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.textPrimary(context),
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                'Seu patrimônio e histórico de investimentos',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w400,
+                  color: AppColors.textSecondary(context),
+                ),
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                CartaoPatrimonio(controller: _controller),
+                EvolucaoPatrimonioCard(controller: _controller),
+                DistribuicaoPatrimonioCard(controller: _controller),
+                MeusInvestimentos(controller: _controller),
+                HistoricoTransacoesCard(controller: _controller),
+                const SizedBox(height: 16),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 
