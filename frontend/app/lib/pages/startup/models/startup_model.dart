@@ -59,6 +59,7 @@ class QuestionModel {
   final String id;
   final String text;
   final String authorName;
+  final String? authorUid;
   final String? answer;
   final DateTime? answeredAt;
   final bool isPrivate;
@@ -68,6 +69,7 @@ class QuestionModel {
     required this.id,
     required this.text,
     required this.authorName,
+    this.authorUid,
     this.answer,
     this.answeredAt,
     required this.isPrivate,
@@ -79,6 +81,7 @@ class QuestionModel {
       id: map['id'] as String? ?? '',
       text: map['text'] as String? ?? '',
       authorName: map['authorName'] as String? ?? '',
+      authorUid: map['authorUid'] as String?,
       answer: map['answer'] as String?,
       answeredAt: _parseTimestamp(map['answeredAt']),
       isPrivate: map['isPrivate'] as bool? ?? false,
@@ -166,54 +169,6 @@ class StartupModel {
           .toList(),
       videoUrl:      map['videoUrl']      as String?,
       changePercent: (map['changePercent'] as num?)?.toDouble(),
-    );
-  }
-
-  /// I return mock data for development without Firebase.
-  factory StartupModel.mock() {
-    return const StartupModel(
-      id: 'mock-theracare',
-      name: 'TheraCare',
-      tagline: 'Saúde mental acessível para todos',
-      description:
-          'Plataforma de telemedicina que conecta pacientes a psicólogos credenciados.',
-      executiveSummary:
-          'O Brasil possui apenas 3,2 psicólogos por 10.000 habitantes, muito abaixo da média '
-          'recomendada pela OMS. A TheraCare resolve esse gargalo oferecendo teleconsultas de '
-          'saúde mental com psicólogos credenciados pelo CFP, a partir de R\$ 80 por sessão. '
-          'Nosso modelo SaaS cobra uma comissão de 20% por sessão realizada, sem mensalidade '
-          'para os profissionais. Em 3 meses de operação no modo beta fechado, validamos 47 '
-          'sessões com NPS de 92. Buscamos R\$ 200.000 em capital semente para escalar a '
-          'aquisição de usuários e contratar 2 desenvolvedores.',
-      stage: 'new',
-      logoUrl: 'https://placehold.co/200x200/4F46E5/FFFFFF?text=TC',
-      tokenPrice: 0.10,
-      capitalRaised: 18000,
-      totalTokens: 1000000,
-      availableTokens: 850000,
-      tokenName: 'TC',
-      videoUrl: null,
-      partners: [
-        PartnerModel(
-          name: 'Ana Paula Ferreira',
-          role: 'CEO & Co-fundadora',
-          equityPct: 60,
-          bio: 'Psicóloga formada pela PUC-Campinas, especialista em TCC.',
-        ),
-        PartnerModel(
-          name: 'Lucas Mendes',
-          role: 'CTO & Co-fundador',
-          equityPct: 40,
-          bio:
-              'Engenheiro de Software pela Unicamp, 4 anos de experiência mobile.',
-        ),
-      ],
-      advisors: [
-        AdvisorModel(
-          name: 'Prof. Dr. Ricardo Alves',
-          role: 'Mentor de Negócios',
-        ),
-      ],
     );
   }
 }
