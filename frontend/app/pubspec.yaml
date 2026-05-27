@@ -61,6 +61,13 @@ dependencies:
   # Charts
   fl_chart: ^0.70.2
 
+  # QR code
+  qr_flutter: ^4.1.0
+
+  # PDF generation & sharing
+  pdf: ^3.11.1
+  printing: ^5.13.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
