@@ -82,6 +82,7 @@ export async function handleOnGetQuestions(request: CallableRequest)
                     answer: q.answer,
                     answeredAt: q.answered_at,
                     authorName: q.author_name,
+                    authorUid: q.author_uid,
                     createdAt: q.created_at,
                     id: q.id,
                     isPrivate: q.is_private,
