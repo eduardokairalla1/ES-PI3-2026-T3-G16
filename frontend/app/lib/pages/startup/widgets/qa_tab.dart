@@ -3,8 +3,10 @@
 // Content of the "Q&A" tab on the startup detail screen.
 
 // --- IMPORTS ---
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:mesclainvest/app/app_state.dart';
 import 'package:mesclainvest/pages/startup/controllers/startup_controller.dart';
 import 'package:mesclainvest/pages/startup/models/startup_model.dart';
 import 'package:mesclainvest/shared/styles/app_colors.dart';
@@ -46,8 +48,9 @@ class _QATabState extends State<QATab> {
     if (success) {
       _textController.clear();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Pergunta enviada com sucesso!'),
+        SnackBar(
+          content: const Text('Pergunta enviada com sucesso!'),
+          backgroundColor: Colors.green.shade700,
         ),
       );
     } else {
@@ -138,26 +141,7 @@ class _QATabState extends State<QATab> {
         children: [
           Row(
             children: [
-              Container(
-                width: 28,
-                height: 28,
-                decoration: BoxDecoration(
-                  color: AppColors.textPrimary(context),
-                  shape: BoxShape.circle,
-                ),
-                child: Center(
-                  child: Text(
-                    q.authorName.isNotEmpty
-                        ? q.authorName[0].toUpperCase()
-                        : '?',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.surfaceColor(context),
-                    ),
-                  ),
-                ),
-              ),
+              _authorAvatar(q),
               const SizedBox(width: 8),
               Text(
                 q.authorName,
@@ -259,6 +243,49 @@ class _QATabState extends State<QATab> {
           ],
         ],
       ),
+    );
+  }
+
+  Widget _authorAvatar(QuestionModel q) {
+    final isMe = q.authorUid != null &&
+        q.authorUid == FirebaseAuth.instance.currentUser?.uid;
+    final photoUrl = isMe ? AppState.instance.profile?.photoUrl : null;
+    final initial = q.authorName.isNotEmpty ? q.authorName[0].toUpperCase() : '?';
+
+    return Container(
+      width: 28,
+      height: 28,
+      decoration: BoxDecoration(
+        color: AppColors.textPrimary(context),
+        shape: BoxShape.circle,
+      ),
+      child: photoUrl != null
+          ? ClipOval(
+              child: Image.network(
+                photoUrl,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => Center(
+                  child: Text(
+                    initial,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.surfaceColor(context),
+                    ),
+                  ),
+                ),
+              ),
+            )
+          : Center(
+              child: Text(
+                initial,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.surfaceColor(context),
+                ),
+              ),
+            ),
     );
   }
 
