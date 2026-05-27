@@ -6,7 +6,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mesclainvest/app/app_state.dart';
 import 'package:mesclainvest/core/exceptions/auth.dart';
 import 'package:mesclainvest/core/exceptions/infrastructure.dart';
 import 'package:mesclainvest/core/services/auth.dart';
@@ -132,13 +131,12 @@ class _LoginPageState extends State<LoginPage>
 
     // try to sign in the user
     try {
-      await _authService.signIn(_emailCtrl.text.trim(), _passwordCtrl.text);
+      final needs2FA = await _authService.signIn(
+        _emailCtrl.text.trim(),
+        _passwordCtrl.text,
+      );
 
-      // load user profile into global app state
-      await AppState.instance.loadProfile(_authService);
-
-      // login successful: navigate to the dashboard page
-      if (mounted) context.go('/dashboard');
+      if (mounted) context.go(needs2FA ? '/verify-2fa' : '/dashboard');
     }
     // authentication error: display the error message
     on AuthException catch (e) {

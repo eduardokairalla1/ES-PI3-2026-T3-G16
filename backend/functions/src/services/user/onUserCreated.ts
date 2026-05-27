@@ -8,7 +8,7 @@
  * IMPORTS
  */
 import {HttpsError} from 'firebase-functions/v2/https';
-import {addUser, getUser, getUserByCpf} from '../../db/users/storage';
+import {addUser, deleteUser, getUser, getUserByCpf} from '../../db/users/storage';
 import {createWallet} from '../../db/wallets/storage';
 import {verifyAuth} from '../../utils/auth';
 import {logger} from '../../utils/logger';
@@ -87,7 +87,14 @@ export async function handleOnUserCreated(request: CallableRequest)
         );
         logger.info(`User "${uid}" added successfully.`, {data: addedUser});
 
-        await createWallet(uid);
+        // roll back user document if wallet creation fails
+        try {
+            await createWallet(uid);
+        } catch (walletError) {
+            logger.error(`Wallet creation failed for "${uid}", rolling back user document.`);
+            await deleteUser(uid);
+            throw walletError;
+        }
         logger.info(`Wallet created for user "${uid}".`);
 
         return {

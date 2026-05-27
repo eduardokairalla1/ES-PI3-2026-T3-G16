@@ -55,10 +55,14 @@ class DashboardService {
 
   /// Busca o histórico consolidado de transações da carteira do usuário pela Cloud Function `onGetTransactions`.
   /// Retorna uma lista contendo mapas de dados representando cada transação (depósitos, compras e vendas de tokens).
-  Future<List<Map<String, dynamic>>> getTransactions({int limit = 20}) async {
+  Future<List<Map<String, dynamic>>> getTransactions({int? month, int? year}) async {
+    final now = DateTime.now();
     final result = await _functions
         .httpsCallable('onGetTransactions')
-        .call<Map<String, dynamic>>({'limit': limit});
+        .call<Map<String, dynamic>>({
+          'month': month ?? now.month,
+          'year':  year  ?? now.year,
+        });
 
     final List<dynamic> list = result.data['transactions'] ?? [];
     return list.map((e) => Map<String, dynamic>.from(e as Map)).toList();

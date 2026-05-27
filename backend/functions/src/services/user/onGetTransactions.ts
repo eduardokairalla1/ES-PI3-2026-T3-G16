@@ -36,8 +36,12 @@ export async function handleOnGetTransactions(request: CallableRequest)
         // 1. Valida se a requisição provém de um usuário autenticado no Firebase
         const uid = verifyAuth(request);
 
-        // Define o limite padrão de transações a retornar se não especificado pelo cliente (default: 20)
-        const limit: number = request.data.limit || 20;
+        // Resolve o mês e ano solicitados (padrão: mês atual)
+        const now = new Date();
+        const month: number = request.data.month ?? (now.getMonth() + 1); // 1–12
+        const year: number  = request.data.year  ?? now.getFullYear();
+        const startOfMonth  = new Date(year, month - 1, 1);
+        const endOfMonth    = new Date(year, month, 1); // início do mês seguinte (exclusivo)
 
         logger.info(`Buscando histórico unificado de transações para o usuário "${uid}"...`);
 
@@ -83,18 +87,28 @@ export async function handleOnGetTransactions(request: CallableRequest)
         // Isso evita duplicação de dados no extrato, já que compras/vendas são gravadas em ambas as coleções.
         const depositsOnly = deposits.filter(t => t.type !== 'buy' && t.type !== 'sell');
 
+        // Converte qualquer valor de data (Firestore Timestamp, Date ou string) para Date JS
+        const toJsDate = (value: unknown): Date =>
+        {
+            if (value instanceof Date) return value;
+            if (value && typeof value === 'object' && typeof (value as any).toDate === 'function')
+                return (value as any).toDate();
+            return new Date(value as string | number);
+        };
+
         // E ordena as transações pela data de criação em ordem decrescente (mais recente primeiro)
         const all = [...depositsOnly, ...orderTransactions].sort((a, b) =>
+            toJsDate(b.created_at).getTime() - toJsDate(a.created_at).getTime()
+        );
+
+        // 6. Filtra transações do mês/ano solicitado
+        const transactions = all.filter(t =>
         {
-            const dateA = a.created_at instanceof Date ? a.created_at : new Date(a.created_at as string);
-            const dateB = b.created_at instanceof Date ? b.created_at : new Date(b.created_at as string);
-            return dateB.getTime() - dateA.getTime();
+            const date = toJsDate(t.created_at);
+            return date >= startOfMonth && date < endOfMonth;
         });
 
-        // 6. Aplica o limite de paginação especificado
-        const transactions = all.slice(0, limit);
-
-        logger.info(`Retornando ${transactions.length} transações para o usuário "${uid}".`);
+        logger.info(`Retornando ${transactions.length} transações de ${month}/${year} para o usuário "${uid}".`);
 
         return {transactions};
     }

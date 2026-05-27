@@ -1,9 +1,13 @@
 // --- App routes ---
 
 // --- IMPORTS ---
+import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mesclainvest/app/app_state.dart';
 import 'package:mesclainvest/pages/auth/forgot_password_page.dart';
+import 'package:mesclainvest/pages/auth/setup_2fa_page.dart';
+import 'package:mesclainvest/pages/auth/verify_2fa_page.dart';
 import 'package:mesclainvest/pages/catalog/catalog_page.dart';
 import 'package:mesclainvest/pages/auth/login_page.dart';
 import 'package:mesclainvest/pages/auth/register_page.dart';
@@ -23,28 +27,47 @@ import 'package:flutter/material.dart';
 import 'package:mesclainvest/shared/widgets/bottom_nav.dart';
 import 'package:mesclainvest/shared/widgets/light_theme_scope.dart';
 
+/// Bridges a Stream into a Listenable so GoRouter re-evaluates redirects
+/// whenever the auth state changes.
+class _GoRouterRefreshStream extends ChangeNotifier {
+  _GoRouterRefreshStream(Stream<dynamic> stream) {
+    notifyListeners();
+    _sub = stream.listen((_) => notifyListeners());
+  }
+  late final StreamSubscription<dynamic> _sub;
+  @override
+  void dispose() {
+    _sub.cancel();
+    super.dispose();
+  }
+}
+
+
 /// --- GLOBAIS ---
 
 // inicializa o roteador do app
 final router = GoRouter(
   initialLocation: '/',
+  refreshListenable: Listenable.merge([
+    _GoRouterRefreshStream(FirebaseAuth.instance.authStateChanges()),
+    AppState.instance,
+  ]),
   redirect: (context, state) {
-    // verifica se o usuário está logado
-    final isLoggedIn = FirebaseAuth.instance.currentUser != null;
+    final isLoggedIn   = FirebaseAuth.instance.currentUser != null;
+    final pendingTwoFa = AppState.instance.pendingTwoFa;
+    final loc          = state.matchedLocation;
 
-    // verifica se o usuário está tentando acessar uma rota protegida
+    // 2FA pending: only /verify-2fa is accessible
+    if (pendingTwoFa && loc != '/verify-2fa') return '/verify-2fa';
+
+    // not logged in + protected route → login
     final protectedPaths = ['/dashboard', '/catalog', '/balcao', '/carteira', '/profile', '/startup'];
-    final isProtected = protectedPaths.any((p) => state.matchedLocation.startsWith(p));
+    if (!isLoggedIn && protectedPaths.any((p) => loc.startsWith(p))) return '/login';
 
-    // usuário não está logado e tentando acessar rota protegida: redireciona para login
-    if (!isLoggedIn && isProtected) return '/login';
-
-    // usuário está logado e tentando acessar login ou registro: redireciona para
-    // o dashboard
+    // logged in (no pending 2FA, not mid-registration) + auth pages → dashboard
+    final isRegistering = AppState.instance.isRegistering;
     final authPaths = ['/login', '/register'];
-    if (isLoggedIn && authPaths.contains(state.matchedLocation)) {
-      return '/dashboard';
-    }
+    if (isLoggedIn && !pendingTwoFa && !isRegistering && authPaths.contains(loc)) return '/dashboard';
 
     return null;
   },
@@ -64,6 +87,14 @@ final router = GoRouter(
     GoRoute(
       path: '/forgot-password',
       builder: (context, state) => const LightThemeScope(child: ForgotPasswordPage()),
+    ),
+    GoRoute(
+      path: '/verify-2fa',
+      builder: (context, state) => const Verify2FAPage(),
+    ),
+    GoRoute(
+      path: '/setup-2fa',
+      builder: (context, state) => const Setup2FAPage(),
     ),
     GoRoute(
       path: '/reset-password',

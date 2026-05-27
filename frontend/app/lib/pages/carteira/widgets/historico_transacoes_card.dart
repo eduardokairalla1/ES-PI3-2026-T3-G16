@@ -26,6 +26,11 @@ const int _kMaxRows = 6;
 final _currencyFmt = NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
 final _dateFmt     = DateFormat('dd/MM/yyyy');
 
+String _formatMes(int month, int year) {
+  final mes = DateFormat('MMMM', 'pt_BR').format(DateTime(year, month));
+  return '${mes[0].toUpperCase()}${mes.substring(1)} $year';
+}
+
 // --- WIDGET ---
 
 /// Card with the "Histórico de Transações" title and the latest transactions
@@ -43,11 +48,36 @@ class HistoricoTransacoesCard extends StatefulWidget {
 
 class _HistoricoTransacoesCardState extends State<HistoricoTransacoesCard> {
   late Future<List<TransactionModel>> _future;
+  late int _selectedMonth;
+  late int _selectedYear;
 
   @override
   void initState() {
     super.initState();
-    _future = widget.controller.getTransactions();
+    final now = DateTime.now();
+    _selectedMonth = now.month;
+    _selectedYear  = now.year;
+    _fetch();
+  }
+
+  void _fetch() {
+    _future = widget.controller.getTransactions(month: _selectedMonth, year: _selectedYear);
+  }
+
+  void _prevMonth() {
+    setState(() {
+      if (_selectedMonth == 1) { _selectedMonth = 12; _selectedYear--; }
+      else { _selectedMonth--; }
+      _fetch();
+    });
+  }
+
+  void _nextMonth() {
+    setState(() {
+      if (_selectedMonth == 12) { _selectedMonth = 1; _selectedYear++; }
+      else { _selectedMonth++; }
+      _fetch();
+    });
   }
 
   @override
@@ -72,21 +102,43 @@ class _HistoricoTransacoesCardState extends State<HistoricoTransacoesCard> {
         children: [
           Row(
             children: [
-              Icon(
-                Icons.receipt_long_outlined,
-                size:  18,
-                color: AppColors.textSecondary(context),
-              ),
+              Icon(Icons.receipt_long_outlined, size: 18, color: AppColors.textSecondary(context)),
               const SizedBox(width: 8),
               Text(
                 'Histórico de Transações',
-                style: TextStyle(
-                  fontSize:    15,
-                  fontWeight:  FontWeight.w700,
-                  color:       AppColors.textPrimary(context),
-                ),
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.textPrimary(context)),
               ),
             ],
+          ),
+          const SizedBox(height: 10),
+          Container(
+            decoration: BoxDecoration(
+              color: AppColors.surfaceMuted(context),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.chevron_left),
+                  onPressed: _prevMonth,
+                  color: AppColors.textSecondary(context),
+                ),
+                Text(
+                  _formatMes(_selectedMonth, _selectedYear),
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.textPrimary(context)),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.chevron_right),
+                  onPressed: (_selectedMonth == DateTime.now().month && _selectedYear == DateTime.now().year)
+                      ? null
+                      : _nextMonth,
+                  color: (_selectedMonth == DateTime.now().month && _selectedYear == DateTime.now().year)
+                      ? AppColors.textMuted(context)
+                      : AppColors.textSecondary(context),
+                ),
+              ],
+            ),
           ),
           const SizedBox(height: 8),
           FutureBuilder<List<TransactionModel>>(
@@ -100,7 +152,7 @@ class _HistoricoTransacoesCardState extends State<HistoricoTransacoesCard> {
               }
               if (snapshot.hasError) {
                 return _ErrorRow(onRetry: () {
-                  setState(() => _future = widget.controller.getTransactions());
+                  setState(_fetch);
                 });
               }
               final list = snapshot.data ?? const <TransactionModel>[];

@@ -22,6 +22,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:mesclainvest/app/app_state.dart';
+import 'package:mesclainvest/core/services/extrato_pdf.dart';
 import 'package:mesclainvest/pages/dashboard/controllers/dashboard_controller.dart';
 import 'package:mesclainvest/pages/dashboard/models/transaction_model.dart';
 import 'package:mesclainvest/shared/styles/app_colors.dart';
@@ -204,8 +206,9 @@ class BotoesAcao extends StatelessWidget {
                       });
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Por favor, insira um valor válido.'),
+                        SnackBar(
+                          content: const Text('Por favor, insira um valor válido.'),
+                          backgroundColor: Colors.orange.shade700,
                         ),
                       );
                     }
@@ -248,146 +251,204 @@ class BotoesAcao extends StatelessWidget {
   /// Abre o pop-up de extrato contendo as movimentações recentes do usuário.
   /// Consome a lista assíncrona obtida pelo controller através de um [FutureBuilder].
   /// Trata estados de carregamento (shimmer/progress), erro na comunicação e lista vazia de forma amigável.
+  String _formatMes(int month, int year) {
+    final mes = DateFormat('MMMM', 'pt_BR').format(DateTime(year, month));
+    return '${mes[0].toUpperCase()}${mes.substring(1)} $year';
+  }
+
   void _mostrarDialogoExtrato(BuildContext context) {
+    final now = DateTime.now();
+    var selectedMonth = now.month;
+    var selectedYear  = now.year;
+    Future<List<TransactionModel>>? txFuture;
+
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Row(
-          children: [
-            Icon(
-              Icons.receipt_long_outlined,
-              color: AppColors.textPrimary(context),
-            ),
-            const SizedBox(width: 12),
-            const Text(
-              'Extrato Recente',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-          ],
-        ),
-        content: SizedBox(
-          width: double.maxFinite,
-          height: 400,
-          child: FutureBuilder<List<TransactionModel>>(
-            future: controller.getTransactions(),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return Center(
-                  child: CircularProgressIndicator(
-                    color: AppColors.textPrimary(context),
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (ctx, setDialogState) {
+            txFuture ??= controller.getTransactions(
+              month: selectedMonth,
+              year:  selectedYear,
+            );
+
+            void goToMonth(int m, int y) {
+              setDialogState(() {
+                selectedMonth = m;
+                selectedYear  = y;
+                txFuture = controller.getTransactions(month: m, year: y);
+              });
+            }
+
+            void prevMonth() {
+              if (selectedMonth == 1) {
+                goToMonth(12, selectedYear - 1);
+              } else {
+                goToMonth(selectedMonth - 1, selectedYear);
+              }
+            }
+
+            void nextMonth() {
+              if (selectedMonth == 12) {
+                goToMonth(1, selectedYear + 1);
+              } else {
+                goToMonth(selectedMonth + 1, selectedYear);
+              }
+            }
+
+            final isCurrentMonth = selectedMonth == now.month && selectedYear == now.year;
+
+            return AlertDialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              title: Row(
+                children: [
+                  Icon(Icons.receipt_long_outlined, color: AppColors.textPrimary(ctx)),
+                  const SizedBox(width: 10),
+                  const Text('Extrato', style: TextStyle(fontWeight: FontWeight.bold)),
+                  const Spacer(),
+                  FutureBuilder<List<TransactionModel>>(
+                    future: txFuture,
+                    builder: (ctx2, snap) {
+                      final txs = snap.data ?? [];
+                      return IconButton(
+                        tooltip: 'Exportar PDF',
+                        icon: Icon(Icons.picture_as_pdf_outlined, color: AppColors.textPrimary(ctx)),
+                        onPressed: txs.isEmpty ? null : () => exportExtratoPdf(
+                          transactions: txs,
+                          userName: AppState.instance.profile?.fullName ?? 'Usuário',
+                          month: selectedMonth,
+                          year:  selectedYear,
+                        ),
+                      );
+                    },
                   ),
-                );
-              }
-
-              // Estado: Erro de rede ou chamada
-              if (snapshot.hasError) {
-                return Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                ],
+              ),
+              content: SizedBox(
+                width: double.maxFinite,
+                height: 440,
+                child: Column(
                   children: [
-                    Icon(
-                      Icons.cloud_off_outlined,
-                      size: 48,
-                      color: Colors.red.shade200,
-                    ),
-                    const SizedBox(height: 16),
-                    const Text(
-                      'Erro ao carregar o extrato.',
-                      style: TextStyle(
-                        color: Colors.red,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    const Text(
-                      'Verifique sua conexão e tente novamente.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.grey, fontSize: 12),
-                    ),
-                  ],
-                );
-              }
-
-              // Estado: Lista vazia (sem movimentações)
-              if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                return Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.history_toggle_off,
-                      size: 48,
-                      color: AppColors.textMuted(context),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Nenhuma movimentação encontrada.',
-                      style: TextStyle(color: AppColors.textSecondary(context)),
-                    ),
-                  ],
-                );
-              }
-
-              final transactions = snapshot.data!;
-
-              return ListView.separated(
-                itemCount: transactions.length,
-                separatorBuilder: (context, index) => const Divider(height: 1),
-                itemBuilder: (context, index) {
-                  final t = transactions[index];
-                  final isPositive = t.type == 'deposit' || t.type == 'sell';
-                  final color = isPositive
-                      ? Colors.green.shade700
-                      : Colors.red.shade700;
-                  final prefix = isPositive ? '+' : '-';
-
-                  return ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: Container(
-                      padding: const EdgeInsets.all(8),
+                    // --- Seletor de mês ---
+                    Container(
                       decoration: BoxDecoration(
-                        color: color.withValues(alpha: 0.1),
-                        shape: BoxShape.circle,
+                        color: AppColors.surfaceMuted(ctx),
+                        borderRadius: BorderRadius.circular(10),
                       ),
-                      child: Icon(
-                        isPositive ? Icons.add : Icons.remove,
-                        color: color,
-                        size: 20,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.chevron_left),
+                            onPressed: prevMonth,
+                            color: AppColors.textSecondary(ctx),
+                          ),
+                          Text(
+                            _formatMes(selectedMonth, selectedYear),
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.textPrimary(ctx),
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.chevron_right),
+                            onPressed: isCurrentMonth ? null : nextMonth,
+                            color: isCurrentMonth
+                                ? AppColors.textMuted(ctx)
+                                : AppColors.textSecondary(ctx),
+                          ),
+                        ],
                       ),
                     ),
-                    title: Text(
-                      t.description,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 14,
+                    const SizedBox(height: 12),
+
+                    // --- Lista de transações ---
+                    Expanded(
+                      child: FutureBuilder<List<TransactionModel>>(
+                        future: txFuture,
+                        builder: (ctx2, snapshot) {
+                          if (snapshot.connectionState == ConnectionState.waiting) {
+                            return Center(
+                              child: CircularProgressIndicator(color: AppColors.textPrimary(ctx)),
+                            );
+                          }
+                          if (snapshot.hasError) {
+                            return Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.cloud_off_outlined, size: 48, color: Colors.red.shade200),
+                                const SizedBox(height: 16),
+                                const Text('Erro ao carregar o extrato.',
+                                    style: TextStyle(color: Colors.red, fontWeight: FontWeight.w600)),
+                                const SizedBox(height: 4),
+                                const Text('Verifique sua conexão e tente novamente.',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(color: Colors.grey, fontSize: 12)),
+                              ],
+                            );
+                          }
+                          if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                            return Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.history_toggle_off, size: 48, color: AppColors.textMuted(ctx)),
+                                const SizedBox(height: 16),
+                                Text('Nenhuma movimentação em ${_formatMes(selectedMonth, selectedYear)}.',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(color: AppColors.textSecondary(ctx))),
+                              ],
+                            );
+                          }
+                          final transactions = snapshot.data!;
+                          return ListView.separated(
+                            itemCount: transactions.length,
+                            separatorBuilder: (_, __) => const Divider(height: 1),
+                            itemBuilder: (_, index) {
+                              final t = transactions[index];
+                              final isPositive = t.type == 'deposit' || t.type == 'sell';
+                              final color = isPositive ? Colors.green.shade700 : Colors.red.shade700;
+                              final prefix = isPositive ? '+' : '-';
+                              return ListTile(
+                                contentPadding: EdgeInsets.zero,
+                                leading: Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: color.withValues(alpha: 0.1),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Icon(isPositive ? Icons.add : Icons.remove, color: color, size: 20),
+                                ),
+                                title: Text(t.description,
+                                    style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                                subtitle: Text(DateFormat('dd/MM/yyyy HH:mm').format(t.createdAt),
+                                    style: const TextStyle(fontSize: 12)),
+                                trailing: Text(
+                                  '$prefix ${NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$').format(t.amount)}',
+                                  style: TextStyle(fontWeight: FontWeight.bold, color: color),
+                                ),
+                              );
+                            },
+                          );
+                        },
                       ),
                     ),
-                    subtitle: Text(
-                      DateFormat('dd/MM/yyyy HH:mm').format(t.createdAt),
-                      style: const TextStyle(fontSize: 12),
-                    ),
-                    trailing: Text(
-                      '$prefix ${NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$').format(t.amount)}',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: color,
-                      ),
-                    ),
-                  );
-                },
-              );
-            },
-          ),
-        ),
-        actions: [
-          AppButton(
-            label: 'Fechar',
-            variant: AppButtonVariant.text,
-            size: AppButtonSize.small,
-            fullWidth: false,
-            onPressed: () => Navigator.pop(context),
-          ),
-        ],
-      ),
+                  ],
+                ),
+              ),
+              actions: [
+                AppButton(
+                  label: 'Fechar',
+                  variant: AppButtonVariant.text,
+                  size: AppButtonSize.small,
+                  fullWidth: false,
+                  onPressed: () => Navigator.pop(ctx),
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
   }
 
@@ -398,18 +459,23 @@ class BotoesAcao extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Botão: Carteira
-          _BotaoAcaoItem(
-            icon: Icons.wallet,
-            label: 'Carteira',
-            onTap: () => context.go('/carteira'),
-          ),
-
           // Botão: Depositar
           _BotaoAcaoItem(
             icon: Icons.add,
             label: 'Depositar',
             onTap: () => _mostrarDialogoDeposito(context),
+          ),
+
+          // Botão: Sacar (em breve)
+          _BotaoAcaoItem(
+            icon: Icons.arrow_circle_down_outlined,
+            label: 'Sacar',
+            onTap: () => ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Saques em breve! Esta funcionalidade está em desenvolvimento.'),
+                duration: Duration(seconds: 3),
+              ),
+            ),
           ),
 
           // Botão: Comprar

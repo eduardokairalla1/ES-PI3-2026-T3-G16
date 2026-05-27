@@ -26,7 +26,7 @@ export const CreateOrderRequest = z.object(
 export const BuyFromStartupRequest = z.object(
     {
         startupId: z.string().min(1, 'Startup ID is required'),
-        quantity:  z.number().int().min(1, 'Quantity must be at least 1'),
+        quantity:  z.number().int().min(1, 'Quantity must be at least 1').max(10000, 'Quantity cannot exceed 10,000 tokens per purchase'),
     },
 );
 

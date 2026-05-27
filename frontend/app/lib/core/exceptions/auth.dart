@@ -182,6 +182,42 @@ class AuthException implements Exception {
     stackTrace: stackTrace,
   );
 
+  /// I create an AuthException for an expired action code.
+  factory AuthException.expiredActionCode(
+    {Object? originalError, Object? stackTrace}
+  ) =>
+    AuthException._(
+      message: 'O link expirou. Solicite um novo.',
+      code: 'expired_action_code',
+      originalError: originalError,
+      stackTrace: stackTrace,
+    );
+
+
+  /// I create an AuthException for an invalid action code.
+  factory AuthException.invalidActionCode(
+    {Object? originalError, Object? stackTrace}
+  ) =>
+    AuthException._(
+      message: 'Link inválido ou já utilizado.',
+      code: 'invalid_action_code',
+      originalError: originalError,
+      stackTrace: stackTrace,
+    );
+
+
+  /// I create an AuthException for an invalid 2FA code.
+  factory AuthException.invalidTwoFACode(
+    {Object? originalError, Object? stackTrace}
+  ) =>
+    AuthException._(
+      message: 'Código inválido. Verifique o app autenticador.',
+      code: 'invalid_two_fa_code',
+      originalError: originalError,
+      stackTrace: stackTrace,
+    );
+
+
   /// I create an AuthException from a FirebaseAuthException code.
   ///
   /// :param code: the FirebaseAuthException code.
@@ -231,6 +267,14 @@ class AuthException implements Exception {
       'user-disabled' => AuthException.userDisabled(
         originalError: originalError,
         stackTrace: stackTrace,
+      ),
+      'expired-action-code' => AuthException.expiredActionCode(
+        originalError: originalError,
+        stackTrace: stackTrace
+      ),
+      'invalid-action-code' => AuthException.invalidActionCode(
+        originalError: originalError,
+        stackTrace: stackTrace
       ),
       _ => null,
     };

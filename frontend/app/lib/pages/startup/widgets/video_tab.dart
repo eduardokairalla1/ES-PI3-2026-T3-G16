@@ -147,9 +147,10 @@ class VideoTab extends StatelessWidget {
                   onTap: () {
                     Clipboard.setData(ClipboardData(text: url));
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Link copiado!'),
-                        duration: Duration(seconds: 2),
+                      SnackBar(
+                        content: const Text('Link copiado!'),
+                        backgroundColor: Colors.green.shade700,
+                        duration: const Duration(seconds: 2),
                       ),
                     );
                   },

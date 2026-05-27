@@ -127,10 +127,59 @@ class MeusInvestimentos extends StatelessWidget {
             },
           ),
 
-        const SizedBox(height: 40),
+        const SizedBox(height: 8),
       ],
     );
   }
+}
+
+class _TokenChip extends StatelessWidget {
+  final InvestimentoResumo investimento;
+  const _TokenChip({required this.investimento});
+
+  @override
+  Widget build(BuildContext context) {
+    final qty = NumberFormat.decimalPattern('pt_BR').format(investimento.tokenQuantity);
+    final ticker = investimento.tokenName.isNotEmpty ? investimento.tokenName : 'tokens';
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceMuted(context),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: AppColors.border(context)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.toll_outlined, size: 11, color: AppColors.textMuted(context)),
+          const SizedBox(width: 4),
+          Text(
+            '$qty $ticker',
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textSecondary(context),
+              letterSpacing: 0.2,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+Widget _logoFallback(BuildContext context, String name) {
+  return Center(
+    child: Text(
+      name.isNotEmpty ? name[0].toUpperCase() : 'S',
+      style: TextStyle(
+        fontWeight: FontWeight.bold,
+        fontSize: 20,
+        color: AppColors.textPrimary(context),
+      ),
+    ),
+  );
 }
 
 /// Widget interno para exibir cada card de investimento na lista.
@@ -194,26 +243,21 @@ class InvestimentoCard extends StatelessWidget {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: AppColors.surfaceMuted(context),
-                image: investimento.startupLogoUrl.isNotEmpty
-                    ? DecorationImage(
-                        image: NetworkImage(investimento.startupLogoUrl),
-                        fit: BoxFit.cover,
-                      )
-                    : null,
               ),
-              child: investimento.startupLogoUrl.isEmpty
-                  ? Center(
-                      child: Text(
-                        investimento.startupName.isNotEmpty
-                            ? investimento.startupName[0].toUpperCase()
-                            : 'S',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 20,
+              child: ClipOval(
+                child: investimento.startupLogoUrl.isNotEmpty
+                    ? Image.network(
+                        investimento.startupLogoUrl,
+                        width: 48,
+                        height: 48,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => _logoFallback(
+                          context,
+                          investimento.startupName,
                         ),
-                      ),
-                    )
-                  : null,
+                      )
+                    : _logoFallback(context, investimento.startupName),
+              ),
             ),
             const SizedBox(width: 12),
 
@@ -230,15 +274,8 @@ class InvestimentoCard extends StatelessWidget {
                       color: AppColors.textPrimary(context),
                     ),
                   ),
-                  const SizedBox(height: 2),
-                  Text(
-                    '${NumberFormat.decimalPattern('pt_BR').format(investimento.tokenQuantity)} STX num. Tokens',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: AppColors.textSecondary(context),
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
+                  const SizedBox(height: 4),
+                  _TokenChip(investimento: investimento),
                 ],
               ),
             ),

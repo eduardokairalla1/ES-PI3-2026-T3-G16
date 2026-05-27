@@ -85,17 +85,15 @@ class _BalcaoPageState extends State<BalcaoPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const _UserHeader(),
-                const SizedBox(height: 8),
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         'Balcão de Ativos',
                         style: TextStyle(
-                          fontSize: 22,
+                          fontSize: 26,
                           fontWeight: FontWeight.w800,
                           color: AppColors.textPrimary(context),
                         ),
@@ -147,116 +145,7 @@ class _BalcaoPageState extends State<BalcaoPage> {
 
 
 // --- USER HEADER ---
-// Compact "avatar + name + bell" header, mirrors the one used on the
-// dashboard. Reads the profile from [AppState] directly so this widget does
-// not depend on any controller — keeps the balcão page self-contained.
 
-class _UserHeader extends StatelessWidget {
-  const _UserHeader();
-
-  @override
-  Widget build(BuildContext context) {
-    final profile = AppState.instance.profile;
-    final userName = profile?.fullName ?? 'Usuário';
-    final initial  = userName.isNotEmpty ? userName[0].toUpperCase() : 'U';
-    final photoUrl = profile?.photoUrl;
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: AppColors.surfaceColor(context),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.border(context)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            GestureDetector(
-              onTap: () => context.go('/profile'),
-              child: Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: AppColors.textPrimary(context),
-                  shape: BoxShape.circle,
-                ),
-                child: ClipOval(
-                  child: photoUrl != null
-                      ? Image.network(
-                          photoUrl,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, _, _) => _initial(context, initial),
-                        )
-                      : _initial(context, initial),
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                userName,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimary(context),
-                ),
-              ),
-            ),
-            Stack(
-              children: [
-                IconButton(
-                  onPressed: () {},
-                  icon: Icon(
-                    Icons.notifications_outlined,
-                    color: AppColors.textPrimary(context),
-                    size: 24,
-                  ),
-                ),
-                const Positioned(
-                  right: 12,
-                  top: 12,
-                  child: SizedBox(
-                    width: 7,
-                    height: 7,
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: Colors.red,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _initial(BuildContext context, String letter) {
-    return Center(
-      child: Text(
-        letter,
-        style: TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.w600,
-          color: AppColors.surfaceColor(context),
-        ),
-      ),
-    );
-  }
-}
 
 
 // --- WALLET CARD ---
@@ -756,7 +645,7 @@ class _MyOrdersTab extends StatelessWidget {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(err ?? 'Ordem cancelada.'),
-        backgroundColor: err == null ? null : Colors.red.shade700,
+        backgroundColor: err == null ? Colors.green.shade700 : Colors.red.shade700,
       ),
     );
   }
@@ -775,7 +664,7 @@ class _MyOrdersTab extends StatelessWidget {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(err ?? 'Ordem atualizada.'),
-        backgroundColor: err == null ? null : Colors.red.shade700,
+        backgroundColor: err == null ? Colors.green.shade700 : Colors.red.shade700,
       ),
     );
   }

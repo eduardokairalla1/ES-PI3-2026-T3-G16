@@ -86,18 +86,24 @@ class _PaginaDashboardState extends State<PaginaDashboard> {
     final showDepositPrompt = (_controller.data?.saldoDisponivel ?? 0) <= 0;
     // --- end Pedro ---
 
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          CabecalhoDashboard(controller: _controller),
-          CartaoPatrimonio(controller: _controller),
-          if (showDepositPrompt) DepositPromptCard(controller: _controller),
-          BotoesAcao(controller: _controller),
-          StartupsEcossistema(controller: _controller),
-          MeusInvestimentos(controller: _controller),
-        ],
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        CabecalhoDashboard(controller: _controller),
+        Expanded(
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                CartaoPatrimonio(controller: _controller),
+                if (showDepositPrompt) DepositPromptCard(controller: _controller),
+                BotoesAcao(controller: _controller),
+                StartupsEcossistema(controller: _controller),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 

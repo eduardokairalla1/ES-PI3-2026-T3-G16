@@ -19,10 +19,10 @@
 import {initializeApp} from 'firebase-admin/app';
 import {getFirestore}  from 'firebase-admin/firestore';
 
-import type {StartupDocument}       from '../db/startups/model';
-import type {OrderDocument}         from '../db/orders/model';
-import type {PriceSnapshotDocument} from '../db/price_history/model';
-import {calcTokenPrice}             from '../utils/pricing';
+import type {StartupDocument}       from '../src/db/startups/model';
+import type {OrderDocument}         from '../src/db/orders/model';
+import type {PriceSnapshotDocument} from '../src/db/price_history/model';
+import {calcTokenPrice}             from '../src/utils/pricing';
 
 
 /**

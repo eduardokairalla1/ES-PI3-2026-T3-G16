@@ -4,10 +4,13 @@
 
 // --- IMPORTS ---
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:mesclainvest/app/app_state.dart';
 import 'package:mesclainvest/app/theme/theme_controller.dart';
+import 'package:mesclainvest/core/exceptions/auth.dart';
 import 'package:mesclainvest/core/models/user_profile.dart';
 import 'package:mesclainvest/pages/profile/controllers/profile_controller.dart';
 import 'package:mesclainvest/shared/styles/app_colors.dart';
@@ -249,8 +252,8 @@ class _ProfilePageState extends State<ProfilePage> {
   // ── 2FA card ──────────────────────────────────────────────────────────────
 
   Widget _twoFACard(UserProfile? profile) {
-    final enabled = profile?.twoFaEnabled ?? false;
-    final isToggling = _controller.isTogglingTwoFA;
+    final enabled    = profile?.twoFaEnabled ?? false;
+    final isToggling = _controller.isDisabling2FA;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
@@ -308,11 +311,169 @@ class _ProfilePageState extends State<ProfilePage> {
                     strokeWidth: 2,
                   ),
                 )
-              : _switch(value: enabled, onTap: _controller.toggle2FA),
+              : GestureDetector(
+                  onTap: () => enabled
+                      ? _showDisable2FADialog(context)
+                      : context.go('/setup-2fa'),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    width: 52,
+                    height: 28,
+                    decoration: BoxDecoration(
+                      color: enabled ? AppColors.textPrimary(context) : const Color(0xFFBBBBBB),
+                      borderRadius: BorderRadius.circular(50),
+                    ),
+                    child: AnimatedAlign(
+                      duration: const Duration(milliseconds: 200),
+                      alignment: enabled ? Alignment.centerRight : Alignment.centerLeft,
+                      child: Container(
+                        width: 22,
+                        height: 22,
+                        margin: const EdgeInsets.symmetric(horizontal: 3),
+                        decoration: BoxDecoration(
+                          color: AppColors.surfaceColor(context),
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
         ],
       ),
     );
   }
+
+  // ── Disable 2FA dialog ────────────────────────────────────────────────────
+
+  void _showDisable2FADialog(BuildContext context) {
+    final codeCtrl = TextEditingController();
+    String? dialogError;
+
+    showModalBottomSheet<void>(
+      context:       context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setModalState) => Padding(
+          padding: EdgeInsets.only(
+            left:   24,
+            right:  24,
+            top:    24,
+            bottom: MediaQuery.of(ctx).viewInsets.bottom + 32,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+
+              Text(
+                'Desativar 2FA',
+                style: GoogleFonts.inter(
+                  fontWeight: FontWeight.w700,
+                  fontSize:   20,
+                  color:      Colors.black,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Digite o código do app autenticador para confirmar.',
+                style: GoogleFonts.inter(fontSize: 14, color: Colors.black54),
+              ),
+              const SizedBox(height: 20),
+
+              TextField(
+                controller:      codeCtrl,
+                keyboardType:    TextInputType.number,
+                maxLength:       6,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                style: GoogleFonts.inter(
+                  fontSize: 22, letterSpacing: 8, color: Colors.black,
+                ),
+                decoration: InputDecoration(
+                  hintText:    '000000',
+                  hintStyle:   GoogleFonts.inter(
+                    fontSize: 22, letterSpacing: 8, color: Colors.black26,
+                  ),
+                  counterText: '',
+                  filled:      true,
+                  fillColor:   const Color(0xFFF5F5F5),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide:   BorderSide.none,
+                  ),
+                  errorText: dialogError,
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              SizedBox(
+                width: double.infinity,
+                height: 52,
+                child: ListenableBuilder(
+                  listenable: _controller,
+                  builder: (_, __) => ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.black,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                    onPressed: _controller.isDisabling2FA ? null : () async {
+                      final code = codeCtrl.text.trim();
+                      if (code.length != 6) {
+                        setModalState(() => dialogError = 'Digite 6 dígitos');
+                        return;
+                      }
+                      setModalState(() => dialogError = null);
+                      try {
+                        await _controller.disable2FA(code);
+                        if (ctx.mounted) {
+                          Navigator.of(ctx).pop();
+                          ScaffoldMessenger.of(ctx).showSnackBar(
+                            const SnackBar(
+                              content: Text('Autenticação 2FA desativada com sucesso!'),
+                              backgroundColor: Colors.green,
+                            ),
+                          );
+                        }
+                      } on AuthException catch (e) {
+                        setModalState(() => dialogError = e.message);
+                      } catch (_) {
+                        setModalState(
+                          () => dialogError = 'Erro inesperado. Tente novamente.',
+                        );
+                      }
+                    },
+                    child: _controller.isDisabling2FA
+                        ? const SizedBox(
+                            width:  22,
+                            height: 22,
+                            child:  CircularProgressIndicator(
+                              color: Colors.white, strokeWidth: 2,
+                            ),
+                          )
+                        : Text(
+                            'CONFIRMAR',
+                            style: GoogleFonts.inter(
+                              fontWeight: FontWeight.w800,
+                              fontSize:   16,
+                            ),
+                          ),
+                  ),
+                ),
+              ),
+
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
 
   // ── Menu card ─────────────────────────────────────────────────────────────
 
@@ -325,12 +486,6 @@ class _ProfilePageState extends State<ProfilePage> {
       ),
       child: Column(
         children: [
-          _menuItem(
-            icon: Icons.account_balance_wallet_outlined,
-            label: 'Minha Carteira',
-            onTap: () => context.go('/carteira'),
-          ),
-          _menuDivider(),
           _menuItem(
             icon: Icons.settings_outlined,
             label: 'Configurações',
@@ -447,13 +602,33 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
             const SizedBox(width: 14),
             Expanded(
-              child: Text(
-                'Modo Escuro / Claro',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary(context),
-                ),
+              child: Row(
+                children: [
+                  Text(
+                    'Modo Escuro / Claro',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textPrimary(context),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: AppColors.surfaceMuted(context),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      'BETA',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textMuted(context),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
             _switch(value: isDark, onTap: () => ThemeController.instance.toggle()),
@@ -511,12 +686,4 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  void _comingSoon(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Em breve!'),
-        duration: Duration(seconds: 2),
-      ),
-    );
-  }
 }

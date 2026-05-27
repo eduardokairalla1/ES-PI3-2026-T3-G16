@@ -86,6 +86,7 @@ export async function handleOnGetStartups(request: CallableRequest)
                     partners:         s.partners,
                     stage:            s.stage,
                     tagline:          s.tagline,
+                    availableTokens:  s.available_tokens,
                     tokenPrice:       s.token_price,
                     totalTokens:      s.total_tokens,
                     updatedAt:        s.updated_at,
