@@ -127,6 +127,43 @@ export async function updateUser(
 
 
 /**
+ * I save a TOTP secret for a user.
+ *
+ * @param uid Firebase Auth UID
+ * @param secret base32-encoded TOTP secret
+ */
+export async function setTotpSecret(uid: string, secret: string): Promise<void>
+{
+    await db.collection('users').doc(uid).update({'totp_secret': secret});
+}
+
+
+/**
+ * I enable 2FA for a user after the setup code is confirmed.
+ *
+ * @param uid Firebase Auth UID
+ */
+export async function enableTwoFA(uid: string): Promise<void>
+{
+    await db.collection('users').doc(uid).update({'two_fa_enabled': true});
+}
+
+
+/**
+ * I disable 2FA and clear the TOTP secret for a user.
+ *
+ * @param uid Firebase Auth UID
+ */
+export async function disableTwoFA(uid: string): Promise<void>
+{
+    await db.collection('users').doc(uid).update({
+        'two_fa_enabled': false,
+        'totp_secret': null,
+    });
+}
+
+
+/**
  * I toggle the two_fa_enabled flag for a user and return the new state.
  *
  * @param uid Firebase Auth UID of the user
