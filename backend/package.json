@@ -2,18 +2,17 @@
   "name": "mesclainvest-backend",
   "private": true,
   "scripts": {
-    "dev": "npx firebase emulators:start",
+    "dev": "npm run build:functions && (npm run watch:functions & npx --yes firebase-tools emulators:start)",
     "build:functions": "npm --prefix functions run build",
     "lint:functions": "npm --prefix functions run lint",
     "lint:fix:functions": "npm --prefix functions run lint:fix",
     "watch:functions": "npm --prefix functions run build:watch",
-    "deploy": "npx firebase deploy",
-    "seed": "FIRESTORE_EMULATOR_HOST=localhost:8080 npx --yes tsx functions/scripts/seed-startups.ts",
-    "seed:orders": "FIRESTORE_EMULATOR_HOST=localhost:8080 npx --yes tsx functions/scripts/seed-orders.ts",
+    "deploy": "npm run build:functions && npx --yes firebase-tools deploy",
+    "seed:startups": "FIRESTORE_EMULATOR_HOST=localhost:8080 npx --yes tsx functions/scripts/seed-startups.ts",
+    "seed:users": "FIRESTORE_EMULATOR_HOST=localhost:8080 FIREBASE_AUTH_EMULATOR_HOST=localhost:9099 npx --yes tsx functions/scripts/seed-users.ts",
     "seed:investments": "FIRESTORE_EMULATOR_HOST=localhost:8080 npx --yes tsx functions/scripts/seed-investments.ts",
-    "seed:users": "npx --yes tsx functions/scripts/seed-users.ts"
-  },
-  "dependencies": {
-    "zod": "^4.3.6"
+    "seed:orderbook": "FIRESTORE_EMULATOR_HOST=localhost:8080 npx --yes tsx functions/scripts/seed-orderbook.ts",
+    "seed:orders": "FIRESTORE_EMULATOR_HOST=localhost:8080 npx --yes tsx functions/scripts/seed-orders.ts",
+    "seed:all": "npm run seed:startups && npm run seed:users && npm run seed:investments && npm run seed:orderbook"
   }
 }
