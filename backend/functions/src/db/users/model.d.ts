@@ -11,7 +11,6 @@
 export interface userDocument
 {
     birth_date: string;
-
     created_at: Date;
     cpf: string;
     email: string;
@@ -20,6 +19,7 @@ export interface userDocument
     phone: string;
     photo_url: string | null;
     status: 'active' | 'inactive';
+    totp_secret: string | null;
     two_fa_enabled: boolean;
     uid: string;
     updated_at: Date | null;
