@@ -179,36 +179,49 @@ class AuthService {
   }
 
 
-  /// I disable 2FA after verifying the current TOTP code.
+  /// I disable 2FA by re-authenticating with the user's password.
   ///
-  /// :param code: 6-digit TOTP code
+  /// Re-authenticates via Firebase first (refreshes auth_time on the token),
+  /// then calls the backend which verifies the re-authentication was recent.
   ///
-  /// :throws AuthException: if the code is invalid
+  /// :param password: the user's current account password
+  ///
+  /// :throws AuthException: if the password is wrong
   /// :throws InfrastructureException: if any other error occurs
-  ///
-  /// :returns: void
-  Future<void> disable2FA(String code) async {
-    try {
-      await FirebaseFunctions.instance
-          .httpsCallable('onDisable2FA')
-          .call({'code': code});
+  Future<void> disable2FAByPassword(String password) async {
+    // 1. Re-authenticate with Firebase to get a fresh auth_time token
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null || user.email == null) {
+      throw AuthException.userNotFound();
     }
-    on FirebaseFunctionsException catch (e) {
-      if (e.code == 'invalid-argument') {
-        throw AuthException.invalidTwoFACode(
-          originalError: e,
-          stackTrace:    StackTrace.current,
-        );
-      }
-      throw InfrastructureException(
+
+    try {
+      final credential = EmailAuthProvider.credential(
+        email:    user.email!,
+        password: password,
+      );
+      await user.reauthenticateWithCredential(credential);
+    } on FirebaseAuthException catch (e) {
+      final mapped = AuthException.fromFirebaseCode(
+        e.code,
+        originalError: e,
+        stackTrace: StackTrace.current,
+      );
+      throw mapped ?? InfrastructureException(
         message:      e.message ?? e.toString(),
         originalError: e,
         stackTrace:    StackTrace.current,
       );
     }
-    catch (e) {
+
+    // 2. Call the backend (auth_time is now fresh — within the 5-min window)
+    try {
+      await FirebaseFunctions.instance
+          .httpsCallable('onDisable2FAByPassword')
+          .call();
+    } on FirebaseFunctionsException catch (e) {
       throw InfrastructureException(
-        message:      e.toString(),
+        message:      e.message ?? e.toString(),
         originalError: e,
         stackTrace:    StackTrace.current,
       );
