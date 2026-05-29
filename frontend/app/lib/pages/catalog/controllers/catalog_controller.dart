@@ -38,10 +38,12 @@ class CatalogController extends ChangeNotifier {
   final Set<String> _favoriteIds = {};
 
   /// I load startups for the current stage filter.
-  Future<void> load() async {
-    isLoading = true;
-    errorMessage = null;
-    notifyListeners();
+  Future<void> load({bool silent = false}) async {
+    if (!silent) {
+      isLoading = true;
+      errorMessage = null;
+      notifyListeners();
+    }
 
     try {
       final results = await Future.wait([
@@ -50,12 +52,12 @@ class CatalogController extends ChangeNotifier {
       ]);
       startups = results[0] as List<StartupModel>;
       final dashboardData = results[1] as DashboardData;
-      
+
       _favoriteIds
         ..clear()
         ..addAll(dashboardData.favoriteIds);
     } catch (_) {
-      errorMessage = 'Não foi possível carregar as startups. Tente novamente.';
+      if (!silent) errorMessage = 'Não foi possível carregar as startups. Tente novamente.';
     } finally {
       isLoading = false;
       notifyListeners();
