@@ -4,7 +4,6 @@
 
 // --- IMPORTS ---
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
@@ -27,17 +26,30 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   final ProfileController _controller = ProfileController();
+  int _lastNavVersion = 0;
 
   @override
   void initState() {
     super.initState();
+    _lastNavVersion = AppState.instance.navVersion;
     _controller.loadStats();
+    AppState.instance.addListener(_onNavChanged);
   }
 
   @override
   void dispose() {
+    AppState.instance.removeListener(_onNavChanged);
     _controller.dispose();
     super.dispose();
+  }
+
+  void _onNavChanged() {
+    if (!mounted) return;
+    final v = AppState.instance.navVersion;
+    if (v != _lastNavVersion) {
+      _lastNavVersion = v;
+      _controller.loadStats(silent: true);
+    }
   }
 
   @override
@@ -346,13 +358,14 @@ class _ProfilePageState extends State<ProfilePage> {
   // ── Disable 2FA dialog ────────────────────────────────────────────────────
 
   void _showDisable2FADialog(BuildContext context) {
-    final codeCtrl = TextEditingController();
+    final passwordCtrl  = TextEditingController();
     String? dialogError;
+    bool    obscure     = true;
 
     showModalBottomSheet<void>(
-      context:       context,
+      context:            context,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
+      backgroundColor:    Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -365,7 +378,7 @@ class _ProfilePageState extends State<ProfilePage> {
             bottom: MediaQuery.of(ctx).viewInsets.bottom + 32,
           ),
           child: Column(
-            mainAxisSize: MainAxisSize.min,
+            mainAxisSize:      MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
 
@@ -379,30 +392,30 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
               const SizedBox(height: 8),
               Text(
-                'Digite o código do app autenticador para confirmar.',
+                'Digite sua senha para confirmar a desativação.',
                 style: GoogleFonts.inter(fontSize: 14, color: Colors.black54),
               ),
               const SizedBox(height: 20),
 
               TextField(
-                controller:      codeCtrl,
-                keyboardType:    TextInputType.number,
-                maxLength:       6,
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                style: GoogleFonts.inter(
-                  fontSize: 22, letterSpacing: 8, color: Colors.black,
-                ),
+                controller:  passwordCtrl,
+                obscureText: obscure,
+                style: GoogleFonts.inter(fontSize: 16, color: Colors.black),
                 decoration: InputDecoration(
-                  hintText:    '000000',
-                  hintStyle:   GoogleFonts.inter(
-                    fontSize: 22, letterSpacing: 8, color: Colors.black26,
-                  ),
-                  counterText: '',
-                  filled:      true,
-                  fillColor:   const Color(0xFFF5F5F5),
+                  hintText:  'Sua senha',
+                  hintStyle: GoogleFonts.inter(fontSize: 16, color: Colors.black26),
+                  filled:    true,
+                  fillColor: const Color(0xFFF5F5F5),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
                     borderSide:   BorderSide.none,
+                  ),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      obscure ? Icons.visibility_off : Icons.visibility,
+                      color: Colors.black45,
+                    ),
+                    onPressed: () => setModalState(() => obscure = !obscure),
                   ),
                   errorText: dialogError,
                 ),
@@ -410,7 +423,7 @@ class _ProfilePageState extends State<ProfilePage> {
               const SizedBox(height: 20),
 
               SizedBox(
-                width: double.infinity,
+                width:  double.infinity,
                 height: 52,
                 child: ListenableBuilder(
                   listenable: _controller,
@@ -423,19 +436,19 @@ class _ProfilePageState extends State<ProfilePage> {
                       ),
                     ),
                     onPressed: _controller.isDisabling2FA ? null : () async {
-                      final code = codeCtrl.text.trim();
-                      if (code.length != 6) {
-                        setModalState(() => dialogError = 'Digite 6 dígitos');
+                      final password = passwordCtrl.text;
+                      if (password.isEmpty) {
+                        setModalState(() => dialogError = 'Digite sua senha');
                         return;
                       }
                       setModalState(() => dialogError = null);
                       try {
-                        await _controller.disable2FA(code);
+                        await _controller.disable2FAWithPassword(password);
                         if (ctx.mounted) {
                           Navigator.of(ctx).pop();
                           ScaffoldMessenger.of(ctx).showSnackBar(
                             const SnackBar(
-                              content: Text('Autenticação 2FA desativada com sucesso!'),
+                              content:         Text('Autenticação 2FA desativada com sucesso!'),
                               backgroundColor: Colors.green,
                             ),
                           );
