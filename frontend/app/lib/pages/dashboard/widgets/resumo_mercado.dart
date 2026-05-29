@@ -35,11 +35,23 @@ class ResumoMercado extends StatelessWidget {
     final data = controller.data;
     if (data == null) return const SizedBox.shrink();
 
-    // --- Formatação da string de Rentabilidade Média (ex: +12,4% ou -2,5%) ---
-    final rentabilidade = data.rentabilidadeMediaMercado;
-    final sinal = rentabilidade > 0 ? '+' : '';
-    final rentabilidadeStr =
-        '$sinal${rentabilidade.toStringAsFixed(1).replaceAll('.', ',')}%';
+    // --- Formatação da Maior Alta do Mês ---
+    final maiorAltaPct  = data.maiorAltaPct;
+    final maiorAltaNome = data.maiorAltaNome;
+    final String maiorAltaPrimaryText;
+    final String maiorAltaSecondaryText;
+    if (maiorAltaPct != null && maiorAltaNome != null) {
+      final sinal = maiorAltaPct >= 0 ? '+' : '';
+      maiorAltaPrimaryText   = '$sinal${maiorAltaPct.toStringAsFixed(1).replaceAll('.', ',')}%';
+      // Trunca nomes muito longos para caber no card
+      final nome = maiorAltaNome.length > 12
+          ? '${maiorAltaNome.substring(0, 11)}…'
+          : maiorAltaNome;
+      maiorAltaSecondaryText = '$nome\nMaior alta';
+    } else {
+      maiorAltaPrimaryText   = '—';
+      maiorAltaSecondaryText = 'Maior alta\neste mês';
+    }
 
     // --- Formatação do Volume de Investidores (Abrevia milhares com "k" ex: 1500 -> 1,5k) ---
     final investidores = data.totalInvestidoresMercado;
@@ -49,7 +61,6 @@ class ResumoMercado extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-      // Alinha os cartões estatísticos horizontalmente de forma expandida e uniforme
       child: Row(
         children: [
           // Bloco 1: Total de startups cadastradas
@@ -59,10 +70,10 @@ class ResumoMercado extends StatelessWidget {
           ),
           const SizedBox(width: 12),
 
-          // Bloco 2: Média de variação/lucro no mercado
+          // Bloco 2: Startup com maior valorização no mês
           StatsBox(
-            primaryText: rentabilidadeStr,
-            secondaryText: 'Rentabilidade\neste mês',
+            primaryText: maiorAltaPrimaryText,
+            secondaryText: maiorAltaSecondaryText,
           ),
           const SizedBox(width: 12),
 
