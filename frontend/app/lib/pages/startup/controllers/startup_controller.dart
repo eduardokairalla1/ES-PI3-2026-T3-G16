@@ -23,6 +23,7 @@ class StartupController extends ChangeNotifier {
 
   StartupModel? startup;
   List<QuestionModel> questions = [];
+  bool isInvestor = false;
   String? errorMessage;
 
   /// I load the startup details and its public questions in parallel.
@@ -40,7 +41,9 @@ class StartupController extends ChangeNotifier {
       ]);
 
       startup = results[0] as StartupModel;
-      questions = results[1] as List<QuestionModel>;
+      final questionsResult = results[1] as ({List<QuestionModel> questions, bool isInvestor});
+      questions = questionsResult.questions;
+      isInvestor = questionsResult.isInvestor;
     } catch (_) {
       if (!silent) {
         errorMessage = 'Não foi possível carregar a startup. Tente novamente.';
@@ -131,7 +134,9 @@ class StartupController extends ChangeNotifier {
 
     try {
       await _service.sendQuestion(startupId, text, isPrivate);
-      questions = await _service.fetchQuestions(startupId);
+      final result = await _service.fetchQuestions(startupId);
+      questions = result.questions;
+      isInvestor = result.isInvestor;
       return true;
     } catch (_) {
       return false;
