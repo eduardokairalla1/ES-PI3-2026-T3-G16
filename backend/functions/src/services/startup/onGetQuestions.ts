@@ -9,6 +9,7 @@
  */
 import {HttpsError} from 'firebase-functions/v2/https';
 import {getPublicQuestions, getStartup, getUserPrivateQuestions} from '../../db/startups/storage';
+import {isUserInvestorInStartup} from '../../db/investments/storage';
 import {verifyAuth} from '../../utils/auth';
 import {logger} from '../../utils/logger';
 
@@ -59,13 +60,15 @@ export async function handleOnGetQuestions(request: CallableRequest)
             throw new NotFoundError(`Startup "${parsed.startupId}" not found.`);
         }
 
-        // fetch public questions + caller's own private questions in parallel
+        // fetch public questions, caller's own private questions, and investor status in parallel
         logger.info(`Fetching questions for startup "${parsed.startupId}"...`);
-        const [publicQs, privateQs] = await Promise.all([
+        const [publicQs, privateQs, isInvestor] = await Promise.all([
             getPublicQuestions(parsed.startupId),
             getUserPrivateQuestions(parsed.startupId, uid),
+            isUserInvestorInStartup(uid, parsed.startupId),
         ]);
 
+        // combine public and private questions, sort by creation date (newest first), and return the result
         type DateLike = {toMillis: () => number} | Date | number | string;
         const toMs = (d: DateLike): number =>
             typeof d === 'object' && d !== null && 'toMillis' in d
@@ -74,9 +77,10 @@ export async function handleOnGetQuestions(request: CallableRequest)
         const questions = [...publicQs, ...privateQs]
             .sort((a, b) => toMs(b.created_at) - toMs(a.created_at));
 
-        logger.info(`Fetched ${questions.length} questions for startup "${parsed.startupId}".`);
+        logger.info(`Fetched ${questions.length} questions for startup "${parsed.startupId}". isInvestor=${isInvestor}`);
 
         return {
+            isInvestor,
             questions: questions.map(q => (
                 {
                     answer: q.answer,
