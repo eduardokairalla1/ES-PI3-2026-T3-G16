@@ -21,16 +21,23 @@ class StartupService {
     return StartupModel.fromMap(Map<String, dynamic>.from(result.data as Map));
   }
 
-  /// I fetch the public questions for a startup.
-  Future<List<QuestionModel>> fetchQuestions(String startupId) async {
+  /// I fetch the public and user-private questions for a startup, along with whether the
+  /// current user is an investor in that startup.
+  Future<({List<QuestionModel> questions, bool isInvestor})> fetchQuestions(
+    String startupId,
+  ) async {
     final result = await _functions
         .httpsCallable('onGetQuestions')
         .call<Map<String, dynamic>>({'startupId': startupId});
 
-    final raw = (result.data as Map)['questions'] as List<dynamic>? ?? [];
-    return raw
+    final data = result.data as Map;
+    final raw = data['questions'] as List<dynamic>? ?? [];
+    final questions = raw
         .map((q) => QuestionModel.fromMap(Map<String, dynamic>.from(q as Map)))
         .toList();
+    final isInvestor = data['isInvestor'] as bool? ?? false;
+
+    return (questions: questions, isInvestor: isInvestor);
   }
 
   /// I send a question to a startup.
