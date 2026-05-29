@@ -112,6 +112,7 @@ final router = GoRouter(
             child: BottomNav(
               currentIndex: navigationShell.currentIndex,
               onTap: (index) {
+                AppState.instance.onNavigate();
                 navigationShell.goBranch(
                   index,
                   initialLocation: index == navigationShell.currentIndex,
