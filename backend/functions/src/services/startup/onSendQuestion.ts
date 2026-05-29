@@ -9,6 +9,7 @@
  */
 import {HttpsError} from 'firebase-functions/v2/https';
 import {addQuestion, getStartup} from '../../db/startups/storage';
+import {isUserInvestorInStartup} from '../../db/investments/storage';
 import {getUser} from '../../db/users/storage';
 import {verifyAuth} from '../../utils/auth';
 import {logger} from '../../utils/logger';
@@ -20,6 +21,7 @@ import {logger} from '../../utils/logger';
 import {AuthError} from '../../errors/authError';
 import {InternalError} from '../../errors/internalError';
 import {NotFoundError} from '../../errors/notFoundError';
+import {PermissionError} from '../../errors/permissionError';
 import {ValidationError} from '../../errors/validationError';
 
 
@@ -68,6 +70,18 @@ export async function handleOnSendQuestion(request: CallableRequest)
             throw new AuthError(`User profile not found for uid "${uid}".`);
         }
 
+        // private questions are restricted to investors of the startup
+        if (parsed.isPrivate)
+        {
+            const isInvestor = await isUserInvestorInStartup(uid, parsed.startupId);
+            if (!isInvestor)
+            {
+                throw new PermissionError(
+                    `User "${uid}" is not an investor in startup "${parsed.startupId}" and cannot send private questions.`,
+                );
+            }
+        }
+
         // add the question
         logger.info(`User "${uid}" sending question to startup "${parsed.startupId}"...`);
         const question = await addQuestion(
@@ -98,6 +112,11 @@ export async function handleOnSendQuestion(request: CallableRequest)
         {
             logger.error(error.message);
             throw new HttpsError('unauthenticated', error.message);
+        }
+        if (error instanceof PermissionError)
+        {
+            logger.error(error.message);
+            throw new HttpsError('permission-denied', error.message);
         }
         if (error instanceof NotFoundError)
         {

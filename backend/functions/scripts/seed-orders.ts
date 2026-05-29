@@ -17,11 +17,13 @@
  * IMPORTS
  */
 import {initializeApp} from 'firebase-admin/app';
-import {getFirestore}  from 'firebase-admin/firestore';
+import {FieldValue, getFirestore}  from 'firebase-admin/firestore';
 
 import type {StartupDocument}       from '../src/db/startups/model';
 import type {OrderDocument}         from '../src/db/orders/model';
+import type {InvestmentDocument}    from '../src/db/investments/model';
 import type {PriceSnapshotDocument} from '../src/db/price_history/model';
+import type {TransactionDocument}   from '../src/db/transactions/model';
 import {calcTokenPrice}             from '../src/utils/pricing';
 
 
@@ -117,11 +119,66 @@ async function simulatePurchase(
     };
     batch.set(snapRef, snapshot);
 
+    // transaction record
+    const txRef = db.collection('users').doc(USER_UID).collection('transactions').doc();
+    const transaction: Omit<TransactionDocument, 'id'> = {
+        amount:      totalAmount,
+        created_at:  purchaseDate,
+        description: `Compra de ${quantity} tokens ${startup.token_name} (${startup.name})`,
+        status:      'completed',
+        type:        'buy',
+    };
+    batch.set(txRef, transaction);
+
+    // wallet debit
+    batch.update(db.collection('wallets').doc(USER_UID), {
+        balance:    FieldValue.increment(-totalAmount),
+        updated_at: purchaseDate,
+    });
+
     await batch.commit();
 
     // update in-memory state for next purchase
     startup.available_tokens = newAvailable;
     startup.token_price      = newPrice;
+}
+
+
+/**
+ * I create or update the investment record for USER_UID in a given startup,
+ * reflecting the accumulated token quantity and weighted average price across
+ * all purchases for that startup.
+ */
+async function upsertInvestment(
+    startup: StartupDocument,
+    totalQty: number,
+    weightedAvgPrice: number,
+): Promise<void>
+{
+    const invCol = db.collection('users').doc(USER_UID).collection('investments');
+    const existing = await invCol.where('startup_id', '==', startup.id).limit(1).get();
+
+    if (existing.empty)
+    {
+        const investment: Omit<InvestmentDocument, 'id'> = {
+            avg_purchase_price: weightedAvgPrice,
+            created_at:         new Date(),
+            startup_id:         startup.id,
+            startup_logo_url:   startup.logo_url ?? '',
+            startup_name:       startup.name,
+            token_quantity:     totalQty,
+            updated_at:         null,
+        };
+        await invCol.add(investment);
+    }
+    else
+    {
+        await existing.docs[0].ref.update({
+            token_quantity:     FieldValue.increment(totalQty),
+            avg_purchase_price: weightedAvgPrice,
+            updated_at:         new Date(),
+        });
+    }
 }
 
 
@@ -190,13 +247,22 @@ async function seed(): Promise<void>
         // oldest first so the bonding curve progresses correctly
         const sorted = [...purchases].sort((a, b) => b.daysAgo - a.daysAgo);
 
+        let totalQty        = 0;
+        let weightedPriceSum = 0;
+
         for (const {quantity, daysAgo} of sorted)
         {
+            const priceAtPurchase = startup.token_price;
             await simulatePurchase(startup, quantity, daysAgo, now);
-            console.log(`  ✓ ${quantity.toLocaleString()} tokens — ${daysAgo}d ago @ R$${startup.token_price.toFixed(4)}`);
+            console.log(`  ✓ ${quantity.toLocaleString()} tokens — ${daysAgo}d ago @ R$${priceAtPurchase.toFixed(4)}`);
+            totalQty         += quantity;
+            weightedPriceSum += priceAtPurchase * quantity;
         }
 
-        console.log();
+        // create / update the investment custody record for this startup
+        const weightedAvgPrice = totalQty > 0 ? weightedPriceSum / totalQty : 0;
+        await upsertInvestment(startup, totalQty, weightedAvgPrice);
+        console.log(`  ✓ investment record: ${totalQty.toLocaleString()} tokens @ avg R$${weightedAvgPrice.toFixed(4)}\n`);
     }
 
     console.log('Done.');

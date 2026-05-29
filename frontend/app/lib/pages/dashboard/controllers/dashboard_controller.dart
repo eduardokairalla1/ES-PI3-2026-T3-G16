@@ -50,13 +50,14 @@ class DashboardController extends ChangeNotifier {
 
   /// Carrega os dados consolidados do dashboard do usuário e a lista de startups em paralelo.
   /// Atualiza os estados de carregamento e notifica os ouvintes da View.
-  Future<void> loadDashboard() async {
-    isLoading    = true;
-    errorMessage = null;
-    notifyListeners();
+  Future<void> loadDashboard({bool silent = false}) async {
+    if (!silent) {
+      isLoading    = true;
+      errorMessage = null;
+      notifyListeners();
+    }
 
     try {
-      // Dispara as consultas da API em paralelo para diminuir a latência do app
       final results = await Future.wait([
         _dashboardService.fetchUserDashboardData(),
         _catalogService.fetchStartups(),
@@ -65,12 +66,13 @@ class DashboardController extends ChangeNotifier {
       data        = results[0] as DashboardData;
       allStartups = results[1] as List<StartupModel>;
 
-      // Sincroniza o conjunto local de favoritos
       _favoriteIds
         ..clear()
         ..addAll(data!.favoriteIds);
     } catch (e) {
-      errorMessage = 'Não foi possível carregar os dados.\nVerifique sua conexão e tente novamente.';
+      if (!silent) {
+        errorMessage = 'Não foi possível carregar os dados.\nVerifique sua conexão e tente novamente.';
+      }
     } finally {
       isLoading = false;
       notifyListeners();
@@ -91,8 +93,23 @@ class DashboardController extends ChangeNotifier {
   }
 
   /// Retorna a lista de startups pós-aplicação do filtro selecionado (`selectedStartupFilter`).
+  ///
+  /// Quando nenhum filtro está ativo (null), ordena por [StartupModel.changePercent]
+  /// decrescente — as startups com maior valorização semanal aparecem primeiro,
+  /// tornando o título "Startups em alta" semanticamente correto.
   List<StartupModel> get filteredStartups {
-    if (selectedStartupFilter == null) return allStartups;
+    if (selectedStartupFilter == null) {
+      final sorted = List<StartupModel>.from(allStartups)
+        ..sort((a, b) {
+          final ca = a.changePercent;
+          final cb = b.changePercent;
+          if (ca == null && cb == null) return 0;
+          if (ca == null) return 1;
+          if (cb == null) return -1;
+          return cb.compareTo(ca); // decrescente: maior valorização primeiro
+        });
+      return sorted;
+    }
 
     if (selectedStartupFilter == 'Favoritas') {
       return allStartups.where((s) => _favoriteIds.contains(s.id)).toList();
@@ -165,7 +182,8 @@ class DashboardController extends ChangeNotifier {
         rendimentoDiarioValor: data!.rendimentoDiarioValor,
         rendimentoDiarioPorcentagem: data!.rendimentoDiarioPorcentagem,
         totalStartupsMercado: data!.totalStartupsMercado,
-        rentabilidadeMediaMercado: data!.rentabilidadeMediaMercado,
+        maiorAltaNome: data!.maiorAltaNome,
+        maiorAltaPct:  data!.maiorAltaPct,
         totalInvestidoresMercado: data!.totalInvestidoresMercado,
         investimentos: data!.investimentos,
         favoriteIds: data!.favoriteIds,

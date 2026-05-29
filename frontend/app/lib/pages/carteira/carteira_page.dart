@@ -45,17 +45,30 @@ class CarteiraPage extends StatefulWidget {
 
 class _CarteiraPageState extends State<CarteiraPage> {
   final DashboardController _controller = DashboardController();
+  int _lastNavVersion = 0;
 
   @override
   void initState() {
     super.initState();
+    _lastNavVersion = AppState.instance.navVersion;
     _controller.loadDashboard();
+    AppState.instance.addListener(_onNavChanged);
   }
 
   @override
   void dispose() {
+    AppState.instance.removeListener(_onNavChanged);
     _controller.dispose();
     super.dispose();
+  }
+
+  void _onNavChanged() {
+    if (!mounted) return;
+    final v = AppState.instance.navVersion;
+    if (v != _lastNavVersion) {
+      _lastNavVersion = v;
+      _controller.loadDashboard(silent: true);
+    }
   }
 
   @override

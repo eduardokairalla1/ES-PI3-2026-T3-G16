@@ -24,7 +24,9 @@ const app = initializeApp({projectId: 'mesclainvest-eda16'});
 const db = getFirestore(app);
 
 // startups to seed
-const startups: any[] = [
+type RawStartup = Omit<StartupDocument, 'id' | 'appreciation_factor' | 'available_tokens' | 'base_price'>;
+
+const startups: RawStartup[] = [
     {
         'advisors': [
             {name: 'Prof. Dr. Ricardo Alves', role: 'Mentor de Negócios'},
@@ -488,7 +490,7 @@ const startups: any[] = [
     },
 ];
 
-const extraStartups: any[] = [
+const extraStartups: RawStartup[] = [
     // 21
     {
         'advisors': [{name: 'Dr. Fernando Dias', role: 'Mentor de Fitness'}],

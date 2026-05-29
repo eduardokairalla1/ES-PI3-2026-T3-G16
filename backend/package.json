@@ -13,6 +13,7 @@
     "seed:investments": "FIRESTORE_EMULATOR_HOST=localhost:8080 npx --yes tsx functions/scripts/seed-investments.ts",
     "seed:orderbook": "FIRESTORE_EMULATOR_HOST=localhost:8080 npx --yes tsx functions/scripts/seed-orderbook.ts",
     "seed:orders": "FIRESTORE_EMULATOR_HOST=localhost:8080 npx --yes tsx functions/scripts/seed-orders.ts",
-    "seed:all": "npm run seed:startups && npm run seed:users && npm run seed:investments && npm run seed:orderbook"
+    "seed:questions": "FIRESTORE_EMULATOR_HOST=localhost:8080 npx --yes tsx functions/scripts/seed-questions.ts",
+    "seed:all": "npm run seed:startups && npm run seed:users && npm run seed:investments && npm run seed:orderbook && npm run seed:questions"
   }
 }

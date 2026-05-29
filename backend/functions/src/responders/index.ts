@@ -16,7 +16,7 @@ import {handleOnGetPortfolio} from '../services/user/onGetPortfolio';
 import {handleOnGetProfile} from '../services/user/onGetProfile';
 import {handleOnGetWallet} from '../services/user/onGetWallet';
 import {handleOnConfirmSetup2FA} from '../services/user/onConfirmSetup2FA';
-import {handleOnDisable2FA} from '../services/user/onDisable2FA';
+import {handleOnDisable2FAByPassword} from '../services/user/onDisable2FAByPassword';
 import {handleOnSetup2FA} from '../services/user/onSetup2FA';
 import {handleOnUpdateProfile} from '../services/user/onUpdateProfile';
 import {handleOnUserCreated} from '../services/user/onUserCreated';
@@ -51,7 +51,7 @@ export const onUpdateProfile    = onCall({cors: true}, handleOnUpdateProfile);
 export const onSetup2FA         = onCall({cors: true}, handleOnSetup2FA);
 export const onConfirmSetup2FA  = onCall({cors: true}, handleOnConfirmSetup2FA);
 export const onVerify2FA        = onCall({cors: true}, handleOnVerify2FA);
-export const onDisable2FA       = onCall({cors: true}, handleOnDisable2FA);
+export const onDisable2FAByPassword = onCall({cors: true}, handleOnDisable2FAByPassword);
 export const onDeposit          = onCall({cors: true}, handleOnDeposit);
 export const onGetTransactions  = onCall({cors: true}, handleOnGetTransactions);
 

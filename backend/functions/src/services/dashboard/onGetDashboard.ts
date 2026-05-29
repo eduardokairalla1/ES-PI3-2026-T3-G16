@@ -124,25 +124,34 @@ export async function handleOnGetDashboard(request: CallableRequest)
         const totalStartups = startups.length;
 
         // --- Pedro Henrique Medeiros dos Reis - 24801656 ---
-        // Rentabilidade mensal real: calcula a variação média de preço de todas as startups do ecossistema,
-        // comparando o preço atual com o valor de ~30 dias atrás nos históricos.
+        // Maior alta do mês: encontra a startup com a maior valorização de preço
+        // nos últimos 30 dias comparando o preço atual com o snapshot mais antigo do período.
         const monthAgo = new Date();
         monthAgo.setDate(monthAgo.getDate() - 30);
 
-        const startupReturns = await Promise.all(
+        // Para cada startup, busca o snapshot mais antigo desde há 30 dias e calcula a variação percentual
+        const startupChanges = await Promise.all(
             startups.map(async (s) =>
             {
                 const snap = await getOldestSnapshotSince(s.id, monthAgo);
-                if (snap === null || snap.price <= 0) return 0;
-                return ((s.token_price - snap.price) / snap.price) * 100;
+                if (snap === null || snap.price <= 0) return {name: s.name, pct: null as number | null};
+                const pct = ((s.token_price - snap.price) / snap.price) * 100;
+                return {name: s.name, pct};
             }),
         );
 
-        const rentabilidadeMedia = startupReturns.length > 0
-            ? Math.round(
-                (startupReturns.reduce((sum, r) => sum + r, 0) / startupReturns.length) * 100,
-            ) / 100
-            : 0;
+        // Filtra apenas as startups que possuem dados válidos
+        const withData = startupChanges.filter(s => s.pct !== null);
+        let maiorAltaNome: string | null = null;
+        let maiorAltaPct: number | null  = null;
+        
+        // Se houver startups com dados válidos, encontra a que teve a maior valorização percentual
+        if (withData.length > 0)
+        {
+            const best = withData.reduce((a, b) => (a.pct! > b.pct! ? a : b));
+            maiorAltaNome = best.name;
+            maiorAltaPct  = Math.round(best.pct! * 100) / 100;
+        }
         // --- end Pedro ---
 
         // Recupera a lista de IDs de startups favoritas do usuário
@@ -158,7 +167,8 @@ export async function handleOnGetDashboard(request: CallableRequest)
             patrimonioTotal,
             rendimentoDiarioPorcentagem,
             rendimentoDiarioValor,
-            rentabilidadeMediaMercado: rentabilidadeMedia,
+            maiorAltaNome,
+            maiorAltaPct,
             saldoDisponivel: wallet?.balance ?? 0,
             totalInvestidoresMercado: activeInvestors,
             totalStartupsMercado: totalStartups,

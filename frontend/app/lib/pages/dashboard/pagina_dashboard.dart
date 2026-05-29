@@ -6,6 +6,7 @@
  */
 
 import 'package:flutter/material.dart';
+import 'package:mesclainvest/app/app_state.dart';
 import 'package:mesclainvest/pages/dashboard/controllers/dashboard_controller.dart';
 import 'package:mesclainvest/pages/dashboard/widgets/dashboard_skeleton.dart';
 import 'package:mesclainvest/pages/dashboard/widgets/deposit_prompt_card.dart';
@@ -27,17 +28,18 @@ class PaginaDashboard extends StatefulWidget {
 }
 
 class _PaginaDashboardState extends State<PaginaDashboard> {
-  // Controlador responsável pela lógica de negócios da página (MVVM)
   final DashboardController _controller = DashboardController();
+  int _lastNavVersion = 0;
 
   @override
   void initState() {
     super.initState();
+    _lastNavVersion = AppState.instance.navVersion;
     if (widget.initialFilter != null) {
       _controller.filterStartups(widget.initialFilter);
     }
-    // Inicializa a carga assíncrona dos dados do painel do usuário
     _controller.loadDashboard();
+    AppState.instance.addListener(_onNavChanged);
   }
 
   @override
@@ -50,9 +52,18 @@ class _PaginaDashboardState extends State<PaginaDashboard> {
 
   @override
   void dispose() {
-    // Libera os recursos alocados pelo controlador ao descartar a página
+    AppState.instance.removeListener(_onNavChanged);
     _controller.dispose();
     super.dispose();
+  }
+
+  void _onNavChanged() {
+    if (!mounted) return;
+    final v = AppState.instance.navVersion;
+    if (v != _lastNavVersion) {
+      _lastNavVersion = v;
+      _controller.loadDashboard(silent: true);
+    }
   }
 
   @override

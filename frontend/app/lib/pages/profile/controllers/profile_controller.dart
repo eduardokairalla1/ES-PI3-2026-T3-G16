@@ -22,14 +22,16 @@ class ProfileController extends ChangeNotifier {
   DashboardData? _dashboardData;
 
   /// Carrega dados do dashboard para exibir estatísticas.
-  Future<void> loadStats() async {
-    isLoadingStats = true;
-    notifyListeners();
+  Future<void> loadStats({bool silent = false}) async {
+    if (!silent) {
+      isLoadingStats = true;
+      notifyListeners();
+    }
 
     try {
       _dashboardData = await _dashboardService.fetchUserDashboardData();
     } catch (_) {
-      _dashboardData = null;
+      if (!silent) _dashboardData = null;
     } finally {
       isLoadingStats = false;
       notifyListeners();
@@ -45,13 +47,13 @@ class ProfileController extends ChangeNotifier {
   /// Retorna o número de startups favoritadas.
   int get totalFavoritas => _dashboardData?.favoriteIds.length ?? 0;
 
-  /// I disable 2FA after verifying the given TOTP code.
-  Future<void> disable2FA(String code) async {
+  /// I disable 2FA after re-authenticating with the user's password.
+  Future<void> disable2FAWithPassword(String password) async {
     isDisabling2FA = true;
     notifyListeners();
 
     try {
-      await _authService.disable2FA(code);
+      await _authService.disable2FAByPassword(password);
       AppState.instance.updateProfileLocally(twoFaEnabled: false);
     } finally {
       isDisabling2FA = false;

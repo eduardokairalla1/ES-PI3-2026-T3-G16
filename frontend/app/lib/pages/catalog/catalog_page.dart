@@ -4,6 +4,7 @@
 
 // --- IMPORTS ---
 import 'package:flutter/material.dart';
+import 'package:mesclainvest/app/app_state.dart';
 import 'package:mesclainvest/pages/catalog/controllers/catalog_controller.dart';
 import 'package:mesclainvest/pages/catalog/widgets/startup_card.dart';
 import 'package:mesclainvest/shared/styles/app_colors.dart';
@@ -29,17 +30,30 @@ class CatalogPage extends StatefulWidget {
 
 class _CatalogPageState extends State<CatalogPage> {
   final CatalogController _controller = CatalogController();
+  int _lastNavVersion = 0;
 
   @override
   void initState() {
     super.initState();
+    _lastNavVersion = AppState.instance.navVersion;
     _controller.load();
+    AppState.instance.addListener(_onNavChanged);
   }
 
   @override
   void dispose() {
+    AppState.instance.removeListener(_onNavChanged);
     _controller.dispose();
     super.dispose();
+  }
+
+  void _onNavChanged() {
+    if (!mounted) return;
+    final v = AppState.instance.navVersion;
+    if (v != _lastNavVersion) {
+      _lastNavVersion = v;
+      _controller.load(silent: true);
+    }
   }
 
   @override

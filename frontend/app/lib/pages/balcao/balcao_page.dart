@@ -56,18 +56,31 @@ class _BalcaoPageState extends State<BalcaoPage> {
   final BalcaoController _controller = BalcaoController();
   final TextEditingController _searchCtrl = TextEditingController();
   int _activeTab = 0; // 0 = Mercado, 1 = Minhas Ordens
+  int _lastNavVersion = 0;
 
   @override
   void initState() {
     super.initState();
+    _lastNavVersion = AppState.instance.navVersion;
     _controller.load();
+    AppState.instance.addListener(_onNavChanged);
   }
 
   @override
   void dispose() {
+    AppState.instance.removeListener(_onNavChanged);
     _controller.dispose();
     _searchCtrl.dispose();
     super.dispose();
+  }
+
+  void _onNavChanged() {
+    if (!mounted) return;
+    final v = AppState.instance.navVersion;
+    if (v != _lastNavVersion) {
+      _lastNavVersion = v;
+      _controller.load(silent: true);
+    }
   }
 
   @override
@@ -383,12 +396,12 @@ class _MercadoTab extends StatelessWidget {
       child: ListView(
         padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
         children: [
-          _MercadoHeaderRow(),
+          _MercadoHeaderRow(controller: controller),
           const SizedBox(height: 6),
           for (final s in list)
             _MercadoRow(
               startup:   s,
-              variation: controller.variationFor(s.id),
+              variation: controller.variationFor(s.id) ?? s.changePercent,
               onReturn: () => controller.load(),
             ),
         ],
@@ -398,23 +411,108 @@ class _MercadoTab extends StatelessWidget {
 }
 
 class _MercadoHeaderRow extends StatelessWidget {
+  final BalcaoController controller;
+  const _MercadoHeaderRow({required this.controller});
+
   @override
   Widget build(BuildContext context) {
-    final muted = AppColors.textMuted(context);
-    final style = TextStyle(
-      fontSize: 10,
-      fontWeight: FontWeight.w700,
-      color: muted,
-      letterSpacing: 0.5,
-    );
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
       child: Row(
         children: [
-          Expanded(flex: 5, child: Text('STARTUP / TICKET', style: style)),
-          Expanded(flex: 3, child: Text('PREÇO',  style: style, textAlign: TextAlign.right)),
-          Expanded(flex: 3, child: Text('VAR %',  style: style, textAlign: TextAlign.right)),
+          Expanded(
+            flex: 5,
+            child: _SortHeader(
+              label: 'STARTUP / TICKET',
+              column: BalcaoSort.nome,
+              controller: controller,
+              align: TextAlign.left,
+            ),
+          ),
+          Expanded(
+            flex: 3,
+            child: _SortHeader(
+              label: 'PREÇO',
+              column: BalcaoSort.preco,
+              controller: controller,
+              align: TextAlign.right,
+            ),
+          ),
+          Expanded(
+            flex: 3,
+            child: _SortHeader(
+              label: 'VAR %',
+              column: BalcaoSort.variacao,
+              controller: controller,
+              align: TextAlign.right,
+            ),
+          ),
         ],
+      ),
+    );
+  }
+}
+
+class _SortHeader extends StatelessWidget {
+  final String label;
+  final BalcaoSort column;
+  final BalcaoController controller;
+  final TextAlign align;
+  const _SortHeader({
+    required this.label,
+    required this.column,
+    required this.controller,
+    required this.align,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isActive = controller.sort == column;
+    final color    = isActive
+        ? AppColors.textPrimary(context)
+        : AppColors.textMuted(context);
+
+    final icon = isActive
+        ? (controller.sortAsc ? Icons.arrow_upward : Icons.arrow_downward)
+        : null;
+
+    final textStyle = TextStyle(
+      fontSize: 10,
+      fontWeight: FontWeight.w700,
+      color: color,
+      letterSpacing: 0.5,
+    );
+
+    Widget content;
+    if (align == TextAlign.right) {
+      content = Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          if (icon != null) ...[
+            Icon(icon, size: 10, color: color),
+            const SizedBox(width: 2),
+          ],
+          Text(label, style: textStyle),
+        ],
+      );
+    } else {
+      content = Row(
+        children: [
+          Text(label, style: textStyle),
+          if (icon != null) ...[
+            const SizedBox(width: 2),
+            Icon(icon, size: 10, color: color),
+          ],
+        ],
+      );
+    }
+
+    return GestureDetector(
+      onTap: () => controller.setSort(column),
+      behavior: HitTestBehavior.opaque,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: content,
       ),
     );
   }
@@ -685,88 +783,213 @@ class _OrderCard extends StatelessWidget {
     required this.onEdit,
   });
 
+  static final _dateFmt = DateFormat('dd/MM/yyyy', 'pt_BR');
+
   @override
   Widget build(BuildContext context) {
-    final isBuy = order.isBuy;
-    final typeLabel = isBuy ? 'Compra' : 'Venda';
-    final tokenName = order.tokenName.isEmpty ? order.startupName : order.tokenName;
-    final total = order.unitPrice * order.quantity;
-    final status = _statusLabel(order.status);
-    final statusColor = _statusColor(order.status);
-    final showActions = order.isOpen;
+    final isBuy         = order.isBuy;
+    final sideColor     = isBuy ? _kBuyColor : _kSellColor;
+    final sideBg        = isBuy ? const Color(0x1416A34A) : const Color(0x14DC2626);
+    final tokenName     = order.tokenName.isEmpty ? order.startupName : order.tokenName;
+    final total         = order.unitPrice * order.quantity;
+    final statusLabel   = _statusLabel(order.status);
+    final statusColor   = _statusColor(order.status);
+    final showActions   = order.isOpen;
+    final hasProgress   = order.filledQuantity > 0 && order.status == 'pending';
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.fromLTRB(14, 14, 14, 12),
       decoration: BoxDecoration(
-        color: AppColors.surfaceColor(context),
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: AppColors.border(context)),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(13),
+        child: IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _Logo(url: order.startupLogoUrl ?? '', name: order.startupName, size: 36),
-              const SizedBox(width: 12),
+              // ── Left accent bar ─────────────────────────
+              Container(width: 4, color: sideColor),
+
+              // ── Card body ───────────────────────────────
               Expanded(
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Text(
-                      '$typeLabel · $tokenName',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary(context),
+
+                    // Header: logo + name + type chip + status
+                    Container(
+                      color: AppColors.surfaceColor(context),
+                      padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+                      child: Row(
+                        children: [
+                          _Logo(url: order.startupLogoUrl ?? '', name: order.startupName, size: 36),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  order.startupName,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppColors.textPrimary(context),
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  '$tokenName · ${_dateFmt.format(order.createdAt)}',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: AppColors.textMuted(context),
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: sideBg,
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              isBuy ? 'COMPRA' : 'VENDA',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w800,
+                                color: sideColor,
+                                letterSpacing: 0.4,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          _StatusBadge(label: statusLabel, color: statusColor),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      'qtd ${_intFmt.format(order.quantity)}'
-                      '${(order.filledQuantity > 0 && order.status == 'pending') ? ' (executado ${_intFmt.format(order.filledQuantity)})' : ''} '
-                      '${order.tokenName} · ${_currencyFmt.format(total)}',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: AppColors.textSecondary(context),
-                        fontWeight: FontWeight.w500,
+
+                    // Stats grid: QUANTIDADE | PREÇO/TOKEN | TOTAL
+                    Container(
+                      color: AppColors.surfaceMuted(context),
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      child: IntrinsicHeight(
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: _StatCell(
+                                label: 'QUANTIDADE',
+                                value: '${_intFmt.format(order.quantity)} tokens',
+                              ),
+                            ),
+                            VerticalDivider(width: 1, color: AppColors.border(context)),
+                            Expanded(
+                              child: _StatCell(
+                                label: 'PREÇO/TOKEN',
+                                value: _currencyFmt.format(order.unitPrice),
+                              ),
+                            ),
+                            VerticalDivider(width: 1, color: AppColors.border(context)),
+                            Expanded(
+                              child: _StatCell(
+                                label: 'TOTAL',
+                                value: _currencyFmt.format(total),
+                                valueColor: sideColor,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
+
+                    // Progress bar for partially filled pending orders
+                    if (hasProgress) ...[
+                      Container(
+                        color: AppColors.surfaceColor(context),
+                        padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'Execução parcial',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.textMuted(context),
+                                  ),
+                                ),
+                                Text(
+                                  '${_intFmt.format(order.filledQuantity)} / ${_intFmt.format(order.quantity)} tokens'
+                                  ' · ${(order.progress * 100).toStringAsFixed(0)}%',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w700,
+                                    color: sideColor,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 6),
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(4),
+                              child: LinearProgressIndicator(
+                                value: order.progress,
+                                minHeight: 5,
+                                backgroundColor: AppColors.border(context),
+                                color: sideColor,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+
+                    // Action buttons (pending orders only)
+                    if (showActions) ...[
+                      Divider(height: 1, color: AppColors.border(context)),
+                      Container(
+                        color: AppColors.surfaceColor(context),
+                        padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: _ActionButton(
+                                label:     'EDITAR',
+                                color:     AppColors.surfaceMuted(context),
+                                fgColor:   AppColors.textPrimary(context),
+                                isLoading: isEditing,
+                                onTap:     isCancelling ? null : onEdit,
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: _ActionButton(
+                                label:     'CANCELAR',
+                                color:     _kSellColor.withValues(alpha: 0.12),
+                                fgColor:   _kSellColor,
+                                isLoading: isCancelling,
+                                onTap:     isEditing ? null : onCancel,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
-              _StatusBadge(label: status, color: statusColor),
             ],
           ),
-          if (showActions) ...[
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: _ActionButton(
-                    label:     'EDITAR',
-                    color:     AppColors.surfaceMuted(context),
-                    fgColor:   AppColors.textPrimary(context),
-                    isLoading: isEditing,
-                    onTap:     isCancelling ? null : onEdit,
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: _ActionButton(
-                    label:     'CANCELAR',
-                    color:     _kSellColor.withValues(alpha: 0.12),
-                    fgColor:   _kSellColor,
-                    isLoading: isCancelling,
-                    onTap:     isEditing ? null : onCancel,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ],
+        ),
       ),
     );
   }
@@ -786,6 +1009,43 @@ class _OrderCard extends StatelessWidget {
         'failed'    => _kSellColor,
         _ => Colors.grey,
       };
+}
+
+class _StatCell extends StatelessWidget {
+  final String label;
+  final String value;
+  final Color? valueColor;
+  const _StatCell({required this.label, required this.value, this.valueColor});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 9,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textMuted(context),
+              letterSpacing: 0.5,
+            ),
+          ),
+          const SizedBox(height: 3),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w800,
+              color: valueColor ?? AppColors.textPrimary(context),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _StatusBadge extends StatelessWidget {

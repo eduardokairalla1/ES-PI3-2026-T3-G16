@@ -37,10 +37,11 @@ class _QATabState extends State<QATab> {
     final text = _textController.text.trim();
     if (text.isEmpty) return;
 
+    final canSendPrivate = widget.controller.isInvestor;
     final success = await widget.controller.sendQuestion(
       widget.startupId,
       text,
-      _isPrivate,
+      _isPrivate && canSendPrivate,
     );
 
     if (!mounted) return;
@@ -290,6 +291,8 @@ class _QATabState extends State<QATab> {
   }
 
   Widget _inputField(bool isSending) {
+    final isInvestor = widget.controller.isInvestor;
+
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
       decoration: BoxDecoration(
@@ -306,49 +309,50 @@ class _QATabState extends State<QATab> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              GestureDetector(
-                onTap: () => setState(() => _isPrivate = !_isPrivate),
-                child: Row(
-                  children: [
-                    AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      width: 18,
-                      height: 18,
-                      decoration: BoxDecoration(
-                        color: _isPrivate ? AppColors.textPrimary(context) : Colors.transparent,
-                        borderRadius: BorderRadius.circular(4),
-                        border: Border.all(
-                          color: _isPrivate
-                              ? AppColors.textPrimary(context)
-                              : AppColors.border(context),
+          if (isInvestor) ...[
+            Row(
+              children: [
+                GestureDetector(
+                  onTap: () => setState(() => _isPrivate = !_isPrivate),
+                  child: Row(
+                    children: [
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        width: 18,
+                        height: 18,
+                        decoration: BoxDecoration(
+                          color: _isPrivate ? AppColors.textPrimary(context) : Colors.transparent,
+                          borderRadius: BorderRadius.circular(4),
+                          border: Border.all(
+                            color: _isPrivate
+                                ? AppColors.textPrimary(context)
+                                : AppColors.border(context),
+                          ),
+                        ),
+                        child: _isPrivate
+                            ? Icon(
+                                Icons.check,
+                                size: 12,
+                                color: AppColors.surfaceColor(context),
+                              )
+                            : null,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Pergunta privada',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.textSecondary(context),
                         ),
                       ),
-                      child: _isPrivate
-                          ? Icon(
-                              Icons.check,
-                              size: 12,
-                              color: AppColors.surfaceColor(context),
-                            )
-                          : null,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      'Pergunta privada',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                        color: AppColors.textSecondary(context),
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 10),
+              ],
+            ),
+            const SizedBox(height: 10),
+          ],
 
           Row(
             children: [
