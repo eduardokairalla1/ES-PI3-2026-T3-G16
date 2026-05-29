@@ -77,8 +77,11 @@ class DashboardData {
   /// Número total de startups ativas registradas e disponíveis para investimento no ecossistema.
   final int totalStartupsMercado;
   
-  /// Rentabilidade média geral calculada das startups do ecossistema nos últimos 30 dias.
-  final double rentabilidadeMediaMercado;
+  /// Nome da startup com maior valorização de preço nos últimos 30 dias. Null se não houver dados.
+  final String? maiorAltaNome;
+
+  /// Percentual de valorização da startup com maior alta no mês. Null se não houver dados.
+  final double? maiorAltaPct;
   
   /// Contagem total de investidores ativos (que possuem ordens de compra completadas) no ecossistema.
   final int totalInvestidoresMercado;
@@ -96,7 +99,8 @@ class DashboardData {
     required this.rendimentoDiarioValor,
     required this.rendimentoDiarioPorcentagem,
     required this.totalStartupsMercado,
-    required this.rentabilidadeMediaMercado,
+    this.maiorAltaNome,
+    this.maiorAltaPct,
     required this.totalInvestidoresMercado,
     required this.investimentos,
     required this.favoriteIds,
@@ -120,8 +124,8 @@ class DashboardData {
       rendimentoDiarioPorcentagem:
           (map['rendimentoDiarioPorcentagem'] as num?)?.toDouble() ?? 0,
       totalStartupsMercado: (map['totalStartupsMercado'] as num?)?.toInt() ?? 0,
-      rentabilidadeMediaMercado:
-          (map['rentabilidadeMediaMercado'] as num?)?.toDouble() ?? 0,
+      maiorAltaNome: map['maiorAltaNome'] as String?,
+      maiorAltaPct:  (map['maiorAltaPct'] as num?)?.toDouble(),
       totalInvestidoresMercado:
           (map['totalInvestidoresMercado'] as num?)?.toInt() ?? 0,
       investimentos: rawInvestimentos
