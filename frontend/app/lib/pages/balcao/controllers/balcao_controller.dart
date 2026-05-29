@@ -1,5 +1,7 @@
 // --- Balcão hub controller ---
 // Pedro Henrique Medeiros dos Reis - 24801656
+
+// ignore_for_file: library_private_types_in_public_api
 //
 // Holds the state of the balcão hub:
 //   - "Mercado": every startup available to trade, with the user's variation
@@ -15,6 +17,10 @@ import 'package:mesclainvest/pages/balcao/services/order_service.dart';
 import 'package:mesclainvest/pages/catalog/services/catalog_service.dart';
 import 'package:mesclainvest/pages/dashboard/services/dashboard_service.dart';
 import 'package:mesclainvest/pages/startup/models/startup_model.dart';
+
+// --- TYPES ---
+
+enum BalcaoSort { nome, preco, variacao }
 
 // --- CONTROLLER ---
 
@@ -69,12 +75,22 @@ class BalcaoController extends ChangeNotifier {
   // Local search filter applied to the Mercado list.
   String _searchQuery = '';
 
+  // Sort state for the Mercado list.
+  BalcaoSort _sort    = BalcaoSort.nome;
+  bool       _sortAsc = true;
+
   // In-flight tracking so the UI can disable just one row at a time.
   final Set<String> _cancelling = {};
   final Set<String> _editing    = {};
 
   /// Current search query (lower-cased, trimmed). Used by [filteredStartups].
   String get searchQuery => _searchQuery;
+
+  /// Active sort criterion.
+  BalcaoSort get sort => _sort;
+
+  /// Whether the active sort is ascending.
+  bool get sortAsc => _sortAsc;
 
   /// True while a cancel request for [orderId] is currently in flight.
   bool isCancelling(String orderId) => _cancelling.contains(orderId);
@@ -87,15 +103,54 @@ class BalcaoController extends ChangeNotifier {
   /// startup yet — the UI should render "—" in that case.
   double? variationFor(String startupId) => _variationByStartup[startupId];
 
-  /// Startups filtered by [searchQuery]. Matches either name or token symbol,
-  /// case-insensitive. Returns the full list when the query is empty.
+  /// Startups filtered by [searchQuery] and sorted by the active criterion.
+  /// Matches name or token symbol, case-insensitive.
   List<StartupModel> get filteredStartups {
-    if (_searchQuery.isEmpty) return startups;
     final q = _searchQuery;
-    return startups.where((s) {
-      return s.name.toLowerCase().contains(q) ||
-          s.tokenName.toLowerCase().contains(q);
-    }).toList();
+    final list = q.isEmpty
+        ? List<StartupModel>.from(startups)
+        : startups
+            .where((s) =>
+                s.name.toLowerCase().contains(q) ||
+                s.tokenName.toLowerCase().contains(q))
+            .toList();
+
+    list.sort((a, b) {
+      int cmp;
+      switch (_sort) {
+        case BalcaoSort.preco:
+          cmp = a.tokenPrice.compareTo(b.tokenPrice);
+        case BalcaoSort.variacao:
+          final va = _variationByStartup[a.id] ?? a.changePercent;
+          final vb = _variationByStartup[b.id] ?? b.changePercent;
+          if (va == null && vb == null) {
+            cmp = 0;
+          } else if (va == null) {
+            cmp = 1; // nulls always last
+          } else if (vb == null) {
+            cmp = -1;
+          } else {
+            cmp = va.compareTo(vb);
+          }
+        case BalcaoSort.nome:
+          cmp = a.name.toLowerCase().compareTo(b.name.toLowerCase());
+      }
+      return _sortAsc ? cmp : -cmp;
+    });
+
+    return list;
+  }
+
+  /// Sets the active sort column. Tapping the same column toggles direction;
+  /// tapping a different column resets to ascending.
+  void setSort(BalcaoSort column) {
+    if (_sort == column) {
+      _sortAsc = !_sortAsc;
+    } else {
+      _sort    = column;
+      _sortAsc = true;
+    }
+    notifyListeners();
   }
 
   /// Updates the search query and notifies listeners so the Mercado list
@@ -108,43 +163,44 @@ class BalcaoController extends ChangeNotifier {
   }
 
   /// Loads everything in parallel: startups, orders and wallet + holdings.
-  /// Used on first page enter.
-  Future<void> load() async {
+  Future<void> load({bool silent = false}) async {
     await Future.wait([
-      loadStartups(),
-      loadMyOrders(),
-      loadWalletAndHoldings(),
+      loadStartups(silent: silent),
+      loadMyOrders(silent: silent),
+      loadWalletAndHoldings(silent: silent),
     ]);
   }
 
-  /// Reloads the "Mercado" tab. Sets [isLoadingStartups]/[startupsError] and
-  /// notifies listeners around the fetch.
-  Future<void> loadStartups() async {
-    isLoadingStartups = true;
-    startupsError = null;
-    notifyListeners();
+  /// Reloads the "Mercado" tab.
+  Future<void> loadStartups({bool silent = false}) async {
+    if (!silent) {
+      isLoadingStartups = true;
+      startupsError = null;
+      notifyListeners();
+    }
 
     try {
       startups = await _catalogService.fetchStartups();
     } catch (_) {
-      startupsError = 'Não foi possível carregar as startups.';
+      if (!silent) startupsError = 'Não foi possível carregar as startups.';
     } finally {
       isLoadingStartups = false;
       notifyListeners();
     }
   }
 
-  /// Reloads the "Minhas ordens" tab. Sets [isLoadingOrders]/[ordersError]
-  /// and notifies listeners around the fetch.
-  Future<void> loadMyOrders() async {
-    isLoadingOrders = true;
-    ordersError = null;
-    notifyListeners();
+  /// Reloads the "Minhas ordens" tab.
+  Future<void> loadMyOrders({bool silent = false}) async {
+    if (!silent) {
+      isLoadingOrders = true;
+      ordersError = null;
+      notifyListeners();
+    }
 
     try {
       orders = await _orderService.getMyOrders();
     } catch (_) {
-      ordersError = 'Não foi possível carregar suas ordens.';
+      if (!silent) ordersError = 'Não foi possível carregar suas ordens.';
     } finally {
       isLoadingOrders = false;
       notifyListeners();
@@ -152,12 +208,12 @@ class BalcaoController extends ChangeNotifier {
   }
 
   /// Loads wallet balance and per-startup variation from the dashboard
-  /// payload. The dashboard endpoint already computes the variation since the
-  /// user's average purchase price for every owned startup, so we just copy
-  /// the map across — no extra backend work needed.
-  Future<void> loadWalletAndHoldings() async {
-    isLoadingWallet = true;
-    notifyListeners();
+  /// payload.
+  Future<void> loadWalletAndHoldings({bool silent = false}) async {
+    if (!silent) {
+      isLoadingWallet = true;
+      notifyListeners();
+    }
 
     try {
       final data = await _dashboardService.fetchUserDashboardData();
