@@ -3,7 +3,8 @@
  * a few pending offers on each side and one completed trade, so the order
  * book screen has something to show right after bootstrap.
  *
- * Run while the Firebase emulator is running (after seed-startups + seed-users):
+ * Run while the Firebase emulator is running (after seed-startups + seed-users
+ * + seed-investments, so investor data is available for sell-side offers):
  *   npm run seed:orderbook
  *
  * Idempotent: looks for existing seed-orderbook docs (marked with a `seed_tag`
@@ -22,8 +23,9 @@ process.env.FIRESTORE_EMULATOR_HOST ??= 'localhost:8080';
 import {initializeApp}   from 'firebase-admin/app';
 import {getFirestore}    from 'firebase-admin/firestore';
 
-import type {OrderDocument}  from '../src/db/orders/model';
-import type {StartupDocument} from '../src/db/startups/model';
+import type {OrderDocument}         from '../src/db/orders/model';
+import type {PriceSnapshotDocument}  from '../src/db/price_history/model';
+import type {StartupDocument}        from '../src/db/startups/model';
 
 
 /**
@@ -31,7 +33,7 @@ import type {StartupDocument} from '../src/db/startups/model';
  */
 
 const PROJECT_ID  = 'mesclainvest-eda16';
-const SEED_TAG    = 'seed-orderbook-v2';
+const SEED_TAG    = 'seed-orderbook-v4';
 const TOTAL_USERS = 150;
 
 // price bands relative to the startup's current bonding-curve price.
@@ -143,6 +145,20 @@ async function seed(): Promise<void>
         process.exit(1);
     }
 
+    // build a map of startupId → uid[] of actual investors so sell-side offers
+    // only come from users who own tokens of that startup
+    const investorMap = new Map<string, string[]>();
+    const investmentsSnap = await db.collectionGroup('investments').get();
+    for (const invDoc of investmentsSnap.docs)
+    {
+        const uid       = invDoc.ref.parent.parent!.id;
+        const startupId = invDoc.data().startup_id as string | undefined;
+        if (!startupId) continue;
+        if (!investorMap.has(startupId)) investorMap.set(startupId, []);
+        investorMap.get(startupId)!.push(uid);
+    }
+    console.log(`Loaded investor data for ${investorMap.size} startups.\n`);
+
     let createdOffers = 0;
     let createdTrades = 0;
     let skippedStartups = 0;
@@ -195,49 +211,63 @@ async function seed(): Promise<void>
         }
 
         const startupSeed = Math.abs(hashCode(startup.id));
-        const now = new Date();
+        const now         = new Date();
+        const investors   = investorMap.get(startup.id) ?? [];
 
         // ----- pending sell offers (above market) -----
-        for (let i = 0; i < SELL_BANDS_PCT.length; i++)
+        // Only investors who hold tokens of this startup can have sell orders.
+        if (investors.length === 0)
         {
-            const slotSeed = startupSeed + i * 11;
-            const order: OrderDocument & {seed_tag: string} = {
-                id:              '',
-                uid:             pickUid(slotSeed),
-                startup_id:      startup.id,
-                type:            'sell',
-                status:          'pending',
-                quantity:        deterministicQty(slotSeed),
-                unit_price:      round2(price * (1 + SELL_BANDS_PCT[i])),
-                total_amount:    0,  // set below
-                created_at:      new Date(now.getTime() - i * 60_000),
-                completed_at:    null,
-                failure_reason:  null,
-                filled_quantity: 0,
-                cancelled_at:    null,
-                avg_fill_price:  null,
-                seed_tag:        SEED_TAG,
-            };
-            order.total_amount = order.quantity * order.unit_price;
-
-            const ref = await db.collection('orders').add(order);
-            await ref.update({id: ref.id});
-            createdOffers++;
+            console.log(`  ⚠  No investors for "${startup.name}" — skipping sell offers`);
+        }
+        else
+        {
+            for (let i = 0; i < SELL_BANDS_PCT.length; i++)
+            {
+                const slotSeed  = startupSeed + i * 11;
+                const qty       = deterministicQty(slotSeed);
+                const uprice    = round2(price * (1 + SELL_BANDS_PCT[i]));
+                const sellerUid = investors[slotSeed % investors.length];
+                const ref       = db.collection('orders').doc();
+                const order: OrderDocument & {seed_tag: string} = {
+                    id:              ref.id,
+                    uid:             sellerUid,
+                    startup_id:      startup.id,
+                    type:            'sell',
+                    status:          'pending',
+                    quantity:        qty,
+                    unit_price:      uprice,
+                    total_amount:    qty * uprice,
+                    created_at:      new Date(now.getTime() - i * 60_000),
+                    completed_at:    null,
+                    failure_reason:  null,
+                    filled_quantity: 0,
+                    cancelled_at:    null,
+                    avg_fill_price:  null,
+                    seed_tag:        SEED_TAG,
+                };
+                await ref.set(order);
+                createdOffers++;
+            }
         }
 
         // ----- pending buy offers (below market) -----
+        // Any user can place a buy order — no token ownership required.
         for (let i = 0; i < BUY_BANDS_PCT.length; i++)
         {
             const slotSeed = startupSeed + 100 + i * 7;
+            const qty      = deterministicQty(slotSeed);
+            const uprice   = round2(price * (1 - BUY_BANDS_PCT[i]));
+            const ref      = db.collection('orders').doc();
             const order: OrderDocument & {seed_tag: string} = {
-                id:              '',
+                id:              ref.id,
                 uid:             pickUid(slotSeed),
                 startup_id:      startup.id,
                 type:            'buy',
                 status:          'pending',
-                quantity:        deterministicQty(slotSeed),
-                unit_price:      round2(price * (1 - BUY_BANDS_PCT[i])),
-                total_amount:    0,
+                quantity:        qty,
+                unit_price:      uprice,
+                total_amount:    qty * uprice,
                 created_at:      new Date(now.getTime() - i * 60_000),
                 completed_at:    null,
                 failure_reason:  null,
@@ -246,28 +276,30 @@ async function seed(): Promise<void>
                 avg_fill_price:  null,
                 seed_tag:        SEED_TAG,
             };
-            order.total_amount = order.quantity * order.unit_price;
-
-            const ref = await db.collection('orders').add(order);
-            await ref.update({id: ref.id});
+            await ref.set(order);
             createdOffers++;
         }
 
-        // ----- historical completed trades (so lastTradePrice + history are populated) -----
-        // Each entry is one synthetic trade that already happened. The trades
-        // drift from below to around the current market price over the week.
+        // ----- historical completed trades -----
+        // Buy-side trades use any user; sell-side trades use investors only
+        // (falling back to buyers if no investors exist for this startup).
         for (let i = 0; i < TRADE_HISTORY.length; i++)
         {
-            const slot = TRADE_HISTORY[i];
+            const slot       = TRADE_HISTORY[i];
             const tradeQty   = deterministicQty(startupSeed + 500 + i * 17);
             const tradePrice = round2(price * (1 + slot.driftPct));
-            const ts = new Date(now.getTime() - slot.hoursAgo * 60 * 60 * 1000);
-
+            const ts         = new Date(now.getTime() - slot.hoursAgo * 60 * 60 * 1000);
+            const isSell     = i % 2 !== 0;
+            const slotSeed   = startupSeed + 50 + i * 3;
+            const tradeUid   = isSell && investors.length > 0
+                ? investors[slotSeed % investors.length]
+                : pickUid(slotSeed);
+            const ref = db.collection('orders').doc();
             const trade: OrderDocument & {seed_tag: string} = {
-                id:              '',
-                uid:             pickUid(startupSeed + 50 + i * 3),
+                id:              ref.id,
+                uid:             tradeUid,
                 startup_id:      startup.id,
-                type:            i % 2 === 0 ? 'buy' : 'sell',
+                type:            isSell ? 'sell' : 'buy',
                 status:          'completed',
                 quantity:        tradeQty,
                 unit_price:      tradePrice,
@@ -280,15 +312,40 @@ async function seed(): Promise<void>
                 avg_fill_price:  tradePrice,
                 seed_tag:        SEED_TAG,
             };
-            const tradeRef = await db.collection('orders').add(trade);
-            await tradeRef.update({id: tradeRef.id});
+            await ref.set(trade);
             createdTrades++;
         }
 
-        const sellCount = SELL_BANDS_PCT.length;
+        // ----- 7-day-ago price snapshot -----
+        // onGetStartups computes changePercent by comparing token_price to the
+        // oldest snapshot within the last 7 days. Without a snapshot in that
+        // window every startup shows changePercent = null ("—") in the balcão.
+        // We create one snapshot per startup at exactly 7 days ago with a
+        // deterministically varied price so the comparison is meaningful.
+        const sevenDaysAgo      = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        // drift: -8% to +8% below current price, varies per startup
+        const weekAgoMultiplier = 1 - (0.16 * ((startupSeed % 100) / 100) - 0.08);
+        const weekAgoPrice      = round2(price * weekAgoMultiplier);
+        const tokensSoldApprox  = startup.total_tokens - startup.available_tokens;
+        const snapRef           = db
+            .collection('price_history')
+            .doc(startup.id)
+            .collection('snapshots')
+            .doc();
+        const weekSnap: PriceSnapshotDocument = {
+            id:          snapRef.id,
+            startup_id:  startup.id,
+            price:       weekAgoPrice,
+            tokens_sold: tokensSoldApprox,
+            recorded_at: sevenDaysAgo,
+        };
+        await snapRef.set(weekSnap);
+
+        const sellCount = investors.length > 0 ? SELL_BANDS_PCT.length : 0;
         const buyCount  = BUY_BANDS_PCT.length;
         console.log(
-            `✓ "${startup.name}" — ${sellCount} sells, ${buyCount} buys, ${TRADE_HISTORY.length} trades`,
+            `✓ "${startup.name}" — ${sellCount} sells (${investors.length} investidores), ` +
+            `${buyCount} buys, ${TRADE_HISTORY.length} trades, snapshot 7d`,
         );
         processedStartups++;
     }
