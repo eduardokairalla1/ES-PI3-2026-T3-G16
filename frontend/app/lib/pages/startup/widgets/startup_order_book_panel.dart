@@ -19,6 +19,7 @@ import 'package:mesclainvest/pages/balcao/models/order_book_model.dart';
 import 'package:mesclainvest/pages/startup/controllers/startup_order_book_controller.dart';
 import 'package:mesclainvest/pages/startup/models/startup_model.dart';
 import 'package:mesclainvest/shared/styles/app_colors.dart';
+import 'package:mesclainvest/shared/styles/money_style.dart';
 
 // --- CONSTANTS ---
 
@@ -233,11 +234,9 @@ class _StartupOrderBookPanelState extends State<StartupOrderBookPanel> {
             children: [
               Text(
                 _currencyFmt.format(widget.startup.tokenPrice),
-                style: TextStyle(
+                style: moneyStyle(
                   fontSize: 28,
-                  fontWeight: FontWeight.w800,
                   color: AppColors.textPrimary(context),
-                  letterSpacing: -0.5,
                 ),
               ),
               const SizedBox(height: 2),
@@ -482,9 +481,8 @@ class _StartupOrderBookPanelState extends State<StartupOrderBookPanel> {
               ),
               Text(
                 _currencyFmt.format(total),
-                style: TextStyle(
+                style: moneyStyle(
                   fontSize: 15,
-                  fontWeight: FontWeight.w800,
                   color: AppColors.textPrimary(context),
                 ),
               ),
@@ -901,9 +899,8 @@ class _OrderCard extends StatelessWidget {
                       currencyFmt.format(entry.price),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
+                      style: moneyStyle(
                         fontSize: 15,
-                        fontWeight: FontWeight.w800,
                         color: color,
                       ),
                     ),

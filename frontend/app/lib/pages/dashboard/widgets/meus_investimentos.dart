@@ -22,6 +22,7 @@ import 'package:intl/intl.dart';
 import 'package:mesclainvest/pages/dashboard/controllers/dashboard_controller.dart';
 import 'package:mesclainvest/pages/dashboard/models/dashboard_data.dart';
 import 'package:mesclainvest/shared/styles/app_colors.dart';
+import 'package:mesclainvest/shared/styles/money_style.dart';
 
 /*
  * CONSTANTES
@@ -286,9 +287,8 @@ class InvestimentoCard extends StatelessWidget {
               children: [
                 Text(
                   exibirValores ? _currencyFmt.format(valorTotal) : 'R\$ •••••',
-                  style: TextStyle(
+                  style: moneyStyle(
                     fontSize: 15,
-                    fontWeight: FontWeight.w700,
                     color: AppColors.textPrimary(context),
                   ),
                 ),

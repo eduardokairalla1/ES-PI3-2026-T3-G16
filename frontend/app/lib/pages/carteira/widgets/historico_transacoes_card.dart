@@ -16,6 +16,7 @@ import 'package:intl/intl.dart';
 import 'package:mesclainvest/pages/dashboard/controllers/dashboard_controller.dart';
 import 'package:mesclainvest/pages/dashboard/models/transaction_model.dart';
 import 'package:mesclainvest/shared/styles/app_colors.dart';
+import 'package:mesclainvest/shared/styles/money_style.dart';
 
 // --- CONSTANTS ---
 
@@ -236,10 +237,9 @@ class _TransactionRow extends StatelessWidget {
           ),
           Text(
             '$prefix ${_currencyFmt.format(tx.amount)}',
-            style: TextStyle(
-              fontSize:   13,
-              fontWeight: FontWeight.w800,
-              color:      color,
+            style: moneyStyle(
+              fontSize: 13,
+              color:    color,
             ),
           ),
         ],

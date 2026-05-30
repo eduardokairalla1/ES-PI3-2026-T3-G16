@@ -13,6 +13,7 @@ import 'package:mesclainvest/core/exceptions/auth.dart';
 import 'package:mesclainvest/core/models/user_profile.dart';
 import 'package:mesclainvest/pages/profile/controllers/profile_controller.dart';
 import 'package:mesclainvest/shared/styles/app_colors.dart';
+import 'package:mesclainvest/shared/styles/money_style.dart';
 import 'package:mesclainvest/shared/widgets/app_button.dart';
 
 // --- PAGE ---
@@ -211,7 +212,7 @@ class _ProfilePageState extends State<ProfilePage> {
         children: [
           Expanded(child: _statColumn(investimentos, 'Investimentos')),
           _verticalDivider(),
-          Expanded(child: _statColumn(aplicado, 'Aplicado')),
+          Expanded(child: _statColumn(aplicado, 'Aplicado', isMonetary: true)),
           _verticalDivider(),
           Expanded(child: _statColumn(favoritas, 'Favoritas')),
         ],
@@ -219,7 +220,7 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget _statColumn(String value, String label) {
+  Widget _statColumn(String value, String label, {bool isMonetary = false}) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4),
       child: Column(
@@ -230,11 +231,13 @@ class _ProfilePageState extends State<ProfilePage> {
             child: Text(
               value,
               maxLines: 1,
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary(context),
-              ),
+              style: isMonetary
+                  ? moneyStyle(fontSize: 20, color: AppColors.textPrimary(context))
+                  : TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textPrimary(context),
+                    ),
             ),
           ),
           const SizedBox(height: 4),

@@ -15,6 +15,7 @@ import 'package:intl/intl.dart';
 import 'package:mesclainvest/pages/dashboard/controllers/dashboard_controller.dart';
 import 'package:mesclainvest/pages/dashboard/widgets/meus_investimentos.dart';
 import 'package:mesclainvest/shared/styles/app_colors.dart';
+import 'package:mesclainvest/shared/styles/money_style.dart';
 import 'package:mesclainvest/shared/widgets/app_button.dart';
 
 // --- CONSTANTS ---
@@ -189,11 +190,9 @@ class _SummaryHeader extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   _currencyFmt.format(totalAplicado),
-                  style: TextStyle(
-                    fontSize:    22,
-                    fontWeight:  FontWeight.w800,
-                    color:       AppColors.textPrimary(context),
-                    letterSpacing: -0.3,
+                  style: moneyStyle(
+                    fontSize: 22,
+                    color:    AppColors.textPrimary(context),
                   ),
                 ),
               ],
