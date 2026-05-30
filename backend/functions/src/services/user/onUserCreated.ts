@@ -10,6 +10,7 @@
 import {HttpsError} from 'firebase-functions/v2/https';
 import {addUser, deleteUser, getUser, getUserByCpf} from '../../db/users/storage';
 import {createWallet} from '../../db/wallets/storage';
+import {createNotification} from '../../db/notifications/storage';
 import {verifyAuth} from '../../utils/auth';
 import {logger} from '../../utils/logger';
 import {parseRequest} from '../../utils/validation';
@@ -96,6 +97,14 @@ export async function handleOnUserCreated(request: CallableRequest)
             throw walletError;
         }
         logger.info(`Wallet created for user "${uid}".`);
+
+        // welcome notification (best-effort)
+        await createNotification(
+            uid,
+            'welcome',
+            'Bem-vindo ao MesclaInvest!',
+            'Faça seu primeiro depósito e comece a investir nas startups do ecossistema.',
+        );
 
         return {
             birthDate: addedUser.birth_date,

@@ -10,6 +10,7 @@
 import {HttpsError} from 'firebase-functions/v2/https';
 import {depositToWallet, getWalletBalance} from '../../db/wallets/storage';
 import {recordTransaction} from '../../db/transactions/storage';
+import {createNotification} from '../../db/notifications/storage';
 import {logger} from '../../utils/logger';
 import {verifyAuth} from '../../utils/auth';
 
@@ -76,6 +77,19 @@ export async function handleOnDeposit(request: CallableRequest)
 
         // 6. Consulta o saldo atualizado pós-transação para retorno da interface
         const newBalance = await getWalletBalance(uid);
+
+        // 7. In-app notification of the confirmed deposit (best-effort).
+        const formattedAmount = new Intl.NumberFormat('pt-BR', {
+            currency: 'BRL',
+            style: 'currency',
+        }).format(amount);
+
+        await createNotification(
+            uid,
+            'deposit_confirmed',
+            'Depósito confirmado',
+            `${formattedAmount} foi adicionado à sua carteira.`,
+        );
 
         return {
             newBalance,

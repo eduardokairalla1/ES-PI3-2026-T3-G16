@@ -29,6 +29,9 @@ import {handleOnGetStartups} from '../services/startup/onGetStartups';
 import {handleOnGetStartupOrderBook} from '../services/startup/onGetStartupOrderBook';
 import {handleOnGetTokenHistory} from '../services/startup/onGetTokenHistory';
 import {handleOnSendQuestion} from '../services/startup/onSendQuestion';
+import {handleOnGetNotifications} from '../services/user/onGetNotifications';
+import {handleOnDeleteNotification} from '../services/user/onDeleteNotification';
+import {handleOnDeleteAllNotifications} from '../services/user/onDeleteAllNotifications';
 import {handleOnGetDashboard} from '../services/dashboard/onGetDashboard';
 import {handleOnToggleFavorite} from '../services/dashboard/onToggleFavorite';
 import {handleOnGetPatrimonyHistory} from '../services/dashboard/onGetPatrimonyHistory';
@@ -54,6 +57,12 @@ export const onVerify2FA        = onCall({cors: true}, handleOnVerify2FA);
 export const onDisable2FAByPassword = onCall({cors: true}, handleOnDisable2FAByPassword);
 export const onDeposit          = onCall({cors: true}, handleOnDeposit);
 export const onGetTransactions  = onCall({cors: true}, handleOnGetTransactions);
+
+
+// notification functions
+export const onGetNotifications        = onCall({cors: true}, handleOnGetNotifications);
+export const onDeleteNotification      = onCall({cors: true}, handleOnDeleteNotification);
+export const onDeleteAllNotifications  = onCall({cors: true}, handleOnDeleteAllNotifications);
 
 
 // startup functions
