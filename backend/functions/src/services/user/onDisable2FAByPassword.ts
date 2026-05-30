@@ -1,11 +1,5 @@
 /**
  * Function callable onDisable2FAByPassword.
- * Disables 2FA after confirming identity via recent password re-authentication.
- *
- * The client must call FirebaseAuth.reauthenticateWithCredential() immediately
- * before invoking this function. The resulting ID token carries a fresh
- * auth_time claim; this function verifies that auth_time is within the last
- * 5 minutes as proof that the user just confirmed their password.
  *
  * Eduardo Kairalla - 24024241
  */
@@ -20,10 +14,26 @@ import {ValidationError} from '../../errors/validationError';
 import type {CallableRequest} from 'firebase-functions/v2/https';
 
 
+/**
+ * I handle the onDisable2FAByPassword callable.
+ * Disables 2FA after confirming identity via recent password re-authentication.
+ * The client must call FirebaseAuth.reauthenticateWithCredential() immediately
+ * before invoking this function; this function checks that auth_time is within
+ * the last 5 minutes as proof that the user just re-confirmed their password.
+ *
+ * @param request callable request (no data required)
+ *
+ * @returns { twoFaEnabled: false }
+ *
+ * @throws HttpsError('unauthenticated')  if the caller is not signed in
+ * @throws HttpsError('permission-denied') if re-authentication window has expired
+ * @throws HttpsError('invalid-argument') if 2FA is not currently enabled
+ */
 export async function handleOnDisable2FAByPassword(request: CallableRequest)
 {
     try
     {
+        // validate authentication
         if (request.auth === null || request.auth === undefined)
         {
             throw new AuthError('User must be authenticated.');
@@ -31,9 +41,9 @@ export async function handleOnDisable2FAByPassword(request: CallableRequest)
 
         const uid = request.auth.uid;
 
-        // auth_time is seconds since Unix epoch; verify the re-authentication
-        // happened within the last 5 minutes
-        const authTimeSecs    = request.auth.token['auth_time'] as number;
+        // verify re-authentication happened within the last 5 minutes
+        // (auth_time is seconds since Unix epoch)
+        const authTimeSecs     = request.auth.token['auth_time'] as number;
         const secondsSinceAuth = Math.floor(Date.now() / 1000) - authTimeSecs;
         if (secondsSinceAuth > 300)
         {
@@ -42,6 +52,7 @@ export async function handleOnDisable2FAByPassword(request: CallableRequest)
             );
         }
 
+        // retrieve user and verify 2FA is enabled
         const user = await getUser(uid);
         if (user === null)
         {
@@ -53,6 +64,7 @@ export async function handleOnDisable2FAByPassword(request: CallableRequest)
             throw new ValidationError('2FA is not enabled for this account.');
         }
 
+        // disable 2FA
         await disableTwoFA(uid);
         logger.info(`2FA disabled via password re-auth for user "${uid}".`);
 

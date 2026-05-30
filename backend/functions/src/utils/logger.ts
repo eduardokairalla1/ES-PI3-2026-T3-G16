@@ -50,9 +50,9 @@ const LEVEL_NAME: Record<string, string> = {
  */
 
 /**
- * Get current timestamp in YYYY-MM-DD HH:MM:SS format
+ * I return the current timestamp in YYYY-MM-DD HH:MM:SS format.
  *
- * :returns: Formatted timestamp string
+ * @returns formatted timestamp string
  */
 function timestamp(): string
 {
@@ -73,12 +73,12 @@ function timestamp(): string
 
 
 /**
- * Build log message
+ * I build a formatted log message with level prefix and timestamp.
  *
- * :param level: Log level (DEBUG, INFO, WARNING, ERROR)
- * :param message: Log message
+ * @param level   log level (DEBUG, INFO, WARNING, ERROR)
+ * @param message log message text
  *
- * :returns: Formatted log message string
+ * @returns formatted log message string
  */
 function buildMessage(level: string, message: string): string
 {
@@ -110,13 +110,11 @@ function buildMessage(level: string, message: string): string
 export const logger = {
 
     /**
-   * Log debug message
-   *
-   * :param message: Log message
-   * :param data: Optional structured data to include in log
-   *
-   * :returns: void
-   */
+     * I log a debug message.
+     *
+     * @param message log message text
+     * @param data    optional structured data to include
+     */
     debug: (message: string, data?: LogData) =>
     {
 
