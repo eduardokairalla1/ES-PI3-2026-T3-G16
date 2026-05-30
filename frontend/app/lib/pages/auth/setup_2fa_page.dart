@@ -14,6 +14,7 @@ import 'package:mesclainvest/pages/auth/widgets/auth_constants.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 
+/// I display the 2FA setup screen where the user scans a QR code and confirms the first TOTP code.
 class Setup2FAPage extends StatefulWidget {
   const Setup2FAPage({super.key});
 
@@ -22,6 +23,7 @@ class Setup2FAPage extends StatefulWidget {
 }
 
 
+/// State for Setup2FAPage.
 class _Setup2FAPageState extends State<Setup2FAPage>
     with SingleTickerProviderStateMixin {
 
@@ -64,6 +66,7 @@ class _Setup2FAPageState extends State<Setup2FAPage>
   }
 
 
+  /// I load the OTP auth URI from the server and display the QR code.
   Future<void> _loadQrCode() async {
     try {
       final uri = await _authService.setup2FA();
@@ -80,6 +83,7 @@ class _Setup2FAPageState extends State<Setup2FAPage>
   }
 
 
+  /// I confirm 2FA setup by validating the TOTP code and enabling 2FA on the account.
   Future<void> _confirm() async {
     final code = _codeCtrl.text.trim();
     if (code.length != 6) {

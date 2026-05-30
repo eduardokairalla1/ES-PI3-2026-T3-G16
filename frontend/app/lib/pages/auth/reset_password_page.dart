@@ -16,6 +16,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 // --- CODE ---
 
+/// I display the reset password screen where the user sets a new password after clicking the reset link.
 class ResetPasswordPage extends StatefulWidget {
   final String oobCode;
 
@@ -25,6 +26,7 @@ class ResetPasswordPage extends StatefulWidget {
   State<ResetPasswordPage> createState() => _ResetPasswordPageState();
 }
 
+/// State for ResetPasswordPage.
 class _ResetPasswordPageState extends State<ResetPasswordPage>
     with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
@@ -66,6 +68,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage>
     super.dispose();
   }
 
+  /// I validate the new password field against strength requirements.
   String? _validatePassword(String? value) {
     if (value == null || value.isEmpty) return 'Informe a nova senha';
     if (value.length < 8) return 'Mínimo de 8 caracteres';
@@ -79,12 +82,14 @@ class _ResetPasswordPageState extends State<ResetPasswordPage>
     return null;
   }
 
+  /// I validate that the confirm password field matches the new password.
   String? _validateConfirm(String? value) {
     if (value == null || value.isEmpty) return 'Confirme a senha';
     if (value != _passwordCtrl.text) return 'As senhas não coincidem';
     return null;
   }
 
+  /// I submit the new password to Firebase and transition to the success state on success.
   Future<void> _submit() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
 
@@ -131,6 +136,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage>
     );
   }
 
+  /// I build the password entry form with two password fields and a submit button.
   Widget _buildFormState() {
     return Form(
       key: _formKey,
@@ -244,6 +250,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage>
     );
   }
 
+  /// I build a styled password input field with a visibility toggle.
   Widget _buildPasswordField({
     required String label,
     required TextEditingController controller,
@@ -315,6 +322,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage>
     );
   }
 
+  /// I build the success state shown after the password has been successfully reset.
   Widget _buildSuccessState() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -364,6 +372,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage>
     );
   }
 
+  /// I build the invalid link error state shown when the oobCode is missing or expired.
   Widget _buildInvalidLink() {
     return Scaffold(
       backgroundColor: Colors.white,

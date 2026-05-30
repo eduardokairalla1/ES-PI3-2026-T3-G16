@@ -4,6 +4,7 @@
 
 // --- CODE ---
 
+/// I represent an infrastructure exception.
 // I represent an infrastructure exception.
 class InfrastructureException implements Exception {
   // attributes
@@ -11,6 +12,7 @@ class InfrastructureException implements Exception {
   final Object? originalError;
   final Object? stackTrace;
 
+  /// I construct an InfrastructureException with an optional message and error context.
   // constructor
   const InfrastructureException({
     this.message = 'Ocorreu um erro inesperado. Tente novamente.',
