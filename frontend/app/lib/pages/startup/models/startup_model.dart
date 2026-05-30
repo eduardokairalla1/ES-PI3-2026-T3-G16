@@ -15,6 +15,7 @@ DateTime? _parseTimestamp(dynamic value) {
 
 // --- MODELS ---
 
+/// I represent a founding partner of a startup.
 class PartnerModel {
   final String name;
   final String role;
@@ -30,6 +31,7 @@ class PartnerModel {
     this.avatarUrl,
   });
 
+  /// I create a PartnerModel from a raw Firestore map.
   factory PartnerModel.fromMap(Map<String, dynamic> map) {
     return PartnerModel(
       name: map['name'] as String? ?? '',
@@ -41,12 +43,14 @@ class PartnerModel {
   }
 }
 
+/// I represent an advisor or mentor of a startup.
 class AdvisorModel {
   final String name;
   final String role;
 
   const AdvisorModel({required this.name, required this.role});
 
+  /// I create an AdvisorModel from a raw Firestore map.
   factory AdvisorModel.fromMap(Map<String, dynamic> map) {
     return AdvisorModel(
       name: map['name'] as String? ?? '',
@@ -55,6 +59,7 @@ class AdvisorModel {
   }
 }
 
+/// I represent a question posted to a startup's Q&A section.
 class QuestionModel {
   final String id;
   final String text;
@@ -76,6 +81,7 @@ class QuestionModel {
     required this.createdAt,
   });
 
+  /// I create a QuestionModel from a raw Firestore map.
   factory QuestionModel.fromMap(Map<String, dynamic> map) {
     return QuestionModel(
       id: map['id'] as String? ?? '',
@@ -90,6 +96,7 @@ class QuestionModel {
   }
 }
 
+/// I represent the full data model for a startup, including token and partner info.
 class StartupModel {
   final String id;
   final String name;
@@ -108,6 +115,7 @@ class StartupModel {
   final String? videoUrl;
   final double? changePercent;
 
+  /// I construct a StartupModel with all required fields.
   const StartupModel({
     required this.id,
     required this.name,
@@ -144,6 +152,7 @@ class StartupModel {
     _ => stage,
   };
 
+  /// I create a StartupModel from a raw Firestore map, parsing partners and advisors.
   factory StartupModel.fromMap(Map<String, dynamic> map) {
     final rawPartners = (map['partners'] as List<dynamic>?) ?? [];
     final rawAdvisors = (map['advisors'] as List<dynamic>?) ?? [];

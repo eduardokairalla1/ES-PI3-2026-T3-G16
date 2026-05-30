@@ -14,6 +14,7 @@ import 'package:mesclainvest/shared/widgets/app_button.dart';
 
 // --- PAGE ---
 
+/// I display the full startup detail screen with tabs for About, Partners, Q&A, and Video.
 class StartupDetailPage extends StatefulWidget {
   final String startupId;
 
@@ -23,6 +24,7 @@ class StartupDetailPage extends StatefulWidget {
   State<StartupDetailPage> createState() => _StartupDetailPageState();
 }
 
+/// State for StartupDetailPage.
 class _StartupDetailPageState extends State<StartupDetailPage> {
   final StartupController _controller = StartupController();
 
@@ -174,6 +176,7 @@ class _StartupDetailPageState extends State<StartupDetailPage> {
 
 // --- INVEST PANEL ---
 
+/// I manage the bottom invest panel that expands into a token quantity selector.
 class _InvestPanel extends StatefulWidget {
   final StartupController controller;
   final String startupId;
@@ -187,6 +190,7 @@ class _InvestPanel extends StatefulWidget {
   State<_InvestPanel> createState() => _InvestPanelState();
 }
 
+/// State for _InvestPanel.
 class _InvestPanelState extends State<_InvestPanel> {
   final _qtyCtrl = TextEditingController(text: '1');
   bool _syncingFromController = false;
@@ -252,6 +256,7 @@ class _InvestPanelState extends State<_InvestPanel> {
     );
   }
 
+  /// I build the collapsed invest button shown when the order panel is closed.
   Widget _investButton() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
@@ -262,6 +267,7 @@ class _InvestPanelState extends State<_InvestPanel> {
     );
   }
 
+  /// I build the expanded order panel with a quantity stepper and confirm button.
   Widget _orderPanel(
     BuildContext context,
     NumberFormat formatter,
@@ -421,6 +427,7 @@ class _InvestPanelState extends State<_InvestPanel> {
     );
   }
 
+  /// I build a stepper increment or decrement button.
   Widget _stepperButton({required IconData icon, required VoidCallback onTap}) {
     return Builder(
       builder: (context) => GestureDetector(

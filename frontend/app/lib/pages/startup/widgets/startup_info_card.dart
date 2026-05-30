@@ -14,12 +14,14 @@ import 'package:mesclainvest/shared/styles/stage_colors.dart';
 
 // --- WIDGET ---
 
+/// I display a compact card with the startup logo, token price, and stage badge.
 class StartupInfoCard extends StatelessWidget {
 
   final StartupModel startup;
 
   const StartupInfoCard({super.key, required this.startup});
 
+  /// I build the info card row with logo, token price, and stage badge.
   @override
   Widget build(BuildContext context) {
     final currencyFmt = NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
@@ -95,6 +97,7 @@ class StartupInfoCard extends StatelessWidget {
     );
   }
 
+  /// I build a placeholder with the first letter of the startup name when no logo is available.
   Widget _logoPlaceholder(String name) {
     final letter = name.isNotEmpty ? name[0].toUpperCase() : '?';
     return Builder(
