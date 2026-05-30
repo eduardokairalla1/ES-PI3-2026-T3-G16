@@ -20,6 +20,7 @@ final _currencyFmt = NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$', decim
 
 // --- WIDGET ---
 
+/// I display a summary card for a startup in the catalog listing.
 class StartupCard extends StatelessWidget {
 
   final StartupModel startup;
@@ -35,6 +36,7 @@ class StartupCard extends StatelessWidget {
     this.onReturn,
   });
 
+  /// I build the startup card layout with logo, name, stage badge, and stats.
   @override
   Widget build(BuildContext context) {
     final color = stageColor(startup.stage);
@@ -159,12 +161,14 @@ class StartupCard extends StatelessWidget {
 }
 
 
+/// I render the circular startup logo with a fallback initial letter.
 class _Logo extends StatelessWidget {
   final String url;
   final String name;
 
   const _Logo({required this.url, required this.name});
 
+  /// I build the circular logo container with a network image or initial fallback.
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -196,12 +200,14 @@ class _Logo extends StatelessWidget {
 }
 
 
+/// I render a labeled numeric stat column inside the startup card.
 class _Stat extends StatelessWidget {
   final String label;
   final String value;
 
   const _Stat({required this.label, required this.value});
 
+  /// I build the label and value column for a stat entry.
   @override
   Widget build(BuildContext context) {
     return Column(
