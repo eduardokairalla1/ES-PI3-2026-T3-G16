@@ -16,8 +16,11 @@ import 'package:mesclainvest/shared/widgets/app_button.dart';
 
 /// I represent the login page.
 class LoginPage extends StatefulWidget {
+  /// Whether the user just completed registration successfully.
+  final bool registered;
+
   // constructor
-  const LoginPage({super.key});
+  const LoginPage({super.key, this.registered = false});
 
   /// I create the mutable state for this widget.
   ///
@@ -404,5 +407,20 @@ class _LoginPageState extends State<LoginPage>
 
     // start entrance animation
     _entranceCtrl.forward();
+
+    // show registration success banner after first frame
+    if (widget.registered) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Cadastro realizado com sucesso! Faça login para continuar.'),
+            backgroundColor: Colors.green.shade700,
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      });
+    }
   }
 }
