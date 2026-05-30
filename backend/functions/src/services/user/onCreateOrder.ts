@@ -16,6 +16,7 @@ import {HttpsError} from 'firebase-functions/v2/https';
 import {getWallet, createWallet} from '../../db/wallets/storage';
 import {getStartup} from '../../db/startups/storage';
 import {recordTransaction} from '../../db/transactions/storage';
+import {createNotification} from '../../db/notifications/storage';
 import {verifyAuth} from '../../utils/auth';
 import {logger} from '../../utils/logger';
 import db from '../../configs';
@@ -127,6 +128,79 @@ function computeAvailableTokens(orders: OrderDocument[]): number
 function crosses(type: OrderType, myPrice: number, oppPrice: number): boolean
 {
     return type === 'buy' ? oppPrice <= myPrice : oppPrice >= myPrice;
+}
+
+
+// --- NOTIFICATION HELPERS ---
+
+const brlFormatter = new Intl.NumberFormat('pt-BR', {
+    currency: 'BRL',
+    style:    'currency',
+});
+
+
+interface NotificationContext
+{
+    authorUid:   string;
+    outcome:     MatchOutcome;
+    quantity:    number;
+    startupId:   string;
+    startupName: string;
+    type:        OrderType;
+}
+
+
+/**
+ * Fires the notifications for one match: one for the author + one per
+ * unique counter-party (grouped by UID to avoid duplicate pings).
+ */
+async function emitOrderNotifications(ctx: NotificationContext): Promise<void>
+{
+    const sideLabel   = ctx.type === 'buy' ? 'compra' : 'venda';
+    const isFull      = ctx.outcome.status === 'completed';
+    const filledMoney = brlFormatter.format(ctx.outcome.totalAmount);
+
+    const authorTitle = isFull
+        ? `Sua ${sideLabel} foi executada`
+        : `Sua ${sideLabel} foi parcialmente executada`;
+
+    const authorBody = isFull
+        ? `${ctx.outcome.filled} ${ctx.startupName} por ${filledMoney}.`
+        : `${ctx.outcome.filled} de ${ctx.quantity} ${ctx.startupName} ` +
+          `negociados por ${filledMoney}. O restante segue no balcão.`;
+
+    await createNotification(
+        ctx.authorUid,
+        'order_executed',
+        authorTitle,
+        authorBody,
+        {orderId: ctx.outcome.orderId, startupId: ctx.startupId, startupName: ctx.startupName},
+    );
+
+    // Aggregate trades by counter UID → one notification per UID.
+    interface CounterAgg { qty: number; amount: number }
+    const byCounter = new Map<string, CounterAgg>();
+
+    for (const t of ctx.outcome.trades)
+    {
+        const acc = byCounter.get(t.counterUid) ?? {amount: 0, qty: 0};
+        acc.qty    += t.tradeQty;
+        acc.amount += t.tradeQty * t.tradePrice;
+        byCounter.set(t.counterUid, acc);
+    }
+
+    const counterSideLabel = ctx.type === 'buy' ? 'venda' : 'compra';
+
+    for (const [counterUid, agg] of byCounter.entries())
+    {
+        await createNotification(
+            counterUid,
+            'order_counter_match',
+            `Sua ${counterSideLabel} no balcão foi casada`,
+            `${agg.qty} ${ctx.startupName} por ${brlFormatter.format(agg.amount)}.`,
+            {startupId: ctx.startupId, startupName: ctx.startupName},
+        );
+    }
 }
 
 
@@ -635,6 +709,19 @@ export async function handleOnCreateOrder(request: CallableRequest)
             `Order "${outcome.orderId}" created (type=${type}). ` +
             `Filled ${outcome.filled}/${quantity}, ${outcome.trades.length} trade(s).`,
         );
+
+        // Notification fan-out (only when something actually crossed).
+        if (outcome.filled > 0)
+        {
+            await emitOrderNotifications({
+                authorUid: uid,
+                outcome,
+                quantity,
+                startupId,
+                startupName: startup.name,
+                type,
+            });
+        }
 
         return outcome;
     }

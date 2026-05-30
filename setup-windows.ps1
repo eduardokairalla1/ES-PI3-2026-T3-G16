@@ -793,10 +793,12 @@ if (-not $ready) {
     # Os scripts de seed ficam em functions/scripts/ mas o tsconfig
     # principal so compila src/. Precisamos compilar separadamente.
     $seedOutDir = Join-Path $functionsDir "lib\scripts"
-    $seedStartupsJs    = Join-Path $seedOutDir "seed-startups.js"
-    $seedUsersJs       = Join-Path $seedOutDir "seed-users.js"
-    $seedInvestmentsJs = Join-Path $seedOutDir "seed-investments.js"
-    $seedOrderbookJs   = Join-Path $seedOutDir "seed-orderbook.js"
+    $seedStartupsJs      = Join-Path $seedOutDir "seed-startups.js"
+    $seedUsersJs         = Join-Path $seedOutDir "seed-users.js"
+    $seedInvestmentsJs   = Join-Path $seedOutDir "seed-investments.js"
+    $seedOrderbookJs     = Join-Path $seedOutDir "seed-orderbook.js"
+    $seedQuestionsJs     = Join-Path $seedOutDir "seed-questions.js"
+    $seedNotificationsJs = Join-Path $seedOutDir "seed-notifications.js"
 
     # Criar tsconfig temporario para compilar os scripts de seed.
     # tsc emite .js mesmo com erros de tipo (noEmitOnError=false por padrao),
@@ -889,6 +891,13 @@ if (-not $ready) {
     # (referencia UIDs seed-user-01..30 como autores das ordens). E idempotente
     # via campo seed_tag — re-execucao apenas pula startups ja populadas.
     [void](Invoke-SeedScript -JsPath $seedOrderbookJs -Label "ordens do balcao" -SuccessSummary "ordens criadas no balcao")
+
+    # --- Seed Q&A (perguntas + respostas pre-populadas em cada startup) ---
+    # Idempotente: pula startups que ja tem ao menos uma pergunta.
+    [void](Invoke-SeedScript -JsPath $seedQuestionsJs -Label "perguntas e respostas" -SuccessSummary "perguntas criadas nas startups")
+
+    # --- Seed Notifications (inbox of the first 5 demo users) ---
+    [void](Invoke-SeedScript -JsPath $seedNotificationsJs -Label "notificacoes" -SuccessSummary "notificacoes criadas na inbox dos usuarios demo")
 
     # Limpar variaveis de ambiente
     Remove-Item Env:GCLOUD_PROJECT              -ErrorAction SilentlyContinue
