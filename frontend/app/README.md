@@ -31,11 +31,23 @@ cp .env.example .env
 
 Edit `.env` as needed:
 
+| Variable | Description | Dev value |
+|---|---|---|
+| `USE_EMULATOR` | Connect to local Firebase emulators instead of production | `true` |
+| `EMULATOR_HOST` | Host where the emulators are running | `localhost` |
+| `AUTH_EMULATOR_PORT` | Firebase Auth emulator port | `9099` |
+| `FUNCTIONS_EMULATOR_PORT` | Cloud Functions emulator port | `5001` |
+| `FIRESTORE_EMULATOR_PORT` | Firestore emulator port | `8080` |
+| `STORAGE_EMULATOR_PORT` | Firebase Storage emulator port | `9199` |
+
+> Set `USE_EMULATOR=false` to point the app at the real Firebase project (production).
+
 ## Commands
 
 | Command | Description |
 |---|---|
 | `flutter run` | Run the app on a connected device/emulator |
+| `flutter run -d web-server --web-port 9000` | Run in the browser at `http://localhost:9000` |
 | `flutter devices` | List available devices |
 | `flutter pub get` | Install dependencies |
 | `flutter pub upgrade` | Upgrade dependencies |

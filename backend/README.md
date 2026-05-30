@@ -19,10 +19,24 @@ npm --prefix functions install
 
 | Command | Description |
 |---|---|
-| `npm run dev` | Start all Firebase emulators |
+| `npm run dev` | Install deps, compile, start file watcher and all Firebase emulators |
 | `npm run build:functions` | Compile TypeScript functions once |
 | `npm run watch:functions` | Compile TypeScript functions in watch mode |
 | `npm run deploy` | Deploy everything to Firebase |
+
+### Seed scripts
+
+Run after starting the emulators (`npm run dev`) in a separate terminal:
+
+| Command | Description |
+|---|---|
+| `npm run seed:all` | Seed all collections in dependency order |
+| `npm run seed:startups` | Seed startups and storage assets |
+| `npm run seed:users` | Seed users in Auth and Firestore |
+| `npm run seed:investments` | Seed investment records |
+| `npm run seed:orderbook` | Seed order book entries |
+| `npm run seed:questions` | Seed Q&A questions |
+| `npm run seed:notifications` | Seed notifications |
 
 ## Tests
 
@@ -41,6 +55,7 @@ Started with `npm run dev`. Available at:
 | Firestore | http://localhost:8080 |
 | Functions | http://localhost:5001 |
 | Auth | http://localhost:9099 |
+| Storage | http://localhost:9199 |
 
 ## Project structure
 
