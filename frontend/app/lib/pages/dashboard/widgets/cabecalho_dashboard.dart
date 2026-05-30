@@ -18,6 +18,8 @@ library;
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:mesclainvest/app/app_state.dart';
+import 'package:mesclainvest/pages/notifications/controllers/notifications_controller.dart';
+import 'package:mesclainvest/pages/notifications/widgets/notifications_modal.dart';
 import 'package:mesclainvest/shared/styles/app_colors.dart';
 
 import 'package:mesclainvest/pages/dashboard/controllers/dashboard_controller.dart';
@@ -28,7 +30,7 @@ import 'package:mesclainvest/pages/dashboard/controllers/dashboard_controller.da
 
 /// Barra superior com dados do usuário (Avatar e Nome) e botão de notificações.
 /// Reage reativamente às atualizações do perfil através do controlador de estado.
-class CabecalhoDashboard extends StatelessWidget {
+class CabecalhoDashboard extends StatefulWidget {
   /// Controlador do Dashboard fornecendo os dados e fluxo da página principal.
   final DashboardController controller;
 
@@ -36,14 +38,45 @@ class CabecalhoDashboard extends StatelessWidget {
   const CabecalhoDashboard({super.key, required this.controller});
 
   @override
+  State<CabecalhoDashboard> createState() => _CabecalhoDashboardState();
+}
+
+class _CabecalhoDashboardState extends State<CabecalhoDashboard> {
+  // Tracks navVersion to silently reload the inbox on every tab switch.
+  int _lastNavVersion = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _lastNavVersion = AppState.instance.navVersion;
+    AppState.instance.addListener(_onAppStateChanged);
+    NotificationsController.instance.load();
+  }
+
+  @override
+  void dispose() {
+    AppState.instance.removeListener(_onAppStateChanged);
+    super.dispose();
+  }
+
+  void _onAppStateChanged() {
+    if (!mounted) return;
+    final v = AppState.instance.navVersion;
+    if (v != _lastNavVersion) {
+      _lastNavVersion = v;
+      NotificationsController.instance.load(silent: true);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     // Busca dados atualizados do perfil no singleton global (persistência temporária em RAM)
     final profile = AppState.instance.profile;
-    
+
     // Fallback inteligente: se o perfil global estiver nulo (ex: refresh na página web),
     // tenta usar o nome retornado pela chamada do Dashboard no backend. Senão, mostra 'Usuário'.
-    final userName = profile?.fullName ?? controller.data?.nomeUsuario ?? 'Usuário';
-    
+    final userName = profile?.fullName ?? widget.controller.data?.nomeUsuario ?? 'Usuário';
+
     // Obtém a primeira letra do nome do usuário para compor o avatar textual caso não haja foto definida
     final initial = userName.isNotEmpty ? userName[0].toUpperCase() : 'U';
     final photoUrl = profile?.photoUrl;
@@ -104,31 +137,46 @@ class CabecalhoDashboard extends StatelessWidget {
               ),
             ),
 
-            // --- Ícone de Notificações ---
-            Stack(
-              children: [
-                IconButton(
-                  onPressed: () {},
-                  icon: Icon(
-                    Icons.notifications_outlined,
-                    color: AppColors.textPrimary(context),
-                    size: 24,
-                  ),
-                ),
-                // Badge de notificação (ponto vermelho)
-                Positioned(
-                  right: 12,
-                  top: 12,
-                  child: Container(
-                    width: 7,
-                    height: 7,
-                    decoration: const BoxDecoration(
-                      color: Colors.red,
-                      shape: BoxShape.circle,
+            // --- Notifications bell ---
+            AnimatedBuilder(
+              animation: NotificationsController.instance,
+              builder: (context, _) {
+                final hasNotifications =
+                    NotificationsController.instance.unreadCount > 0;
+
+                return Stack(
+                  children: [
+                    IconButton(
+                      tooltip: 'Notificações',
+                      onPressed: () => NotificationsModal.show(context),
+                      icon: Icon(
+                        hasNotifications
+                            ? Icons.notifications
+                            : Icons.notifications_outlined,
+                        color: AppColors.textPrimary(context),
+                        size: 24,
+                      ),
                     ),
-                  ),
-                ),
-              ],
+                    if (hasNotifications)
+                      Positioned(
+                        right: 10,
+                        top: 10,
+                        child: Container(
+                          width: 9,
+                          height: 9,
+                          decoration: BoxDecoration(
+                            color: Colors.red.shade600,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: AppColors.surfaceColor(context),
+                              width: 1.5,
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                );
+              },
             ),
           ],
         ),
