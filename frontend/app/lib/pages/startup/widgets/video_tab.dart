@@ -3,9 +3,11 @@
 // Content of the "Video" tab on the startup detail screen.
 
 // --- IMPORTS ---
+import 'package:chewie/chewie.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:mesclainvest/shared/styles/app_colors.dart';
+import 'package:video_player/video_player.dart';
 
 // --- WIDGET ---
 
@@ -19,7 +21,7 @@ class VideoTab extends StatelessWidget {
     if (videoUrl == null || videoUrl!.isEmpty) {
       return _emptyState(context);
     }
-    return _withVideo(context, videoUrl!);
+    return _VideoPlayer(storagePath: videoUrl!);
   }
 
   Widget _emptyState(BuildContext context) {
@@ -63,116 +65,96 @@ class VideoTab extends StatelessWidget {
       ),
     );
   }
+}
 
-  Widget _withVideo(BuildContext context, String url) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            height: 200,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: Colors.grey.shade900,
-              borderRadius: BorderRadius.circular(16),
+class _VideoPlayer extends StatefulWidget {
+  final String storagePath;
+  const _VideoPlayer({required this.storagePath});
+
+  @override
+  State<_VideoPlayer> createState() => _VideoPlayerState();
+}
+
+class _VideoPlayerState extends State<_VideoPlayer> {
+  VideoPlayerController? _videoController;
+  ChewieController?      _chewieController;
+  bool                   _hasError = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _init();
+  }
+
+  Future<void> _init() async {
+    try {
+      final url = await FirebaseStorage.instance
+          .ref(widget.storagePath)
+          .getDownloadURL();
+
+      final controller = VideoPlayerController.networkUrl(Uri.parse(url));
+      await controller.initialize();
+
+      if (!mounted) {
+        controller.dispose();
+        return;
+      }
+
+      _videoController  = controller;
+      _chewieController = ChewieController(
+        videoPlayerController: controller,
+        autoPlay:        false,
+        looping:         false,
+        allowFullScreen: true,
+        allowMuting:     true,
+      );
+      setState(() {});
+    } catch (e, st) {
+      debugPrint('VideoTab error: $e\n$st');
+      if (mounted) setState(() => _hasError = true);
+    }
+  }
+
+  @override
+  void dispose() {
+    _videoController?.dispose();
+    _chewieController?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_hasError) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.error_outline, size: 48, color: AppColors.textMuted(context)),
+            const SizedBox(height: 12),
+            Text(
+              'Não foi possível carregar o vídeo.',
+              style: TextStyle(color: AppColors.textSecondary(context)),
             ),
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                Icon(
-                  Icons.play_circle_fill,
-                  size: 64,
-                  color: Colors.white.withValues(alpha: 0.9),
-                ),
-                Positioned(
-                  bottom: 14,
-                  left: 14,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.6),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Text(
-                      'Vídeo de apresentação',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
+          ],
+        ),
+      );
+    }
+
+    if (_chewieController == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    return Align(
+      alignment: Alignment.topCenter,
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: AspectRatio(
+            aspectRatio: _videoController!.value.aspectRatio,
+            child: Chewie(controller: _chewieController!),
           ),
-
-          const SizedBox(height: 20),
-
-          Text(
-            'Link do vídeo',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary(context),
-            ),
-          ),
-          const SizedBox(height: 10),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            decoration: BoxDecoration(
-              color: AppColors.surfaceColor(context),
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: AppColors.border(context)),
-            ),
-            child: Row(
-              children: [
-                Icon(Icons.link, size: 18, color: AppColors.textSecondary(context)),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    url,
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: AppColors.textSecondary(context),
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                GestureDetector(
-                  onTap: () {
-                    Clipboard.setData(ClipboardData(text: url));
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: const Text('Link copiado!'),
-                        backgroundColor: Colors.green.shade700,
-                        duration: const Duration(seconds: 2),
-                      ),
-                    );
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: AppColors.surfaceMuted(context),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Icon(
-                      Icons.copy_outlined,
-                      size: 16,
-                      color: AppColors.textSecondary(context),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 32),
-        ],
+        ),
       ),
     );
   }

@@ -9,8 +9,11 @@
 /**
  * IMPORTS
  */
+import * as fs from 'fs';
+import * as path from 'path';
 import {initializeApp} from 'firebase-admin/app';
 import {getFirestore} from 'firebase-admin/firestore';
+import {getStorage} from 'firebase-admin/storage';
 
 import type {StartupDocument} from '../src/db/startups/model';
 
@@ -19,9 +22,25 @@ import type {StartupDocument} from '../src/db/startups/model';
  * CODE
  */
 
+const PROJECT_ID   = 'mesclainvest-eda16';
+const BUCKET       = `${PROJECT_ID}.firebasestorage.app`;
+const VIDEOS_DIR   = path.resolve(__dirname, '../../videos');
+const STORAGE_HOST = process.env.FIREBASE_STORAGE_EMULATOR_HOST ?? 'localhost:9199';
+
+// startup name → video filename (without extension)
+const VIDEO_MAP: Record<string, string> = {
+    'TheraCare':      'TheraCare',
+    'AgroLink':       'AgroLink',
+    'CreditAí':       'creditAi',
+    'EduPath':        'EduPath',
+    'SecurityShield': 'SecurityShield',
+    'UrbanMob':       'UrbanMob',
+};
+
 // initialize Firebase Admin pointing at the local emulator
-const app = initializeApp({projectId: 'mesclainvest-eda16'});
-const db = getFirestore(app);
+const app     = initializeApp({projectId: PROJECT_ID, storageBucket: BUCKET});
+const db      = getFirestore(app);
+const storage = getStorage(app);
 
 // startups to seed
 type RawStartup = Omit<StartupDocument, 'id' | 'appreciation_factor' | 'available_tokens' | 'base_price'>;
@@ -1127,9 +1146,36 @@ const extraStartups: RawStartup[] = [
 
 startups.push(...extraStartups);
 
+async function uploadVideos(): Promise<Record<string, string>> {
+    const bucket = storage.bucket();
+    const urls: Record<string, string> = {};
+
+    for (const [startupName, fileName] of Object.entries(VIDEO_MAP)) {
+        const filePath = path.join(VIDEOS_DIR, `${fileName}.mp4`);
+        if (!fs.existsSync(filePath)) {
+            console.warn(`  ⚠ Video not found for "${startupName}": ${filePath}`);
+            continue;
+        }
+
+        const destination = `videos/${fileName}.mp4`;
+        await bucket.upload(filePath, {
+            destination,
+            metadata: {contentType: 'video/mp4'},
+        });
+
+        urls[startupName] = destination;
+        console.log(`  ✓ Uploaded "${startupName}"`);
+    }
+
+    return urls;
+}
+
 async function seed(): Promise<void>
 {
-    console.log('Seeding startups...\n');
+    console.log('Uploading videos...');
+    const videoUrls = await uploadVideos();
+
+    console.log('\nSeeding startups...\n');
 
     const col = db.collection('startups');
 
@@ -1145,6 +1191,7 @@ async function seed(): Promise<void>
             base_price,
             available_tokens,
             appreciation_factor,
+            video_url: videoUrls[rawStartup.name] ?? null,
         };
 
         const ref = await col.add(startup);

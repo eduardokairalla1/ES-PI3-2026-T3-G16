@@ -67,6 +67,8 @@ dependencies:
   # PDF generation & sharing
   pdf: ^3.11.1
   printing: ^5.13.1
+  video_player: ^2.11.1
+  chewie: ^1.14.1
 
 dev_dependencies:
   flutter_test:
