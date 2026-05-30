@@ -243,7 +243,7 @@ class _NotificationsModalState extends State<NotificationsModal> {
   Future<void> _onMarkAllRead() async {
     await _controller.clearAll();
     if (!mounted) return;
-    Navigator.of(context).pop();
+    Navigator.of(context, rootNavigator: true).pop();
   }
 
   Future<void> _onTapNotification(NotificationModel n) async {
@@ -255,7 +255,7 @@ class _NotificationsModalState extends State<NotificationsModal> {
     await _controller.deleteOne(n.id);
 
     if (!mounted) return;
-    Navigator.of(context).pop();
+    Navigator.of(context, rootNavigator: true).pop();
 
     if (route != null) router.go(route);
   }
