@@ -9,6 +9,7 @@ import 'package:mesclainvest/shared/styles/app_colors.dart';
 
 // --- DATA ---
 
+/// I represent a help section with a title, icon, and list of FAQ items.
 class _Section {
   final String title;
   final IconData icon;
@@ -16,6 +17,7 @@ class _Section {
   const _Section({required this.title, required this.icon, required this.items});
 }
 
+/// I represent a single FAQ question and answer pair.
 class _Item {
   final String question;
   final String answer;
@@ -204,6 +206,7 @@ const _sections = [
 
 // --- PAGE ---
 
+/// I display the Help & Support screen with categorised FAQ sections and contact cards.
 class HelpPage extends StatelessWidget {
   const HelpPage({super.key});
 
@@ -336,6 +339,7 @@ class HelpPage extends StatelessWidget {
     );
   }
 
+  /// I build a contact channel card with an icon, title, subtitle, and detail text.
   Widget _contactCard(
     BuildContext context, {
     required IconData icon,
@@ -395,6 +399,7 @@ class HelpPage extends StatelessWidget {
 
 // --- SECTION BLOCK ---
 
+/// I render a collapsible FAQ section block with a title and list of expandable tiles.
 class _SectionBlock extends StatelessWidget {
   final _Section section;
   const _SectionBlock({required this.section});
@@ -443,6 +448,7 @@ class _SectionBlock extends StatelessWidget {
 
 // --- FAQ TILE ---
 
+/// I display a single FAQ tile that expands to reveal the answer when tapped.
 class _FaqTile extends StatefulWidget {
   final _Item item;
   const _FaqTile({required this.item});
@@ -451,6 +457,7 @@ class _FaqTile extends StatefulWidget {
   State<_FaqTile> createState() => _FaqTileState();
 }
 
+/// State for _FaqTile.
 class _FaqTileState extends State<_FaqTile> {
   bool _expanded = false;
 

@@ -18,6 +18,7 @@ import 'package:mesclainvest/shared/widgets/app_button.dart';
 
 // --- PAGE ---
 
+/// I display the user profile screen with stats, 2FA toggle, and navigation menu.
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
 
@@ -25,6 +26,7 @@ class ProfilePage extends StatefulWidget {
   State<ProfilePage> createState() => _ProfilePageState();
 }
 
+/// State for ProfilePage.
 class _ProfilePageState extends State<ProfilePage> {
   final ProfileController _controller = ProfileController();
   int _lastNavVersion = 0;
@@ -96,6 +98,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   // ── Avatar ────────────────────────────────────────────────────────────────
 
+  /// I build the circular avatar with a photo or initial fallback.
   Widget _avatar(UserProfile? profile) {
     final initial = (profile?.fullName.isNotEmpty == true)
         ? profile!.fullName[0].toUpperCase()
@@ -124,6 +127,7 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
+  /// I build the centered initial letter shown when no avatar photo is available.
   Widget _avatarInitial(String initial) {
     return Center(
       child: Text(
@@ -139,6 +143,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   // ── Name & email ──────────────────────────────────────────────────────────
 
+  /// I build the user's full name and email text block.
   Widget _nameAndEmail(UserProfile? profile) {
     return Column(
       children: [
@@ -163,6 +168,7 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
+  /// I build the verified profile badge shown below the user name.
   Widget _verifiedBadge() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
@@ -194,6 +200,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   // ── Stats card ────────────────────────────────────────────────────────────
 
+  /// I build the stats card displaying investment count, total applied, and favorite count.
   Widget _statsCard(UserProfile? profile) {
     final loading = _controller.isLoadingStats;
     final currency = NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$', decimalDigits: 2);
@@ -220,6 +227,7 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
+  /// I build a single stat column with a value and label for use in the stats card.
   Widget _statColumn(String value, String label, {bool isMonetary = false}) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4),
@@ -256,6 +264,7 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
+  /// I build a thin vertical divider between stat columns.
   Widget _verticalDivider() {
     return Container(
       width: 1,
@@ -266,6 +275,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   // ── 2FA card ──────────────────────────────────────────────────────────────
 
+  /// I build the 2FA toggle card showing the current status and allowing enable/disable.
   Widget _twoFACard(UserProfile? profile) {
     final enabled    = profile?.twoFaEnabled ?? false;
     final isToggling = _controller.isDisabling2FA;
@@ -360,6 +370,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   // ── Disable 2FA dialog ────────────────────────────────────────────────────
 
+  /// I show a bottom sheet dialog prompting the user to confirm 2FA deactivation with their password.
   void _showDisable2FADialog(BuildContext context) {
     final passwordCtrl  = TextEditingController();
     String? dialogError;
@@ -493,6 +504,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   // ── Menu card ─────────────────────────────────────────────────────────────
 
+  /// I build the settings menu card with navigation items.
   Widget _menuCard(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
@@ -527,6 +539,7 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
+  /// I build a single tappable menu row with an icon and label.
   Widget _menuItem({
     required IconData icon,
     required String label,
@@ -578,6 +591,7 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
+  /// I build a thin horizontal divider between menu items.
   Widget _menuDivider() {
     return Divider(
       height: 1,
@@ -689,6 +703,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   // ── Sign out ──────────────────────────────────────────────────────────────
 
+  /// I build the sign out button that triggers sign out and redirects to the login screen.
   Widget _signOutButton(BuildContext context) {
     return AppButton(
       label: 'Sair da Conta',

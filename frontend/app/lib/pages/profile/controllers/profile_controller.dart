@@ -11,6 +11,7 @@ import 'package:mesclainvest/pages/dashboard/services/dashboard_service.dart';
 
 // --- CONTROLLER ---
 
+/// I manage state and actions for the user profile screen.
 class ProfileController extends ChangeNotifier {
 
   final AuthService _authService = AuthService();

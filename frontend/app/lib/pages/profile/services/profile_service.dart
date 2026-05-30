@@ -7,6 +7,7 @@ import 'package:cloud_functions/cloud_functions.dart';
 
 // --- SERVICE ---
 
+/// I handle Firebase Cloud Function calls for profile management.
 class ProfileService {
   final _functions = FirebaseFunctions.instance;
 

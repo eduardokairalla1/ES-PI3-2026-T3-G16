@@ -14,6 +14,7 @@ import 'package:mesclainvest/shared/widgets/app_button.dart';
 
 // --- PAGE ---
 
+/// I display the profile settings screen where the user can edit their name, phone, and avatar.
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
 
@@ -21,6 +22,7 @@ class SettingsPage extends StatefulWidget {
   State<SettingsPage> createState() => _SettingsPageState();
 }
 
+/// State for SettingsPage.
 class _SettingsPageState extends State<SettingsPage> {
   final ProfileService _service = ProfileService();
   final ImagePicker _picker = ImagePicker();
@@ -45,6 +47,7 @@ class _SettingsPageState extends State<SettingsPage> {
     super.dispose();
   }
 
+  /// I pick a photo from the gallery, upload it to Firebase Storage, and update the profile.
   Future<void> _pickAndUploadPhoto() async {
     final uid = AppState.instance.profile?.uid;
     if (uid == null) return;
@@ -91,6 +94,7 @@ class _SettingsPageState extends State<SettingsPage> {
     }
   }
 
+  /// I save changed name and phone fields to the backend and update local app state.
   Future<void> _saveProfile() async {
     final profile = AppState.instance.profile;
     final newName = _nameCtrl.text.trim();
@@ -291,6 +295,7 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
+  /// I build the centered initial letter shown when no avatar photo is available.
   Widget _avatarInitial(String initial) {
     return Builder(
       builder: (context) => Center(
@@ -306,6 +311,7 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
+  /// I build a styled editable text field for profile input.
   Widget _editableField({
     required TextEditingController controller,
     TextInputType keyboardType = TextInputType.text,
@@ -346,6 +352,7 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
+  /// I build a read-only labelled info field for non-editable profile data.
   Widget _infoField(String label, String value) {
     return Builder(
       builder: (context) => Column(
