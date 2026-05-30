@@ -12,6 +12,7 @@ import 'package:mesclainvest/shared/styles/money_style.dart';
 
 // --- WIDGET ---
 
+/// I display the "About" tab content for a startup, including summary, stats, and documents.
 class AboutTab extends StatelessWidget {
   final StartupModel startup;
 
@@ -107,6 +108,7 @@ class AboutTab extends StatelessWidget {
     );
   }
 
+  /// I build a bold section title text widget.
   Widget _sectionTitle(BuildContext context, String text) {
     return Text(
       text,
@@ -118,6 +120,7 @@ class AboutTab extends StatelessWidget {
     );
   }
 
+  /// I build a stat card with an icon, label, and formatted value.
   Widget _statCard({
     required BuildContext context,
     required String label,
@@ -173,6 +176,7 @@ class AboutTab extends StatelessWidget {
     );
   }
 
+  /// I build a document list item with an icon, title, subtitle, and availability indicator.
   Widget _documentItem({
     required BuildContext context,
     required IconData icon,

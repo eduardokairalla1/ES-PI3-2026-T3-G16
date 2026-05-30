@@ -8,6 +8,7 @@ import 'package:mesclainvest/pages/startup/models/startup_model.dart';
 
 // --- SERVICE ---
 
+/// I handle Firebase Cloud Function calls for the startup catalog.
 class CatalogService {
   final _functions = FirebaseFunctions.instance;
 

@@ -138,6 +138,8 @@ class _StartupOrderBookPanelState extends State<StartupOrderBookPanel> {
         ),
       );
       _qtyCtrl.clear();
+      _selectedOfferRemaining = null;
+      _offerPriceText         = null;
     }
   }
 
@@ -415,7 +417,42 @@ class _StartupOrderBookPanelState extends State<StartupOrderBookPanel> {
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
+
+          // Owned tokens info
+          if (_controller.ownedTokens > 0)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: Row(
+                children: [
+                  Icon(Icons.account_balance_wallet_outlined,
+                      size: 13, color: AppColors.textMuted(context)),
+                  const SizedBox(width: 5),
+                  Text(
+                    'Você possui ',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textSecondary(context),
+                    ),
+                  ),
+                  Text(
+                    _intFmt.format(_controller.ownedTokens),
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textPrimary(context),
+                    ),
+                  ),
+                  Text(
+                    ' tokens de $tokenName',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textSecondary(context),
+                    ),
+                  ),
+                ],
+              ),
+            ),
 
           // Price + Qty fields side by side
           Row(
@@ -427,11 +464,13 @@ class _StartupOrderBookPanelState extends State<StartupOrderBookPanel> {
                   controller: _priceCtrl,
                   hint: '0,00',
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[\d,]'))],
                   onChanged: (val) {
                     if (_selectedOfferRemaining != null && val != _offerPriceText) {
                       _selectedOfferRemaining = null;
                       _offerPriceText = null;
                     }
+                    _controller.submitError = null;
                     setState(() {});
                   },
                 ),
@@ -447,6 +486,10 @@ class _StartupOrderBookPanelState extends State<StartupOrderBookPanel> {
                       hint: '0',
                       keyboardType: TextInputType.number,
                       inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                      onChanged: (_) {
+                        _controller.submitError = null;
+                        setState(() {});
+                      },
                     ),
                     if (_selectedOfferRemaining != null)
                       Padding(
@@ -498,6 +541,17 @@ class _StartupOrderBookPanelState extends State<StartupOrderBookPanel> {
           ],
           const SizedBox(height: 12),
           _submitButton(isBuy, tokenName),
+          if (!isBuy && _controller.ownedTokens == 0) ...[
+            const SizedBox(height: 8),
+            Text(
+              'Você não possui tokens desta startup para vender.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 11,
+                color: AppColors.textMuted(context),
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -596,15 +650,17 @@ class _StartupOrderBookPanelState extends State<StartupOrderBookPanel> {
   Widget _submitButton(bool isBuy, String tokenName) {
     final color = isBuy ? _kBuyColor : _kSellColor;
     final label = isBuy ? 'Comprar tokens de $tokenName' : 'Vender tokens de $tokenName';
+    final cannotSell = !isBuy && _controller.ownedTokens == 0;
+    final disabled   = _controller.isSubmitting || cannotSell;
 
     return GestureDetector(
-      onTap: _controller.isSubmitting ? null : _submit,
+      onTap: disabled ? null : _submit,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 120),
         height: 52,
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: _controller.isSubmitting ? color.withValues(alpha: 0.5) : color,
+          color: disabled ? color.withValues(alpha: 0.4) : color,
           borderRadius: BorderRadius.circular(14),
         ),
         child: _controller.isSubmitting
@@ -618,8 +674,8 @@ class _StartupOrderBookPanelState extends State<StartupOrderBookPanel> {
               )
             : Text(
                 label,
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: cannotSell ? 0.6 : 1.0),
                   fontSize: 15,
                   fontWeight: FontWeight.w800,
                   letterSpacing: 0.3,

@@ -28,6 +28,7 @@ class StartupController extends ChangeNotifier {
 
   /// I load the startup details and its public questions in parallel.
   Future<void> load(String startupId, {bool silent = false}) async {
+    // set loading state unless running silently
     if (!silent) {
       isLoading = true;
       errorMessage = null;
@@ -35,11 +36,13 @@ class StartupController extends ChangeNotifier {
     }
 
     try {
+      // fetch startup details and questions in parallel
       final results = await Future.wait([
         _service.fetchStartup(startupId),
         _service.fetchQuestions(startupId),
       ]);
 
+      // unpack results
       startup = results[0] as StartupModel;
       final questionsResult = results[1] as ({List<QuestionModel> questions, bool isInvestor});
       questions = questionsResult.questions;
@@ -56,6 +59,7 @@ class StartupController extends ChangeNotifier {
     }
   }
 
+  /// I open the order panel and reset quantity and error state.
   void openOrderPanel() {
     orderQuantity   = 1;
     buyErrorMessage = null;
@@ -63,21 +67,25 @@ class StartupController extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// I close the order panel.
   void closeOrderPanel() {
     showOrderPanel = false;
     notifyListeners();
   }
 
+  /// I increment the order quantity by one, up to a maximum of 10 000.
   void incrementOrder() {
     if (orderQuantity < 10000) orderQuantity++;
     notifyListeners();
   }
 
+  /// I decrement the order quantity by one, down to a minimum of 1.
   void decrementOrder() {
     if (orderQuantity > 1) orderQuantity--;
     notifyListeners();
   }
 
+  /// I set the order quantity to the given value, clamped between 1 and 10 000.
   void setOrderQuantity(int qty) {
     if (qty >= 1 && qty <= 10000) {
       orderQuantity = qty;
@@ -87,12 +95,15 @@ class StartupController extends ChangeNotifier {
 
   /// I buy tokens and return true on success.
   Future<bool> buyTokens(String startupId) async {
+    // mark purchase as in progress
     isBuyingTokens  = true;
     buyErrorMessage = null;
     notifyListeners();
 
     try {
+      // call cloud function to execute the buy order
       await _service.buyTokens(startupId, orderQuantity);
+      // close panel and silently refresh startup data
       showOrderPanel = false;
       await load(startupId, silent: true);
       return true;

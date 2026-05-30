@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import 'package:mesclainvest/shared/styles/app_colors.dart';
 
 
+/// I display the global bottom navigation bar shared across main pages.
 class BottomNav extends StatelessWidget {
 
   final int currentIndex;
@@ -46,6 +47,7 @@ class BottomNav extends StatelessWidget {
 }
 
 
+/// I represent a single tappable navigation item in the bottom nav bar.
 class _NavItem extends StatefulWidget {
 
   final int index;
@@ -70,18 +72,23 @@ class _NavItem extends StatefulWidget {
   State<_NavItem> createState() => _NavItemState();
 }
 
+/// State for _NavItem.
 class _NavItemState extends State<_NavItem> {
 
   double _scale = 1.0;
 
   bool get _isActive => widget.index == widget.current;
 
+  /// I shrink the item on tap down to give a press feedback.
   void _onTapDown(TapDownDetails _) => setState(() => _scale = 0.78);
 
+  /// I restore the item scale on tap up.
   void _onTapUp(TapUpDetails _) => setState(() => _scale = 1.0);
 
+  /// I restore the item scale when the tap is cancelled.
   void _onTapCancel() => setState(() => _scale = 1.0);
 
+  /// I navigate to the item's route or invoke the custom onTap callback.
   void _onTap(BuildContext context) {
     if (_isActive) return;
     if (widget.onTap != null) {
@@ -91,6 +98,7 @@ class _NavItemState extends State<_NavItem> {
     }
   }
 
+  /// I build the animated nav item with icon and label, reflecting active state.
   @override
   Widget build(BuildContext context) {
     final activeColor = AppColors.textPrimary(context);

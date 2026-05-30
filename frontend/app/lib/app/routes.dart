@@ -78,7 +78,11 @@ final router = GoRouter(
     ),
     GoRoute(
       path: '/login',
-      builder: (context, state) => const LightThemeScope(child: LoginPage()),
+      builder: (context, state) => LightThemeScope(
+        child: LoginPage(
+          registered: state.uri.queryParameters['registered'] == 'true',
+        ),
+      ),
     ),
     GoRoute(
       path: '/register',

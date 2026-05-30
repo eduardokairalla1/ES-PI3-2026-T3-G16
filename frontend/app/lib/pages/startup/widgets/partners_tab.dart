@@ -9,6 +9,7 @@ import 'package:mesclainvest/shared/styles/app_colors.dart';
 
 // --- WIDGET ---
 
+/// I display the "Partners" tab listing founders and advisors for a startup.
 class PartnersTab extends StatelessWidget {
   final StartupModel startup;
 
@@ -38,6 +39,7 @@ class PartnersTab extends StatelessWidget {
     );
   }
 
+  /// I build a bold section title text widget.
   Widget _sectionTitle(BuildContext context, String text) {
     return Text(
       text,
@@ -49,6 +51,7 @@ class PartnersTab extends StatelessWidget {
     );
   }
 
+  /// I build a card displaying a partner's avatar, name, role, equity, and bio.
   Widget _partnerCard(BuildContext context, PartnerModel partner) {
     final initial = partner.name.isNotEmpty
         ? partner.name[0].toUpperCase()
@@ -159,6 +162,7 @@ class PartnersTab extends StatelessWidget {
     );
   }
 
+  /// I build a compact card displaying an advisor's avatar, name, and role.
   Widget _advisorCard(BuildContext context, AdvisorModel advisor) {
     final initial = advisor.name.isNotEmpty
         ? advisor.name[0].toUpperCase()

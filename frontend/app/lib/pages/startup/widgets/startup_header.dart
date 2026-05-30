@@ -10,6 +10,7 @@ import 'package:mesclainvest/shared/styles/app_colors.dart';
 
 // --- WIDGET ---
 
+/// I display the header bar for the startup detail screen with back navigation and startup name.
 class StartupHeader extends StatelessWidget {
   final StartupModel startup;
 
@@ -18,6 +19,7 @@ class StartupHeader extends StatelessWidget {
     required this.startup,
   });
 
+  /// I build the header container with back button, startup name, and tagline.
   @override
   Widget build(BuildContext context) {
 

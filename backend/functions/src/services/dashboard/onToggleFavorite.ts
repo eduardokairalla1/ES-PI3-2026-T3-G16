@@ -62,9 +62,9 @@ export async function handleOnToggleFavorite(request: CallableRequest)
         }
 
         // 4. Executa a alternância do status de favorito no banco de dados (relação muitos-para-muitos)
-        logger.info(`Alternando favorito do usuário "${uid}" para a startup "${parsed.startupId}"...`);
+        logger.info(`Toggling favourite for user "${uid}" on startup "${parsed.startupId}"...`);
         const isFavorited = await toggleFavorite(uid, parsed.startupId);
-        logger.info(`Startup "${parsed.startupId}" agora está ${isFavorited ? 'favoritada' : 'removida dos favoritos'} pelo usuário "${uid}".`);
+        logger.info(`Startup "${parsed.startupId}" is now ${isFavorited ? 'favourited' : 'unfavourited'} by user "${uid}".`);
 
         // Retorna o resultado atualizado para persistência e sincronização otimista no front-end
         return {
@@ -78,17 +78,17 @@ export async function handleOnToggleFavorite(request: CallableRequest)
     {
         if (error instanceof AuthError)
         {
-            logger.error(`Erro de autenticação ao favoritar: ${error.message}`);
+            logger.error(`Authentication error toggling favourite: ${error.message}`);
             throw new HttpsError('unauthenticated', error.message);
         }
         if (error instanceof NotFoundError)
         {
-            logger.error(`Startup não encontrada: ${error.message}`);
+            logger.error(`Startup not found: ${error.message}`);
             throw new HttpsError('not-found', error.message);
         }
         if (error instanceof ValidationError)
         {
-            logger.error(`Erro de validação de argumentos: ${error.message}`);
+            logger.error(`Argument validation error: ${error.message}`);
             throw new HttpsError('invalid-argument', error.message);
         }
 

@@ -30,12 +30,16 @@ import type {QuestionDocument, StartupDocument, StartupStage} from './model';
  */
 export async function getStartups(stage?: StartupStage): Promise<StartupDocument[]>
 {
+
+    // get reference to startups collection
     const col = db.collection('startups');
 
+    // if stage filter provided, query startups by stage; otherwise get all startups
     const snapshot = stage !== undefined
         ? await col.where('stage', '==', stage).orderBy('name').get()
         : await col.orderBy('name').get();
 
+    // map documents to StartupDocument objects
     return snapshot.docs.map(doc => ({id: doc.id, ...doc.data()} as StartupDocument));
 }
 
@@ -49,10 +53,14 @@ export async function getStartups(stage?: StartupStage): Promise<StartupDocument
  */
 export async function getStartup(id: string): Promise<StartupDocument | null>
 {
+
+    // get document reference and snapshot
     const doc = await db.collection('startups').doc(id).get();
 
+    // if document doesn't exist, return null; otherwise map to StartupDocument object
     if (!doc.exists) return null;
 
+    // map document to StartupDocument and return
     return {id: doc.id, ...doc.data()} as StartupDocument;
 }
 
@@ -76,6 +84,7 @@ export async function addQuestion(
     isPrivate: boolean,
 ): Promise<QuestionDocument>
 {
+    // create question object (without ID)
     const question: Omit<QuestionDocument, 'id'> = {
         'answer': null,
         'answered_at': null,
@@ -87,12 +96,14 @@ export async function addQuestion(
         'text': text,
     };
 
+    // add question to Firestore and get reference to new document
     const ref = await db
         .collection('startups')
         .doc(startupId)
         .collection('questions')
         .add(question);
 
+    // return question document with ID included
     return {id: ref.id, ...question};
 }
 
@@ -111,7 +122,10 @@ export function batchDecrementAvailableTokens(
     quantity: number,
 ): void
 {
+    // get reference to startup document
     const ref = db.collection('startups').doc(startupId);
+
+    // decrement available_tokens by quantity and update updated_at timestamp
     batch.update(ref, {
         available_tokens: FieldValue.increment(-quantity),
         updated_at:       new Date(),

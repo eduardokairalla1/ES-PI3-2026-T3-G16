@@ -21,6 +21,7 @@ const _kStages = [
 
 // --- PAGE ---
 
+/// I display the startup catalog listing with search and stage filtering.
 class CatalogPage extends StatefulWidget {
   const CatalogPage({super.key});
 
@@ -28,8 +29,10 @@ class CatalogPage extends StatefulWidget {
   State<CatalogPage> createState() => _CatalogPageState();
 }
 
+/// State for CatalogPage.
 class _CatalogPageState extends State<CatalogPage> {
   final CatalogController _controller = CatalogController();
+  final TextEditingController _searchController = TextEditingController();
   int _lastNavVersion = 0;
 
   @override
@@ -43,6 +46,7 @@ class _CatalogPageState extends State<CatalogPage> {
   @override
   void dispose() {
     AppState.instance.removeListener(_onNavChanged);
+    _searchController.dispose();
     _controller.dispose();
     super.dispose();
   }
@@ -96,6 +100,70 @@ class _CatalogPageState extends State<CatalogPage> {
                 ),
 
                 const SizedBox(height: 16),
+
+                // --- search field ---
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: TextField(
+                    controller: _searchController,
+                    onChanged: (v) {
+                      _controller.filterByName(v);
+                      setState(() {});
+                    },
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: AppColors.textPrimary(context),
+                    ),
+                    decoration: InputDecoration(
+                      hintText: 'Buscar startup...',
+                      hintStyle: TextStyle(
+                        fontSize: 14,
+                        color: AppColors.textMuted(context),
+                      ),
+                      prefixIcon: Icon(
+                        Icons.search,
+                        size: 20,
+                        color: AppColors.textMuted(context),
+                      ),
+                      suffixIcon: _searchController.text.isNotEmpty
+                          ? GestureDetector(
+                              onTap: () {
+                                _searchController.clear();
+                                _controller.filterByName('');
+                              },
+                              child: Icon(
+                                Icons.close,
+                                size: 18,
+                                color: AppColors.textMuted(context),
+                              ),
+                            )
+                          : null,
+                      filled: true,
+                      fillColor: AppColors.surfaceColor(context),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 10,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: AppColors.border(context)),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: AppColors.border(context)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                          color: AppColors.textPrimary(context),
+                          width: 1.5,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 12),
 
                 // --- stage filter chips ---
                 SizedBox(
@@ -156,13 +224,16 @@ class _CatalogPageState extends State<CatalogPage> {
     );
   }
 
+  /// I build the main content area based on the current controller state.
   Widget _buildContent() {
+    // show loading
     if (_controller.isLoading) {
       return Center(
         child: CircularProgressIndicator(color: AppColors.textPrimary(context)),
       );
     }
 
+    // show error
     if (_controller.errorMessage != null) {
       return Center(
         child: Padding(
@@ -194,19 +265,23 @@ class _CatalogPageState extends State<CatalogPage> {
       );
     }
 
+    // show empty state
     if (_controller.startups.isEmpty) {
+      final isSearching = _searchController.text.isNotEmpty;
       return Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              Icons.rocket_launch_outlined,
+              isSearching ? Icons.search_off : Icons.rocket_launch_outlined,
               size: 48,
               color: AppColors.textMuted(context),
             ),
             const SizedBox(height: 16),
             Text(
-              'Nenhuma startup encontrada\nnesta categoria.',
+              isSearching
+                  ? 'Nenhuma startup encontrada\npara "${_searchController.text}".'
+                  : 'Nenhuma startup encontrada\nnesta categoria.',
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 15, color: AppColors.textSecondary(context)),
             ),
@@ -215,6 +290,7 @@ class _CatalogPageState extends State<CatalogPage> {
       );
     }
 
+    // render list
     return RefreshIndicator(
       color: AppColors.textPrimary(context),
       onRefresh: _controller.load,

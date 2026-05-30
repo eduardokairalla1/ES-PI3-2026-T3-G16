@@ -43,7 +43,7 @@ export async function handleOnGetTransactions(request: CallableRequest)
         const startOfMonth  = new Date(year, month - 1, 1);
         const endOfMonth    = new Date(year, month, 1); // início do mês seguinte (exclusivo)
 
-        logger.info(`Buscando histórico unificado de transações para o usuário "${uid}"...`);
+        logger.info(`Fetching unified transaction history for user "${uid}"...`);
 
         // 2. Executa consultas paralelas ao Firestore para reduzir a latência total
         // - getTransactions: busca os depósitos
@@ -108,7 +108,7 @@ export async function handleOnGetTransactions(request: CallableRequest)
             return date >= startOfMonth && date < endOfMonth;
         });
 
-        logger.info(`Retornando ${transactions.length} transações de ${month}/${year} para o usuário "${uid}".`);
+        logger.info(`Returning ${transactions.length} transaction(s) for ${month}/${year} to user "${uid}".`);
 
         return {transactions};
     }

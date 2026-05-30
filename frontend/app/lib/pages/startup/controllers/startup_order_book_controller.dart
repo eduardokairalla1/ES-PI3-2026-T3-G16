@@ -11,6 +11,7 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:mesclainvest/pages/balcao/models/order_book_model.dart';
 import 'package:mesclainvest/pages/balcao/services/order_service.dart';
+import 'package:mesclainvest/pages/dashboard/services/dashboard_service.dart';
 
 // --- CONTROLLER ---
 
@@ -27,10 +28,14 @@ class StartupOrderBookController extends ChangeNotifier {
   /// Firestore document id of the startup being traded.
   final String startupId;
 
-  final OrderService _service = OrderService();
+  final OrderService     _service          = OrderService();
+  final DashboardService _dashboardService = DashboardService();
 
   /// Current snapshot of the public book; starts as [OrderBookModel.empty].
   OrderBookModel book = OrderBookModel.empty();
+
+  /// Tokens the current user holds in this startup. 0 when not invested.
+  int ownedTokens = 0;
 
   /// True until the first [load] finishes (success or failure).
   bool isLoading = true;
@@ -63,18 +68,35 @@ class StartupOrderBookController extends ChangeNotifier {
     bookError = null;
     notifyListeners();
 
-    try {
-      book = await _service.getOrderBook(startupId);
-    } catch (_) {
-      bookError = 'Não foi possível carregar as ofertas. Tente novamente.';
-    } finally {
-      isLoading = false;
-      notifyListeners();
-    }
+    await Future.wait([
+      _loadBook(),
+      _loadOwnedTokens(),
+    ]);
+
+    isLoading = false;
+    notifyListeners();
 
     // start auto-refresh every 5 seconds
     _refreshTimer?.cancel();
     _refreshTimer = Timer.periodic(const Duration(seconds: 5), (_) => refresh());
+  }
+
+  Future<void> _loadBook() async {
+    try {
+      book = await _service.getOrderBook(startupId);
+    } catch (_) {
+      bookError = 'Não foi possível carregar as ofertas. Tente novamente.';
+    }
+  }
+
+  Future<void> _loadOwnedTokens() async {
+    try {
+      final data = await _dashboardService.fetchUserDashboardData();
+      final match = data.investimentos.where((i) => i.startupId == startupId);
+      ownedTokens = match.isEmpty ? 0 : match.first.tokenQuantity;
+    } catch (_) {
+      // best-effort — keep previous value
+    }
   }
 
   /// Silent refresh used by the 5s timer and after a successful submit.
@@ -159,8 +181,9 @@ class StartupOrderBookController extends ChangeNotifier {
         lastResultMessage = 'Ordem aberta no balcão. Aguardando contraparte.';
       }
 
-      // refresh the book to show the new state
-      await refresh();
+      // refresh the book and owned tokens to reflect the trade
+      await Future.wait([refresh(), _loadOwnedTokens()]);
+      notifyListeners();
 
       return true;
     } on FirebaseFunctionsException catch (e) {

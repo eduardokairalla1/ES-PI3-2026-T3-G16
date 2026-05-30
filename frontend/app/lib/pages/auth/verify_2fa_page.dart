@@ -12,6 +12,7 @@ import 'package:mesclainvest/core/services/auth.dart';
 import 'package:mesclainvest/pages/auth/widgets/auth_constants.dart';
 
 
+/// I display the 2FA verification screen where the user enters their TOTP code during login.
 class Verify2FAPage extends StatefulWidget {
   const Verify2FAPage({super.key});
 
@@ -20,6 +21,7 @@ class Verify2FAPage extends StatefulWidget {
 }
 
 
+/// State for Verify2FAPage.
 class _Verify2FAPageState extends State<Verify2FAPage>
     with SingleTickerProviderStateMixin {
 
@@ -59,6 +61,7 @@ class _Verify2FAPageState extends State<Verify2FAPage>
   }
 
 
+  /// I submit the TOTP code to the auth service and navigate to the dashboard on success.
   Future<void> _submit() async {
     final code = _codeCtrl.text.trim();
     if (code.length != 6) {

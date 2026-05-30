@@ -11,15 +11,18 @@ import 'package:mesclainvest/pages/startup/models/startup_model.dart';
 
 // --- CONTROLLER ---
 
+/// I manage state and logic for the startup catalog page.
 class CatalogController extends ChangeNotifier {
   bool _disposed = false;
 
+  /// I dispose this controller and prevent further listener notifications.
   @override
   void dispose() {
     _disposed = true;
     super.dispose();
   }
 
+  /// I notify listeners only when the controller has not been disposed.
   @override
   void notifyListeners() {
     if (!_disposed) {
@@ -31,9 +34,17 @@ class CatalogController extends ChangeNotifier {
   final DashboardService _dashboardService = DashboardService();
 
   bool isLoading = true;
-  List<StartupModel> startups = [];
+  List<StartupModel> _allStartups = [];
   String? selectedStage; // null = all
   String? errorMessage;
+  String _searchQuery = '';
+
+  /// I return the filtered list of startups matching the current search query.
+  List<StartupModel> get startups {
+    if (_searchQuery.isEmpty) return _allStartups;
+    final q = _searchQuery.toLowerCase();
+    return _allStartups.where((s) => s.name.toLowerCase().contains(q)).toList();
+  }
 
   final Set<String> _favoriteIds = {};
 
@@ -50,7 +61,7 @@ class CatalogController extends ChangeNotifier {
         _service.fetchStartups(stage: selectedStage),
         _dashboardService.fetchUserDashboardData(),
       ]);
-      startups = results[0] as List<StartupModel>;
+      _allStartups = results[0] as List<StartupModel>;
       final dashboardData = results[1] as DashboardData;
 
       _favoriteIds
@@ -69,6 +80,12 @@ class CatalogController extends ChangeNotifier {
     if (selectedStage == stage) return;
     selectedStage = stage;
     await load();
+  }
+
+  /// I filter startups by name using the provided search query.
+  void filterByName(String query) {
+    _searchQuery = query.trim();
+    notifyListeners();
   }
 
   /// Retorna se a startup correspondente ao ID informado está favoritada.

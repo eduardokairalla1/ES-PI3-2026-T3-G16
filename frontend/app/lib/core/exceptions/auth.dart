@@ -4,6 +4,7 @@
 
 // --- CODE ---
 
+/// I represent an authentication exception.
 // I represent an authentication exception
 class AuthException implements Exception {
   // attributes
@@ -12,6 +13,7 @@ class AuthException implements Exception {
   final Object? originalError;
   final Object? stackTrace;
 
+  /// I construct an AuthException with a message, code, and optional error context.
   // private constructor
   const AuthException._({
     required this.message,

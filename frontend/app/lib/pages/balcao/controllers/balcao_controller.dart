@@ -126,9 +126,9 @@ class BalcaoController extends ChangeNotifier {
           if (va == null && vb == null) {
             cmp = 0;
           } else if (va == null) {
-            cmp = 1; // nulls always last
+            return 1; // nulls always last regardless of direction
           } else if (vb == null) {
-            cmp = -1;
+            return -1;
           } else {
             cmp = va.compareTo(vb);
           }
@@ -148,7 +148,7 @@ class BalcaoController extends ChangeNotifier {
       _sortAsc = !_sortAsc;
     } else {
       _sort    = column;
-      _sortAsc = true;
+      _sortAsc = column != BalcaoSort.variacao;
     }
     notifyListeners();
   }
@@ -181,6 +181,7 @@ class BalcaoController extends ChangeNotifier {
 
     try {
       startups = await _catalogService.fetchStartups();
+      startupsError = null; // clear on success regardless of silent mode
     } catch (_) {
       if (!silent) startupsError = 'Não foi possível carregar as startups.';
     } finally {
@@ -199,6 +200,7 @@ class BalcaoController extends ChangeNotifier {
 
     try {
       orders = await _orderService.getMyOrders();
+      ordersError = null; // clear on success regardless of silent mode
     } catch (_) {
       if (!silent) ordersError = 'Não foi possível carregar suas ordens.';
     } finally {

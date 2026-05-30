@@ -7,6 +7,7 @@
 
 // --- IMPORTS ---
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:mesclainvest/pages/balcao/models/order_model.dart';
 import 'package:mesclainvest/shared/styles/app_colors.dart';
@@ -153,6 +154,7 @@ class _EditOrderDialogState extends State<_EditOrderDialog> {
             controller:  _priceCtrl,
             hint:        '0,00',
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[\d,]'))],
             onChanged:   (_) => setState(() => _error = null),
           ),
           const SizedBox(height: 12),
@@ -224,6 +226,7 @@ class _LabeledField extends StatelessWidget {
   final TextEditingController controller;
   final String hint;
   final TextInputType keyboardType;
+  final List<TextInputFormatter>? inputFormatters;
   final ValueChanged<String> onChanged;
 
   const _LabeledField({
@@ -231,6 +234,7 @@ class _LabeledField extends StatelessWidget {
     required this.controller,
     required this.hint,
     required this.keyboardType,
+    this.inputFormatters,
     required this.onChanged,
   });
 
@@ -251,6 +255,7 @@ class _LabeledField extends StatelessWidget {
         TextField(
           controller: controller,
           keyboardType: keyboardType,
+          inputFormatters: inputFormatters,
           onChanged: onChanged,
           style: TextStyle(
             fontSize: 15,

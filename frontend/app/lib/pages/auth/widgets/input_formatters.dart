@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 
 /// I format a CPF input as the user types (###.###.###-##).
 class CpfFormatter extends TextInputFormatter {
+  /// I format the raw digit input into a CPF mask (###.###.###-##).
   @override
   TextEditingValue formatEditUpdate(
     TextEditingValue oldValue,
@@ -30,6 +31,7 @@ class CpfFormatter extends TextInputFormatter {
 
 /// I format a phone number input as the user types ((##) #####-####).
 class PhoneFormatter extends TextInputFormatter {
+  /// I format the raw digit input into a phone mask ((##) #####-####).
   @override
   TextEditingValue formatEditUpdate(
     TextEditingValue oldValue,

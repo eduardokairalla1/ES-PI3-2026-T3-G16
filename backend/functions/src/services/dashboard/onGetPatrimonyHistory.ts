@@ -57,7 +57,7 @@ export async function handleOnGetPatrimonyHistory(request: CallableRequest)
         const {period} = parseRequest(GetPatrimonyHistoryRequest, request.data);
 
         const days = PERIOD_TO_DAYS[period] ?? 30;
-        logger.info(`Calculando histórico patrimonial para o usuário "${uid}" no período "${period}" (${days} dias)...`);
+        logger.info(`Computing patrimony history for user "${uid}", period "${period}" (${days} days)...`);
 
         const userDocId = await getUserDocId(uid);
         if (!userDocId)
@@ -234,7 +234,7 @@ export async function handleOnGetPatrimonyHistory(request: CallableRequest)
             };
         });
 
-        logger.info(`Histórico calculado com sucesso contendo ${history.length} pontos.`);
+        logger.info(`History computed successfully with ${history.length} data point(s).`);
 
         return {history};
     }
@@ -242,12 +242,12 @@ export async function handleOnGetPatrimonyHistory(request: CallableRequest)
     {
         if (error instanceof AuthError)
         {
-            logger.error(`Erro de autenticação: ${error.message}`);
+            logger.error(`Authentication error: ${error.message}`);
             throw new HttpsError('unauthenticated', error.message);
         }
         if (error instanceof ValidationError)
         {
-            logger.error(`Erro de validação: ${error.message}`);
+            logger.error(`Validation error: ${error.message}`);
             throw new HttpsError('invalid-argument', error.message);
         }
 

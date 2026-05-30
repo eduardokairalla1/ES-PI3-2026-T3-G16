@@ -13,6 +13,7 @@ import 'package:mesclainvest/shared/styles/app_colors.dart';
 
 // --- WIDGET ---
 
+/// I display the Q&A tab for a startup, including a question list and an input field.
 class QATab extends StatefulWidget {
   final StartupController controller;
   final String startupId;
@@ -23,6 +24,7 @@ class QATab extends StatefulWidget {
   State<QATab> createState() => _QATabState();
 }
 
+/// State for QATab.
 class _QATabState extends State<QATab> {
   final _textController = TextEditingController();
   bool _isPrivate = false;
@@ -33,6 +35,7 @@ class _QATabState extends State<QATab> {
     super.dispose();
   }
 
+  /// I send the typed question to the controller and show a result snackbar.
   Future<void> _sendQuestion() async {
     final text = _textController.text.trim();
     if (text.isEmpty) return;
@@ -88,6 +91,7 @@ class _QATabState extends State<QATab> {
     );
   }
 
+  /// I build the empty state view shown when there are no questions yet.
   Widget _emptyState() {
     return Center(
       child: Column(
@@ -120,6 +124,7 @@ class _QATabState extends State<QATab> {
     );
   }
 
+  /// I build a card displaying a single question, its author, and the answer if available.
   Widget _questionCard(QuestionModel q) {
     final dateFmt = DateFormat('dd/MM/yyyy', 'pt_BR');
 
@@ -247,6 +252,7 @@ class _QATabState extends State<QATab> {
     );
   }
 
+  /// I build the author avatar circle with a photo or initial fallback.
   Widget _authorAvatar(QuestionModel q) {
     final isMe = q.authorUid != null &&
         q.authorUid == FirebaseAuth.instance.currentUser?.uid;
@@ -290,6 +296,7 @@ class _QATabState extends State<QATab> {
     );
   }
 
+  /// I build the question input field with a privacy toggle and send button.
   Widget _inputField(bool isSending) {
     final isInvestor = widget.controller.isInvestor;
 

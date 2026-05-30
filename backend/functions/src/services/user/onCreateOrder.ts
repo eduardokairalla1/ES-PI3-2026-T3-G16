@@ -15,6 +15,7 @@
 import {HttpsError} from 'firebase-functions/v2/https';
 import {getWallet, createWallet} from '../../db/wallets/storage';
 import {getStartup} from '../../db/startups/storage';
+import {getUserDocId} from '../../db/users/storage';
 import {recordTransaction} from '../../db/transactions/storage';
 import {createNotification} from '../../db/notifications/storage';
 import {verifyAuth} from '../../utils/auth';
@@ -75,43 +76,45 @@ interface MatchOutcome
 }
 
 
+// Firestore 'in' operator is limited to 30 items — batch when needed.
+const FIRESTORE_IN_LIMIT = 30;
+
 /**
- * I compute the available token balance of a user for a given startup based on
- * their order history. Owned = completed buys − completed/cancelled sell fills;
- * reserved = pending sell remaining. Available = owned − reserved.
- *
- * @param orders every order the user has for the startup (any type, any status)
- *
- * @returns number of tokens the user can still place a new sell order against
+ * I query the 'users' collection for a list of UIDs in batches that respect
+ * Firestore's 'in' operator limit. Returns all matching document snapshots.
  */
-function computeAvailableTokens(orders: OrderDocument[]): number
+async function getUserDocsByUids(
+    tx: FirebaseFirestore.Transaction,
+    uids: string[],
+): Promise<FirebaseFirestore.QueryDocumentSnapshot[]>
 {
-    let owned    = 0;
-    let reserved = 0;
+    if (uids.length === 0) return [];
 
-    for (const o of orders)
+    const chunks: string[][] = [];
+    for (let i = 0; i < uids.length; i += FIRESTORE_IN_LIMIT)
     {
-        const filled = o.filled_quantity ?? 0;
-
-        if (o.type === 'buy')
-        {
-            // Any filled buy increases owned tokens, regardless of status (pending, completed, cancelled)
-            owned += filled;
-        }
-        else if (o.type === 'sell')
-        {
-            // Any filled sell decreases owned tokens, regardless of status
-            owned -= filled;
-
-            // Pending sells reserve their remaining unfilled portion
-            if (o.status === 'pending')
-            {
-                reserved += (o.quantity - filled);
-            }
-        }
+        chunks.push(uids.slice(i, i + FIRESTORE_IN_LIMIT));
     }
 
-    return owned - reserved;
+    const snapshots = await Promise.all(
+        chunks.map(chunk =>
+            tx.get(db.collection('users').where('uid', 'in', chunk)),
+        ),
+    );
+
+    return snapshots.flatMap(snap => snap.docs);
+}
+
+
+/**
+ * I compute how many tokens a user has reserved in pending sell orders for a
+ * given startup. Used alongside the investment doc to derive available-to-sell.
+ */
+function pendingSellReserved(orders: OrderDocument[]): number
+{
+    return orders
+        .filter(o => o.type === 'sell' && o.status === 'pending')
+        .reduce((sum, o) => sum + (o.quantity - (o.filled_quantity ?? 0)), 0);
 }
 
 
@@ -264,6 +267,15 @@ export async function handleOnCreateOrder(request: CallableRequest)
             await createWallet(uid);
         }
 
+        // Resolve the author's Firestore user doc ID before the transaction so
+        // we can read the investment doc atomically inside it. This is the same
+        // pattern used by onBuyFromStartup.
+        const authorDocId = await getUserDocId(uid);
+        if (authorDocId === null)
+        {
+            throw new NotFoundError(`User document for "${uid}" not found.`);
+        }
+
         // run the matching transaction
         const outcome = await db.runTransaction(async (tx): Promise<MatchOutcome> =>
         {
@@ -281,6 +293,7 @@ export async function handleOnCreateOrder(request: CallableRequest)
                 .where('type', '==', opposingType)
                 .where('status', '==', 'pending')
                 .orderBy('unit_price', opposingDirection)
+                .orderBy('created_at', 'asc') // FIFO at the same price level
                 .limit(PULL_LIMIT);
 
             // author's full order history for this startup (validates sell holdings)
@@ -294,12 +307,20 @@ export async function handleOnCreateOrder(request: CallableRequest)
                 .where('type', '==', 'buy')
                 .where('status', '==', 'pending');
 
-            const [walletSnap, opposingSnap, authorOrdersSnap, pendingBuysSnap] = await Promise.all([
-                tx.get(walletRef),
-                tx.get(opposingQuery),
-                tx.get(authorOrdersQuery),
-                tx.get(authorPendingBuysQuery),
-            ]);
+            // author's investment doc — authoritative token quantity used for sell validation
+            const authorInvestmentRef = db.collection('users')
+                .doc(authorDocId)
+                .collection('investments')
+                .doc(startupId);
+
+            const [walletSnap, opposingSnap, authorOrdersSnap, pendingBuysSnap, authorInvestmentSnap] =
+                await Promise.all([
+                    tx.get(walletRef),
+                    tx.get(opposingQuery),
+                    tx.get(authorOrdersQuery),
+                    tx.get(authorPendingBuysQuery),
+                    tx.get(authorInvestmentRef),
+                ]);
 
             const authorBalance = (walletSnap.data()?.balance as number) ?? 0;
 
@@ -325,7 +346,12 @@ export async function handleOnCreateOrder(request: CallableRequest)
             // pre-validation by side
             if (type === 'sell')
             {
-                const available = computeAvailableTokens(authorOrders);
+                // Use the investment doc (authoritative) rather than reconstructing
+                // from orders — avoids a window where onBuyFromStartup's order isn't
+                // yet marked completed but the investment is already updated.
+                const ownedQty  = (authorInvestmentSnap.data()?.token_quantity as number) ?? 0;
+                const reserved  = pendingSellReserved(authorOrders);
+                const available = ownedQty - reserved;
                 if (available < quantity)
                 {
                     throw new ValidationError(
@@ -407,21 +433,20 @@ export async function handleOnCreateOrder(request: CallableRequest)
             const matchedCounterUids = Array.from(new Set(trades.map(t => t.counter.uid)));
             const allUidsToResolve = Array.from(new Set([uid, ...matchedCounterUids]));
 
-            const usersSnap = await tx.get(db.collection('users').where('uid', 'in', allUidsToResolve));
-            const userDocIdByUid = new Map<string, string>();
-            for (const doc of usersSnap.docs)
-            {
-                const data = doc.data();
-                if (data && data.uid)
-                {
-                    userDocIdByUid.set(data.uid, doc.id);
-                }
-            }
+            // Batch the users query to stay within Firestore's 30-item 'in' limit.
+            // authorDocId is already known (pre-resolved before the tx), so we seed
+            // the map with it and query only the counter UIDs.
+            const userDocIdByUid = new Map<string, string>([[uid, authorDocId]]);
 
-            const authorDocId = userDocIdByUid.get(uid);
-            if (!authorDocId)
+            const counterUidsToResolve = allUidsToResolve.filter(u => u !== uid);
+            if (counterUidsToResolve.length > 0)
             {
-                throw new ValidationError(`Author user document for "${uid}" not found.`);
+                const userDocs = await getUserDocsByUids(tx, counterUidsToResolve);
+                for (const doc of userDocs)
+                {
+                    const data = doc.data();
+                    if (data?.uid) userDocIdByUid.set(data.uid as string, doc.id);
+                }
             }
 
             const investmentRefs = allUidsToResolve.map(cuid =>

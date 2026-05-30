@@ -308,16 +308,25 @@ class _PillTabs extends StatelessWidget {
 
 // --- SEARCH BAR ---
 
-class _SearchBar extends StatelessWidget {
+class _SearchBar extends StatefulWidget {
   final TextEditingController controller;
   final BalcaoController balcao;
   const _SearchBar({required this.controller, required this.balcao});
 
   @override
+  State<_SearchBar> createState() => _SearchBarState();
+}
+
+class _SearchBarState extends State<_SearchBar> {
+  @override
   Widget build(BuildContext context) {
+    final hasText = widget.controller.text.isNotEmpty;
     return TextField(
-      controller: controller,
-      onChanged: balcao.updateSearch,
+      controller: widget.controller,
+      onChanged: (v) {
+        widget.balcao.updateSearch(v);
+        setState(() {});
+      },
       style: TextStyle(
         fontSize: 14,
         color: AppColors.textPrimary(context),
@@ -333,6 +342,20 @@ class _SearchBar extends StatelessWidget {
           color: AppColors.textMuted(context),
           size: 20,
         ),
+        suffixIcon: hasText
+            ? GestureDetector(
+                onTap: () {
+                  widget.controller.clear();
+                  widget.balcao.updateSearch('');
+                  setState(() {});
+                },
+                child: Icon(
+                  Icons.close,
+                  size: 18,
+                  color: AppColors.textMuted(context),
+                ),
+              )
+            : null,
         isDense: true,
         contentPadding: const EdgeInsets.symmetric(vertical: 14),
         filled: true,
