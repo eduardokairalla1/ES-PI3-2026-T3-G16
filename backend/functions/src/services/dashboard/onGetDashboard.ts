@@ -56,7 +56,7 @@ export async function handleOnGetDashboard(request: CallableRequest)
         const uid = verifyAuth(request);
 
         // 2. Dispara consultas assíncronas em paralelo no Firestore para otimizar o tempo de resposta (latência)
-        logger.info(`Buscando dados consolidados do dashboard para o usuário "${uid}"...`);
+        logger.info(`Fetching consolidated dashboard data for user "${uid}"...`);
 
         const [user, favorites, startups, activeInvestors, wallet] = await Promise.all([
             getUser(uid),
@@ -157,7 +157,7 @@ export async function handleOnGetDashboard(request: CallableRequest)
         // Recupera a lista de IDs de startups favoritas do usuário
         const favoriteIds = favorites;
 
-        logger.info(`Dados do dashboard compilados com sucesso para o usuário "${uid}".`);
+        logger.info(`Dashboard data compiled successfully for user "${uid}".`);
 
         // Retorna todos os dados prontos para consumo na UI do aplicativo
         return {
@@ -180,7 +180,7 @@ export async function handleOnGetDashboard(request: CallableRequest)
     {
         if (error instanceof AuthError)
         {
-            logger.error(`Erro de autenticação ao obter dashboard: ${error.message}`);
+            logger.error(`Authentication error fetching dashboard: ${error.message}`);
             throw new HttpsError('unauthenticated', error.message);
         }
 

@@ -62,7 +62,7 @@ export async function handleOnDeposit(request: CallableRequest)
         // 3. Arredonda o valor para garantir precisão exata de duas casas decimais (centavos)
         amount = Math.round(amount * 100) / 100;
 
-        logger.info(`Processando depósito de R$ ${amount} para o usuário "${uid}"...`);
+        logger.info(`Processing deposit of R$ ${amount} for user "${uid}"...`);
 
         // 4. Incrementa o saldo do usuário na carteira digital (Firestore)
         await depositToWallet(uid, amount);
@@ -109,7 +109,7 @@ export async function handleOnDeposit(request: CallableRequest)
         if (error instanceof HttpsError) throw error;
 
         // Loga falhas inesperadas e retorna um erro genérico
-        logger.error('Falha ao processar o depósito:', error);
+        logger.error('Failed to process deposit:', error);
         throw new HttpsError('internal', 'Falha interna ao processar o depósito.');
     }
 }
