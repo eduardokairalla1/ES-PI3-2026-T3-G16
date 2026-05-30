@@ -88,7 +88,7 @@ Future<void> main() async {
   authService.authStateChanges.listen((user) async {
     if (user == null) {
       AppState.instance.clearProfile();
-    } else if (AppState.instance.profile == null) {
+    } else if (AppState.instance.profile == null && !AppState.instance.isRegistering) {
       try {
         await AppState.instance.loadProfile(authService);
       } catch (_) {}
