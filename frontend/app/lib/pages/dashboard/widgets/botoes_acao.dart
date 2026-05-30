@@ -27,6 +27,7 @@ import 'package:mesclainvest/core/services/extrato_pdf.dart';
 import 'package:mesclainvest/pages/dashboard/controllers/dashboard_controller.dart';
 import 'package:mesclainvest/pages/dashboard/models/transaction_model.dart';
 import 'package:mesclainvest/shared/styles/app_colors.dart';
+import 'package:mesclainvest/shared/styles/money_style.dart';
 import 'package:mesclainvest/shared/widgets/app_button.dart';
 
 /*
@@ -121,9 +122,8 @@ class BotoesAcao extends StatelessWidget {
                             locale: 'pt_BR',
                             symbol: 'R\$',
                           ).format(valorFinal),
-                          style: const TextStyle(
+                          style: moneyStyle(
                             fontSize: 28,
-                            fontWeight: FontWeight.bold,
                             color: Colors.green,
                           ),
                         ),
@@ -425,7 +425,7 @@ class BotoesAcao extends StatelessWidget {
                                     style: const TextStyle(fontSize: 12)),
                                 trailing: Text(
                                   '$prefix ${NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$').format(t.amount)}',
-                                  style: TextStyle(fontWeight: FontWeight.bold, color: color),
+                                  style: moneyStyle(color: color),
                                 ),
                               );
                             },

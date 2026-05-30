@@ -10,6 +10,7 @@ import 'package:mesclainvest/pages/startup/controllers/valorizacao_controller.da
 import 'package:mesclainvest/pages/startup/widgets/startup_header.dart';
 import 'package:mesclainvest/pages/startup/widgets/startup_info_card.dart';
 import 'package:mesclainvest/shared/styles/app_colors.dart';
+import 'package:mesclainvest/shared/styles/money_style.dart';
 
 
 // --- CONSTANTES ---
@@ -189,7 +190,7 @@ class _InvestmentSummary extends StatelessWidget {
             children: [
               Text(
                 currencyFmt.format(history.totalValue),
-                style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: AppColors.textPrimary(context)),
+                style: moneyStyle(fontSize: 26, color: AppColors.textPrimary(context)),
               ),
               const SizedBox(height: 4),
               Text(

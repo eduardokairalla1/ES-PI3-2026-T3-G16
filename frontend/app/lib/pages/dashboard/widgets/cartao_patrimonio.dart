@@ -20,6 +20,7 @@ library;
 import 'package:flutter/material.dart';
 import 'package:mesclainvest/pages/dashboard/controllers/dashboard_controller.dart';
 import 'package:mesclainvest/shared/styles/app_colors.dart';
+import 'package:mesclainvest/shared/styles/money_style.dart';
 import 'package:intl/intl.dart';
 
 /*
@@ -91,9 +92,8 @@ class CartaoPatrimonio extends StatelessWidget {
                 child: Text(
                   visivel ? valPatrimonio : 'R\$ *********',
                   key: ValueKey<bool>(visivel),
-                  style: TextStyle(
+                  style: moneyStyle(
                     fontSize: 24,
-                    fontWeight: FontWeight.bold,
                     color: AppColors.textPrimary(context),
                   ),
                 ),
@@ -147,9 +147,8 @@ class CartaoPatrimonio extends StatelessWidget {
                   visivel
                       ? '${data.rendimentoDiarioValor >= 0 ? '+' : ''}$valLucroDiario'
                       : '*******',
-                  style: TextStyle(
+                  style: moneyStyle(
                     fontSize: 14,
-                    fontWeight: FontWeight.w600,
                     color: visivel
                         ? (data.rendimentoDiarioValor >= 0
                               ? Colors.green.shade700
@@ -193,9 +192,8 @@ class CartaoPatrimonio extends StatelessWidget {
                     visivel
                         ? formatter.format(data.saldoDisponivel)
                         : 'R\$ ****',
-                    style: TextStyle(
+                    style: moneyStyle(
                       fontSize: 16,
-                      fontWeight: FontWeight.w700,
                       color: AppColors.textPrimary(context),
                     ),
                   ),

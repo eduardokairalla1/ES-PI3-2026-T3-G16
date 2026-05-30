@@ -19,6 +19,7 @@ import 'package:mesclainvest/pages/balcao/widgets/edit_order_dialog.dart';
 import 'package:mesclainvest/pages/dashboard/widgets/deposit_prompt_card.dart';
 import 'package:mesclainvest/pages/startup/models/startup_model.dart';
 import 'package:mesclainvest/shared/styles/app_colors.dart';
+import 'package:mesclainvest/shared/styles/money_style.dart';
 import 'package:mesclainvest/shared/widgets/app_button.dart';
 
 // --- CONSTANTS ---
@@ -208,11 +209,9 @@ class _WalletCard extends StatelessWidget {
                   child: Text(
                     loading ? 'R\$ —' : _currencyFmt.format(balance),
                     key: ValueKey<String>(loading ? '_' : balance.toString()),
-                    style: const TextStyle(
+                    style: moneyStyle(
                       fontSize: 22,
-                      fontWeight: FontWeight.w800,
                       color: _kWalletFg,
-                      letterSpacing: -0.3,
                     ),
                   ),
                 ),
@@ -589,9 +588,8 @@ class _MercadoRow extends StatelessWidget {
               child: Text(
                 _currencyFmt.format(startup.tokenPrice),
                 textAlign: TextAlign.right,
-                style: TextStyle(
+                style: moneyStyle(
                   fontSize: 13,
-                  fontWeight: FontWeight.w700,
                   color: AppColors.textPrimary(context),
                 ),
               ),
@@ -893,6 +891,7 @@ class _OrderCard extends StatelessWidget {
                               child: _StatCell(
                                 label: 'PREÇO/TOKEN',
                                 value: _currencyFmt.format(order.unitPrice),
+                                isMonetary: true,
                               ),
                             ),
                             VerticalDivider(width: 1, color: AppColors.border(context)),
@@ -901,6 +900,7 @@ class _OrderCard extends StatelessWidget {
                                 label: 'TOTAL',
                                 value: _currencyFmt.format(total),
                                 valueColor: sideColor,
+                                isMonetary: true,
                               ),
                             ),
                           ],
@@ -1015,7 +1015,8 @@ class _StatCell extends StatelessWidget {
   final String label;
   final String value;
   final Color? valueColor;
-  const _StatCell({required this.label, required this.value, this.valueColor});
+  final bool isMonetary;
+  const _StatCell({required this.label, required this.value, this.valueColor, this.isMonetary = false});
 
   @override
   Widget build(BuildContext context) {
@@ -1036,11 +1037,16 @@ class _StatCell extends StatelessWidget {
           const SizedBox(height: 3),
           Text(
             value,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w800,
-              color: valueColor ?? AppColors.textPrimary(context),
-            ),
+            style: isMonetary
+                ? moneyStyle(
+                    fontSize: 12,
+                    color: valueColor ?? AppColors.textPrimary(context),
+                  )
+                : TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                    color: valueColor ?? AppColors.textPrimary(context),
+                  ),
           ),
         ],
       ),

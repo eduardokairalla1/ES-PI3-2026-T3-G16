@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:mesclainvest/pages/balcao/models/order_model.dart';
 import 'package:mesclainvest/shared/styles/app_colors.dart';
+import 'package:mesclainvest/shared/styles/money_style.dart';
 import 'package:mesclainvest/shared/widgets/app_button.dart';
 
 // --- TYPES ---
@@ -182,9 +183,8 @@ class _EditOrderDialogState extends State<_EditOrderDialog> {
                 ),
                 Text(
                   _currencyFmt.format(total),
-                  style: TextStyle(
+                  style: moneyStyle(
                     fontSize: 14,
-                    fontWeight: FontWeight.w800,
                     color: AppColors.textPrimary(context),
                   ),
                 ),

@@ -9,6 +9,7 @@ import 'package:intl/intl.dart';
 import 'package:mesclainvest/pages/startup/controllers/startup_controller.dart';
 import 'package:mesclainvest/pages/startup/widgets/widgets.dart';
 import 'package:mesclainvest/shared/styles/app_colors.dart';
+import 'package:mesclainvest/shared/styles/money_style.dart';
 import 'package:mesclainvest/shared/widgets/app_button.dart';
 
 // --- PAGE ---
@@ -369,9 +370,8 @@ class _InvestPanelState extends State<_InvestPanel> {
                 ),
                 Text(
                   formatter.format(total),
-                  style: TextStyle(
+                  style: moneyStyle(
                     fontSize: 14,
-                    fontWeight: FontWeight.w700,
                     color: AppColors.textPrimary(context),
                   ),
                 ),

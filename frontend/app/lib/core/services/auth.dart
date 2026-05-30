@@ -248,68 +248,73 @@ class AuthService {
     String phone,
     String birthDate,
   ) async {
-    // register with Firebase Authentication
+    AppState.instance.setRegistering(true);
     try {
-      await _auth.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-    } on FirebaseAuthException catch (e) {
-      throw AuthException.fromFirebaseCode(
-            e.code,
-            originalError: e,
-            stackTrace: StackTrace.current,
-          ) ??
-          InfrastructureException(
+      // register with Firebase Authentication
+      try {
+        await _auth.createUserWithEmailAndPassword(
+          email: email,
+          password: password,
+        );
+      } on FirebaseAuthException catch (e) {
+        throw AuthException.fromFirebaseCode(
+              e.code,
+              originalError: e,
+              stackTrace: StackTrace.current,
+            ) ??
+            InfrastructureException(
+              originalError: e,
+              stackTrace: StackTrace.current,
+            );
+      }
+
+      // persist user metadata — if this fails, delete the just-created auth user
+      // so the account doesn't end up in a broken state
+      try {
+        await FirebaseFunctions.instance.httpsCallable('onUserCreated').call({
+          'fullName': fullName,
+          'cpf': cpf,
+          'phone': phone,
+          'birthDate': birthDate,
+        });
+      } on FirebaseFunctionsException catch (e) {
+        try {
+          await _auth.currentUser?.delete();
+        } catch (_) {
+          // avoid masking the original exception
+        }
+        await _auth.signOut();
+        if (e.code == 'invalid-argument' &&
+            (e.message?.contains('CPF') ?? false)) {
+          throw AuthException.cpfAlreadyInUse(
             originalError: e,
             stackTrace: StackTrace.current,
           );
-    }
-
-    // persist user metadata — if this fails, delete the just-created auth user
-    // so the account doesn't end up in a broken state
-    try {
-      await FirebaseFunctions.instance.httpsCallable('onUserCreated').call({
-        'fullName': fullName,
-        'cpf': cpf,
-        'phone': phone,
-        'birthDate': birthDate,
-      });
-    } on FirebaseFunctionsException catch (e) {
-      try {
-        await _auth.currentUser?.delete();
-      } catch (_) {
-        // avoid masking the original exception
-      }
-      await _auth.signOut();
-      if (e.code == 'invalid-argument' &&
-          (e.message?.contains('CPF') ?? false)) {
-        throw AuthException.cpfAlreadyInUse(
+        }
+        throw InfrastructureException(
+          message: e.message ?? e.toString(),
+          originalError: e,
+          stackTrace: StackTrace.current,
+        );
+      } catch (e) {
+        try {
+          await _auth.currentUser?.delete();
+        } catch (_) {
+          // avoid masking the original exception
+        }
+        await _auth.signOut();
+        throw InfrastructureException(
+          message: e.toString(),
           originalError: e,
           stackTrace: StackTrace.current,
         );
       }
-      throw InfrastructureException(
-        message: e.message ?? e.toString(),
-        originalError: e,
-        stackTrace: StackTrace.current,
-      );
-    } catch (e) {
-      try {
-        await _auth.currentUser?.delete();
-      } catch (_) {
-        // avoid masking the original exception
-      }
-      await _auth.signOut();
-      throw InfrastructureException(
-        message: e.toString(),
-        originalError: e,
-        stackTrace: StackTrace.current,
-      );
-    }
 
-    // sign out so the user lands on /login and authenticates explicitly
-    await _auth.signOut();
+      // sign out so the user lands on /login and authenticates explicitly
+      await _auth.signOut();
+    } finally {
+      AppState.instance.setRegistering(false);
+    }
   }
 
   /// I send a password reset email to the given address.

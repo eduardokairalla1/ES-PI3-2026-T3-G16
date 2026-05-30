@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import 'package:mesclainvest/pages/startup/models/startup_model.dart';
 import 'package:mesclainvest/pages/startup/widgets/startup_token_info.dart';
 import 'package:mesclainvest/shared/styles/app_colors.dart';
+import 'package:mesclainvest/shared/styles/money_style.dart';
 
 // --- WIDGET ---
 
@@ -49,6 +50,7 @@ class AboutTab extends StatelessWidget {
                   ).format(startup.capitalRaised),
                   icon: Icons.monetization_on_outlined,
                   color: Colors.green,
+                  isMonetary: true,
                 ),
               ),
               const SizedBox(width: 12),
@@ -122,6 +124,7 @@ class AboutTab extends StatelessWidget {
     required String value,
     required IconData icon,
     required dynamic color,
+    bool isMonetary = false,
   }) {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -154,11 +157,16 @@ class AboutTab extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             value,
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary(context),
-            ),
+            style: isMonetary
+                ? moneyStyle(
+                    fontSize: 18,
+                    color: AppColors.textPrimary(context),
+                  )
+                : TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary(context),
+                  ),
           ),
         ],
       ),
