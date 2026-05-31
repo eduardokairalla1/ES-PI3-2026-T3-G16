@@ -137,6 +137,17 @@ export async function setTotpSecret(uid: string, secret: string): Promise<void>
     await db.collection('users').doc(uid).update({'totp_secret': secret});
 }
 
+/**
+ * I save a pending TOTP secret for a user during setup.
+ *
+ * @param uid Firebase Auth UID
+ * @param secret base32-encoded TOTP secret
+ */
+export async function setPendingTotpSecret(uid: string, secret: string): Promise<void>
+{
+    await db.collection('users').doc(uid).update({'pending_totp_secret': secret});
+}
+
 
 /**
  * I enable 2FA for a user after the setup code is confirmed.
@@ -146,6 +157,21 @@ export async function setTotpSecret(uid: string, secret: string): Promise<void>
 export async function enableTwoFA(uid: string): Promise<void>
 {
     await db.collection('users').doc(uid).update({'two_fa_enabled': true});
+}
+
+/**
+ * I confirm and activate 2FA for a user.
+ *
+ * @param uid    Firebase Auth UID
+ * @param secret the confirmed TOTP secret
+ */
+export async function confirmTwoFA(uid: string, secret: string): Promise<void>
+{
+    await db.collection('users').doc(uid).update({
+        'two_fa_enabled':      true,
+        'totp_secret':         secret,
+        'pending_totp_secret': null,
+    });
 }
 
 

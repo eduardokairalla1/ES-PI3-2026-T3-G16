@@ -11,7 +11,6 @@
  * IMPORTS
  */
 import db from '../../configs';
-import {getUserDocId} from '../users/storage';
 
 
 /**
@@ -36,19 +35,15 @@ export async function recordTransaction(
     data: Omit<TransactionDocument, 'id' | 'created_at'>,
 ): Promise<void>
 {
-    // 1. Obtém o ID interno do documento do usuário correspondente ao UID de Auth
-    const userDocId = await getUserDocId(uid);
-    if (!userDocId) throw new Error(`Usuário com UID "${uid}" não foi localizado para gravar a transação.`);
-
-    // 2. Prepara o documento de transação anexando o carimbo de data/hora atual
+    // O documento do usuário sempre tem o mesmo ID que seu Firebase Auth UID
+    // (ver addUser em users/storage.ts: db.collection('users').doc(uid).set(...))
     const transaction: Omit<TransactionDocument, 'id'> = {
         ...data,
         'created_at': new Date(),
     };
 
-    // 3. Salva a transação na subcoleção física no Firestore
     await db.collection('users')
-        .doc(userDocId)
+        .doc(uid)
         .collection('transactions')
         .add(transaction);
 }
@@ -63,21 +58,34 @@ export async function recordTransaction(
  *
  * @returns Uma lista contendo as transações encontradas.
  */
-export async function getTransactions(uid: string, limit = 20): Promise<TransactionDocument[]>
+export async function getTransactions(
+    uid: string,
+    limit?: number,
+    startDate?: Date,
+    endDate?: Date,
+): Promise<TransactionDocument[]>
 {
-    // 1. Obtém o ID de documento do usuário
-    const userDocId = await getUserDocId(uid);
-    if (!userDocId) return [];
-
-    // 2. Executa a busca ordenada e limitada no Firestore
-    const snapshot = await db.collection('users')
-        .doc(userDocId)
+    // O documento do usuário sempre tem o mesmo ID que seu Firebase Auth UID
+    let query = db.collection('users')
+        .doc(uid)
         .collection('transactions')
-        .orderBy('created_at', 'desc')
-        .limit(limit)
-        .get();
+        .orderBy('created_at', 'desc');
 
-    // 3. Retorna os documentos formatados de acordo com a interface model correspondente
+    if (startDate)
+    {
+        query = query.where('created_at', '>=', startDate);
+    }
+    if (endDate)
+    {
+        query = query.where('created_at', '<', endDate);
+    }
+    if (limit !== undefined)
+    {
+        query = query.limit(limit);
+    }
+
+    const snapshot = await query.get();
+
     return snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),

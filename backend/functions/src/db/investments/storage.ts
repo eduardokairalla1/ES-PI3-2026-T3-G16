@@ -10,7 +10,6 @@
  * IMPORTS
  */
 import db from '../../configs';
-import {getUserDocId} from '../users/storage';
 
 
 /**
@@ -36,19 +35,15 @@ import type {InvestmentDocument} from './model';
  */
 export async function getUserInvestments(uid: string): Promise<InvestmentDocument[]>
 {
-    // 1. Obtém o ID interno do documento do usuário no Firestore a partir do UID de autenticação
-    const userDocId = await getUserDocId(uid);
-    if (userDocId === null) return [];
-
-    // 2. Realiza a consulta na subcoleção de investimentos ordenando alfabeticamente
+    // O documento do usuário sempre tem o mesmo ID que seu Firebase Auth UID
+    // (ver addUser em users/storage.ts: db.collection('users').doc(uid).set(...))
     const snapshot = await db
         .collection('users')
-        .doc(userDocId)
+        .doc(uid)
         .collection('investments')
         .orderBy('startup_name')
         .get();
 
-    // 3. Mapeia os documentos brutos retornados pelo Firestore para a tipagem forte do TypeScript
     return snapshot.docs.map(doc => ({id: doc.id, ...doc.data()} as InvestmentDocument));
 }
 
@@ -64,20 +59,14 @@ export async function getUserInvestments(uid: string): Promise<InvestmentDocumen
  */
 export async function isUserInvestorInStartup(uid: string, startupId: string): Promise<boolean>
 {
-
-    // get the user's document ID
-    const userDocId = await getUserDocId(uid);
-    if (userDocId === null) return false;
-
-    // query the 'investments' subcollection for a document with the specified startup ID
+    // O documento do usuário sempre tem o mesmo ID que seu Firebase Auth UID
     const snapshot = await db
         .collection('users')
-        .doc(userDocId)
+        .doc(uid)
         .collection('investments')
         .where('startup_id', '==', startupId)
         .limit(1)
         .get();
 
-    // if the snapshot is empty, the user is not an investor in the startup; otherwise, they are
     return !snapshot.empty;
 }

@@ -82,6 +82,34 @@ export async function getOldestSnapshotSince(
 
 
 /**
+ * I fetch the latest price snapshot for a startup before or equal to a given date.
+ * Returns null if no snapshot exists before that date.
+ *
+ * @param startupId Firestore document ID of the startup
+ * @param before    end of the period
+ *
+ * @returns the latest snapshot before the date, or null
+ */
+export async function getLatestSnapshotBefore(
+    startupId: string,
+    before: Date,
+): Promise<PriceSnapshotDocument | null>
+{
+    const snapshot = await db
+        .collection('price_history')
+        .doc(startupId)
+        .collection('snapshots')
+        .where('recorded_at', '<=', before)
+        .orderBy('recorded_at', 'desc')
+        .limit(1)
+        .get();
+
+    if (snapshot.empty) return null;
+    return snapshot.docs[0].data() as PriceSnapshotDocument;
+}
+
+
+/**
  * I fetch price snapshots for a startup within a date range.
  *
  * @param startupId Firestore document ID of the startup
@@ -103,4 +131,46 @@ export async function getPriceSnapshots(
         .get();
 
     return snapshot.docs.map(doc => doc.data() as PriceSnapshotDocument);
+}
+
+
+/**
+ * I get the price of a startup at a specific date.
+ * If no snapshot exists before that date, it falls back to the startup's base price
+ * (if any snapshot exists after the date) or the current token price.
+ *
+ * @param startupId   Firestore document ID of the startup
+ * @param date        target date
+ * @param basePrice   startup's initial base price
+ * @param currentPrice startup's current token price
+ *
+ * @returns the resolved historical price
+ */
+export async function getHistoricalPrice(
+    startupId: string,
+    date: Date,
+    basePrice: number,
+    currentPrice: number,
+): Promise<number>
+{
+    const latestBefore = await getLatestSnapshotBefore(startupId, date);
+    if (latestBefore !== null)
+    {
+        return latestBefore.price;
+    }
+
+    const firstSnapshot = await db
+        .collection('price_history')
+        .doc(startupId)
+        .collection('snapshots')
+        .orderBy('recorded_at', 'asc')
+        .limit(1)
+        .get();
+
+    if (firstSnapshot.empty)
+    {
+        return currentPrice;
+    }
+
+    return basePrice;
 }

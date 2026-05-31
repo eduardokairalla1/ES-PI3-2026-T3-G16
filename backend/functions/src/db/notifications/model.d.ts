@@ -17,6 +17,7 @@ export type NotificationType =
     | 'deposit_confirmed'    // deposit settled into the wallet
     | 'order_executed'       // the user's own order matched (full or partial)
     | 'order_counter_match'  // the user was the counter-party of a match
+    | 'order_cancelled'      // the user's pending order was cancelled
     | 'question_answered';   // a founder answered the user's question
 
 

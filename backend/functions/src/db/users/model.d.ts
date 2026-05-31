@@ -20,6 +20,7 @@ export interface userDocument
     photo_url: string | null;
     status: 'active' | 'inactive';
     totp_secret: string | null;
+    pending_totp_secret?: string | null;
     two_fa_enabled: boolean;
     uid: string;
     updated_at: Date | null;
