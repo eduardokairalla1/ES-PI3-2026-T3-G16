@@ -36,7 +36,7 @@ export async function handleOnDeleteAllNotifications(request: CallableRequest)
 {
     try
     {
-        const uid = verifyAuth(request);
+        const uid = await verifyAuth(request);
 
         const deletedCount = await deleteAllNotifications(uid);
         logger.info(`Cleared ${deletedCount} notification(s) for user "${uid}".`);

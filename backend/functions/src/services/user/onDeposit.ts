@@ -43,7 +43,7 @@ export async function handleOnDeposit(request: CallableRequest)
     try
     {
         // 1. Valida se a requisição provém de um usuário autenticado no Firebase
-        const uid = verifyAuth(request);
+        const uid = await verifyAuth(request);
         let {amount} = request.data;
 
         // 2. Validação de regras de negócio para o valor de depósito

@@ -246,7 +246,7 @@ export async function handleOnCreateOrder(request: CallableRequest)
     try
     {
         // verify authentication and extract uid
-        const uid = verifyAuth(request);
+        const uid = await verifyAuth(request);
 
         // validate request
         const {startupId, type, quantity, unitPrice} =
@@ -332,7 +332,8 @@ export async function handleOnCreateOrder(request: CallableRequest)
                 const remainingQty = o.quantity - (o.filled_quantity ?? 0);
                 lockedBrl += remainingQty * o.unit_price;
             }
-            const availableBrl = authorBalance - lockedBrl;
+            lockedBrl = Math.round(lockedBrl * 100) / 100;
+            const availableBrl = Math.round((authorBalance - lockedBrl) * 100) / 100;
 
             // drop the author's own offers (self-trade guard), then cap to the matching depth
             const opposing: OrderDocument[] = opposingSnap.docs
@@ -407,6 +408,13 @@ export async function handleOnCreateOrder(request: CallableRequest)
 
             const trades: PlannedTrade[] = [];
             let remaining = quantity;
+            const failedOrders: string[] = [];
+
+            const runningWalletBalances = new Map<string, number>();
+            for (const [wUid, w] of walletByUid)
+            {
+                runningWalletBalances.set(wUid, w.balance);
+            }
 
             for (const opp of opposing)
             {
@@ -424,6 +432,19 @@ export async function handleOnCreateOrder(request: CallableRequest)
 
                 const tradeQty   = Math.min(remaining, oppRemaining);
                 const tradePrice = opp.unit_price;
+                const tradeAmount = Math.round(tradeQty * tradePrice * 100) / 100;
+
+                // If author is selling, the counterparty (opp) is buying. We must check their balance!
+                if (type === 'sell')
+                {
+                    const currentBalance = runningWalletBalances.get(opp.uid)!;
+                    if (currentBalance < tradeAmount)
+                    {
+                        failedOrders.push(opp.id);
+                        continue;
+                    }
+                    runningWalletBalances.set(opp.uid, Math.round((currentBalance - tradeAmount) * 100) / 100);
+                }
 
                 trades.push({counter: opp, tradePrice, tradeQty});
                 remaining -= tradeQty;
@@ -493,11 +514,22 @@ export async function handleOnCreateOrder(request: CallableRequest)
             let totalAmount      = 0;
             let authorBalanceAfter = authorBalance;
 
+            // 0) Mark failed orders due to insufficient balance
+            for (const fId of failedOrders)
+            {
+                const fRef = db.collection('orders').doc(fId);
+                tx.update(fRef, {
+                    status: 'failed',
+                    failure_reason: 'Saldo insuficiente do comprador',
+                    completed_at: now,
+                });
+            }
+
             for (const trade of trades)
             {
-                const tradeAmount = trade.tradeQty * trade.tradePrice;
+                const tradeAmount = Math.round(trade.tradeQty * trade.tradePrice * 100) / 100;
                 totalFilledQty += trade.tradeQty;
-                totalAmount    += tradeAmount;
+                totalAmount    = Math.round((totalAmount + tradeAmount) * 100) / 100;
 
                 // 1) update the crossed (counter) order
                 const counterRef       = db.collection('orders').doc(trade.counter.id);
@@ -519,14 +551,14 @@ export async function handleOnCreateOrder(request: CallableRequest)
                 if (type === 'buy')
                 {
                     // author = buyer → author debited, counter (seller) credited
-                    authorBalanceAfter   -= tradeAmount;
-                    counterWallet.balance += tradeAmount;
+                    authorBalanceAfter   = Math.round((authorBalanceAfter - tradeAmount) * 100) / 100;
+                    counterWallet.balance = Math.round((counterWallet.balance + tradeAmount) * 100) / 100;
                 }
                 else
                 {
                     // author = seller → author credited, counter (buyer) debited
-                    authorBalanceAfter   += tradeAmount;
-                    counterWallet.balance -= tradeAmount;
+                    authorBalanceAfter   = Math.round((authorBalanceAfter + tradeAmount) * 100) / 100;
+                    counterWallet.balance = Math.round((counterWallet.balance - tradeAmount) * 100) / 100;
                 }
                 tx.update(counterWallet.ref, {
                     balance:    counterWallet.balance,
@@ -625,7 +657,7 @@ export async function handleOnCreateOrder(request: CallableRequest)
                     if (state.totalQtyBought > 0)
                     {
                         const oldTotalCost = state.qty * state.avgPrice;
-                        newAvgPrice = (oldTotalCost + state.totalCostPaidForBuys) / (state.qty + state.totalQtyBought);
+                        newAvgPrice = Math.round(((oldTotalCost + state.totalCostPaidForBuys) / (state.qty + state.totalQtyBought)) * 100) / 100;
                     }
 
                     if (inv.exists)
@@ -658,7 +690,7 @@ export async function handleOnCreateOrder(request: CallableRequest)
             const orderRef    = db.collection('orders').doc();
             const fullyFilled = remaining === 0;
             const avgPrice    = totalFilledQty > 0
-                ? totalAmount / totalFilledQty
+                ? Math.round((totalAmount / totalFilledQty) * 100) / 100
                 : null;
 
             const newOrder: OrderDocument = {
@@ -669,7 +701,7 @@ export async function handleOnCreateOrder(request: CallableRequest)
                 status:          fullyFilled ? 'completed' : 'pending',
                 quantity,
                 unit_price:      unitPrice,
-                total_amount:    quantity * unitPrice,
+                total_amount:    Math.round(quantity * unitPrice * 100) / 100,
                 created_at:      now,
                 completed_at:    fullyFilled ? now : null,
                 failure_reason:  null,
@@ -700,7 +732,7 @@ export async function handleOnCreateOrder(request: CallableRequest)
         // record one transaction entry per side of each trade
         for (const trade of outcome.trades)
         {
-            const amt = trade.tradeQty * trade.tradePrice;
+            const amt = Math.round(trade.tradeQty * trade.tradePrice * 100) / 100;
 
             try
             {

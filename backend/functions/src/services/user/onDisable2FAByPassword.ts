@@ -6,6 +6,7 @@
 
 import {HttpsError} from 'firebase-functions/v2/https';
 import {getUser, disableTwoFA} from '../../db/users/storage';
+import {verifyAuth} from '../../utils/auth';
 import {logger} from '../../utils/logger';
 import {AuthError} from '../../errors/authError';
 import {InternalError} from '../../errors/internalError';
@@ -33,17 +34,12 @@ export async function handleOnDisable2FAByPassword(request: CallableRequest)
 {
     try
     {
-        // validate authentication
-        if (request.auth === null || request.auth === undefined)
-        {
-            throw new AuthError('User must be authenticated.');
-        }
-
-        const uid = request.auth.uid;
+        // validate authentication and confirmed 2FA session
+        const uid = await verifyAuth(request);
 
         // verify re-authentication happened within the last 5 minutes
         // (auth_time is seconds since Unix epoch)
-        const authTimeSecs     = request.auth.token['auth_time'] as number;
+        const authTimeSecs     = request.auth!.token['auth_time'] as number;
         const secondsSinceAuth = Math.floor(Date.now() / 1000) - authTimeSecs;
         if (secondsSinceAuth > 300)
         {

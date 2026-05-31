@@ -35,7 +35,7 @@ export async function handleOnGetNotifications(request: CallableRequest)
 {
     try
     {
-        const uid = verifyAuth(request);
+        const uid = await verifyAuth(request);
         const docs = await getRecentNotifications(uid);
 
         // camelCase response for the Flutter client

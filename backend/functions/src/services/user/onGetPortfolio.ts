@@ -44,7 +44,7 @@ export async function handleOnGetPortfolio(request: CallableRequest)
     try
     {
         // verify authentication and extract uid
-        const uid = verifyAuth(request);
+        const uid = await verifyAuth(request);
 
         logger.info(`Fetching portfolio for user "${uid}"...`);
 
@@ -67,21 +67,25 @@ export async function handleOnGetPortfolio(request: CallableRequest)
             return {holdings: []};
         }
 
-        // group orders by startup: total quantity + first purchase price
-        const byStartup = new Map<string, {quantity: number; firstUnitPrice: number}>();
+        // group orders by startup: net quantity + weighted average purchase price
+        const byStartup = new Map<string, {quantity: number; totalBuyCost: number; totalBuyQuantity: number}>();
 
-        // Sort buy orders in memory by created_at to correctly identify the first purchase price
+        // Sort buy orders in memory to keep the aggregation deterministic.
+        // Only include completed orders to ensure avg_fill_price is always populated.
         const buyDocs = ordersSnap.docs.map(doc =>
         {
             const data = doc.data();
             return {
                 id: doc.id,
+                status: data.status as string,
+                avg_fill_price: (data.avg_fill_price as number | null) ?? null,
                 startup_id: data.startup_id as string,
                 filled_quantity: (data.filled_quantity as number) ?? 0,
                 unit_price: data.unit_price as number,
                 created_at: data.created_at,
             };
-        }).sort((a, b) =>
+        }).filter(o => o.status === 'completed') // Only completed orders have reliable avg_fill_price
+          .sort((a, b) =>
         {
             const timeA = a.created_at?.toDate?.()?.getTime() || 0;
             const timeB = b.created_at?.toDate?.()?.getTime() || 0;
@@ -92,18 +96,24 @@ export async function handleOnGetPortfolio(request: CallableRequest)
         {
             const startupId = data.startup_id;
             const filled    = data.filled_quantity;
-            const unitPrice = data.unit_price;
+            const unitPrice = data.avg_fill_price ?? data.unit_price;
 
             if (filled <= 0) continue;
 
             if (byStartup.has(startupId))
             {
-                byStartup.get(startupId)!.quantity += filled;
+                const agg = byStartup.get(startupId)!;
+                agg.quantity += filled;
+                agg.totalBuyCost += unitPrice * filled;
+                agg.totalBuyQuantity += filled;
             }
             else
             {
-                // first order for this startup = first purchase price
-                byStartup.set(startupId, {quantity: filled, firstUnitPrice: unitPrice});
+                byStartup.set(startupId, {
+                    quantity: filled,
+                    totalBuyCost: unitPrice * filled,
+                    totalBuyQuantity: filled,
+                });
             }
         }
 
@@ -128,15 +138,18 @@ export async function handleOnGetPortfolio(request: CallableRequest)
 
         // fetch startup details and build holdings
         const holdings = await Promise.all(
-            Array.from(byStartup.entries()).map(async ([startupId, {quantity, firstUnitPrice}]) =>
+            Array.from(byStartup.entries()).map(async ([startupId, {quantity, totalBuyCost, totalBuyQuantity}]) =>
             {
                 const startup = await getStartup(startupId);
                 if (startup === null) return null;
 
                 const currentPrice  = startup.token_price;
                 const totalValue    = quantity * currentPrice;
-                const changePercent = firstUnitPrice > 0
-                    ? ((currentPrice - firstUnitPrice) / firstUnitPrice) * 100
+                const avgPurchasePrice = totalBuyQuantity > 0
+                    ? totalBuyCost / totalBuyQuantity
+                    : 0;
+                const changePercent = avgPurchasePrice > 0
+                    ? ((currentPrice - avgPurchasePrice) / avgPurchasePrice) * 100
                     : 0;
 
                 return {
@@ -148,7 +161,7 @@ export async function handleOnGetPortfolio(request: CallableRequest)
                     tokenPrice:    currentPrice,
                     tokenQuantity: quantity,
                     totalValue,
-                    purchasePrice: firstUnitPrice,
+                    purchasePrice: avgPurchasePrice,
                     changePercent,
                 };
             }),

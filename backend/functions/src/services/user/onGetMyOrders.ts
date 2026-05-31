@@ -50,7 +50,7 @@ export async function handleOnGetMyOrders(request: CallableRequest)
 {
     try
     {
-        const uid = verifyAuth(request);
+        const uid = await verifyAuth(request);
 
         logger.info(`Fetching all orders for user "${uid}"...`);
 

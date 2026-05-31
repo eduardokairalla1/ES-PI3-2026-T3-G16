@@ -34,7 +34,7 @@ export async function handleOnGetTransactions(request: CallableRequest)
     try
     {
         // 1. Valida se a requisição provém de um usuário autenticado no Firebase
-        const uid = verifyAuth(request);
+        const uid = await verifyAuth(request);
 
         // Resolve o mês e ano solicitados (padrão: mês atual)
         const now = new Date();
@@ -50,7 +50,7 @@ export async function handleOnGetTransactions(request: CallableRequest)
         // - getAllCompletedOrdersByUid: busca as ordens concluídas
         // - getStartups: busca todas as startups cadastradas para obter seus nomes amigáveis
         const [deposits, orders, startups] = await Promise.all([
-            getTransactions(uid, 200),
+            getTransactions(uid, undefined, startOfMonth, endOfMonth),
             getAllCompletedOrdersByUid(uid),
             getStartups(),
         ]);
@@ -72,9 +72,15 @@ export async function handleOnGetTransactions(request: CallableRequest)
                 ? `Compra de tokens — ${startupName}`
                 : `Venda de tokens — ${startupName}`;
 
+            // Usa o valor real executado (quantidade preenchida × preço médio de execução)
+            // em vez do total_amount da ordem (que representa o pior caso a preço-limite)
+            const filledQty    = order.filled_quantity ?? 0;
+            const executedPrice = order.avg_fill_price ?? order.unit_price;
+            const executedAmount = Math.round(filledQty * executedPrice * 100) / 100;
+
             return {
                 id:          order.id,
-                amount:      order.total_amount,
+                amount:      executedAmount,
                 description,
                 created_at:  order.completed_at ?? order.created_at,
                 type:        order.type,

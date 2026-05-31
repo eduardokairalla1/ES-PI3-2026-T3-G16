@@ -44,7 +44,7 @@ export async function handleOnGetWallet(request: CallableRequest)
 {
     try
     {
-        const uid = verifyAuth(request);
+        const uid = await verifyAuth(request);
 
         logger.info(`Fetching wallet and startups for user "${uid}"...`);
         let [wallet, startups] = await Promise.all([

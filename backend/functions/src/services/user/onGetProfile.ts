@@ -42,7 +42,7 @@ export async function handleOnGetProfile(request: CallableRequest)
     try
     {
         // verify authentication and extract uid
-        const uid = verifyAuth(request);
+        const uid = await verifyAuth(request, {skipTwoFa: true});
 
         // fetch user document from Firestore
         logger.info(`Fetching profile for user "${uid}"...`, {data: {uid}});

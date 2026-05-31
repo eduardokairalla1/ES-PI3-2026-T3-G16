@@ -36,7 +36,7 @@ export async function handleOnDeleteNotification(request: CallableRequest)
 {
     try
     {
-        const uid = verifyAuth(request);
+        const uid = await verifyAuth(request);
 
         const notificationId = request.data?.notificationId;
         if (typeof notificationId !== 'string' || notificationId.length === 0)
