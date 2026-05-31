@@ -1,4 +1,4 @@
-/// Página de valorização de tokens de uma startup específica.
+// Página de valorização de tokens de uma startup específica.
 
 import 'dart:math' show max;
 
@@ -329,6 +329,26 @@ class _ChartSection extends StatelessWidget {
               const SizedBox(height: 8),
               Text(
                 'Você ainda não investiu\nnesta startup',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 13, color: AppColors.textSecondary(context)),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    if (history!.snapshots.isEmpty) {
+      return SizedBox(
+        height: 260,
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.show_chart, size: 40, color: AppColors.textMuted(context)),
+              const SizedBox(height: 8),
+              Text(
+                'Sem variações de preço no período',
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 13, color: AppColors.textSecondary(context)),
               ),

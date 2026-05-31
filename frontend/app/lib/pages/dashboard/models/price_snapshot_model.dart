@@ -73,8 +73,8 @@ class TokenHistoryModel {
     );
   }
 
-  /// Indica se o investidor logado possui investimento ativo e histórico disponível para exibição de gráfico.
-  bool get hasInvestment => purchasePrice != null && snapshots.isNotEmpty;
+  /// Indica se o investidor logado possui investimento ativo.
+  bool get hasInvestment => purchasePrice != null;
 
   /// Retorna a cotação registrada no início do período temporal carregado (primeiro snapshot).
   /// Caso a lista esteja vazia, retorna a cotação atual como fallback.

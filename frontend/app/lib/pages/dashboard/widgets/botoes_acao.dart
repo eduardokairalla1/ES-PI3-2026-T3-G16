@@ -403,7 +403,7 @@ class BotoesAcao extends StatelessWidget {
                           final transactions = snapshot.data!;
                           return ListView.separated(
                             itemCount: transactions.length,
-                            separatorBuilder: (_, __) => const Divider(height: 1),
+                            separatorBuilder: (_, _) => const Divider(height: 1),
                             itemBuilder: (_, index) {
                               final t = transactions[index];
                               final isPositive = t.type == 'deposit' || t.type == 'sell';

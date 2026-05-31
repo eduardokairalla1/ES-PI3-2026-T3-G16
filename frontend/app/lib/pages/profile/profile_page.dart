@@ -441,7 +441,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 height: 52,
                 child: ListenableBuilder(
                   listenable: _controller,
-                  builder: (_, __) => ElevatedButton(
+                  builder: (_, _) => ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.black,
                       foregroundColor: Colors.white,
