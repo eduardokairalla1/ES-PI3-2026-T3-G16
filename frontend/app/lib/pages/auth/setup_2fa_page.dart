@@ -1,7 +1,7 @@
-/// Eduardo Kairalla - 24024241
+// Eduardo Kairalla - 24024241
 
-/// Page where the user scans a QR code and confirms the first TOTP code
-/// to enable 2FA on their account.
+// Page where the user scans a QR code and confirms the first TOTP code
+// to enable 2FA on their account.
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';

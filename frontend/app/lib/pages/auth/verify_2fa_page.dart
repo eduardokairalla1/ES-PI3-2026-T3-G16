@@ -1,6 +1,6 @@
-/// Eduardo Kairalla - 24024241
+// Eduardo Kairalla - 24024241
 
-/// Page where the user enters their TOTP code during login when 2FA is enabled.
+// Page where the user enters their TOTP code during login when 2FA is enabled.
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -109,7 +109,10 @@ class _Verify2FAPageState extends State<Verify2FAPage>
 
                   // back — cancels login and returns to login page
                   GestureDetector(
-                    onTap: () => _authService.signOut(),
+                    onTap: () async {
+                      await _authService.signOut();
+                      if (context.mounted) context.go('/login');
+                    },
                     child: Opacity(
                       opacity: 0.7,
                       child: Row(

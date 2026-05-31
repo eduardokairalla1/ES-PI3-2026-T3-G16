@@ -31,16 +31,6 @@ extension _PeriodX on _Period {
         _Period.y1 => '1 ano',
       };
 
-  /// Number of synthetic samples to plot — denser windows draw a smoother
-  /// curve but cost more chart paint cycles.
-  int get samples => switch (this) {
-        _Period.d7 => 7,
-        _Period.m1 => 15,
-        _Period.m3 => 20,
-        _Period.m6 => 24,
-        _Period.y1 => 30,
-      };
-
   /// Length of the window in days, used to label the X axis.
   int get days => switch (this) {
         _Period.d7 => 7,
@@ -391,5 +381,4 @@ class _PeriodDropdown extends StatelessWidget {
     );
   }
 }
-
 

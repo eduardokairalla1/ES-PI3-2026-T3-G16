@@ -13,6 +13,7 @@ import 'package:mesclainvest/app/app_state.dart';
 import 'package:mesclainvest/app/theme/theme_controller.dart';
 import 'package:mesclainvest/core/services/auth.dart';
 import 'package:mesclainvest/firebase_options.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 
 /// --- CODE ---
@@ -25,6 +26,9 @@ Future<void> main() async {
 
   // ensure Flutter engine is initialized before async calls
   WidgetsFlutterBinding.ensureInitialized();
+
+  // initialize localized date formatting
+  await initializeDateFormatting('pt_BR', null);
 
   // load environment variables
   await dotenv.load(fileName: '.env');
@@ -76,6 +80,9 @@ Future<void> main() async {
   if (restoredUser != null) {
     try {
       await AppState.instance.loadProfile(authService);
+      if (AppState.instance.profile?.twoFaEnabled == true) {
+        AppState.instance.setPendingTwoFa();
+      }
     } catch (_) {
       // best-effort; pages render with placeholders and the listener below
       // will retry on the next auth state change
@@ -91,6 +98,9 @@ Future<void> main() async {
     } else if (AppState.instance.profile == null && !AppState.instance.isRegistering) {
       try {
         await AppState.instance.loadProfile(authService);
+        if (AppState.instance.profile?.twoFaEnabled == true) {
+          AppState.instance.setPendingTwoFa();
+        }
       } catch (_) {}
     }
   });

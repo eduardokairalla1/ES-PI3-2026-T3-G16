@@ -57,8 +57,15 @@ final router = GoRouter(
     final pendingTwoFa = AppState.instance.pendingTwoFa;
     final loc          = state.matchedLocation;
 
+    // auth-only routes require a Firebase session
+    final sessionPaths = ['/verify-2fa', '/setup-2fa'];
+    if (!isLoggedIn && sessionPaths.contains(loc)) return '/login';
+
     // 2FA pending: only /verify-2fa is accessible
     if (pendingTwoFa && loc != '/verify-2fa') return '/verify-2fa';
+
+    // 2FA verification page only makes sense while a login is pending
+    if (isLoggedIn && !pendingTwoFa && loc == '/verify-2fa') return '/dashboard';
 
     // not logged in + protected route → login
     final protectedPaths = ['/dashboard', '/catalog', '/balcao', '/carteira', '/profile', '/startup'];
