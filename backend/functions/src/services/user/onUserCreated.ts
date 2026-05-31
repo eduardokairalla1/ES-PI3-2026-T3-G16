@@ -8,7 +8,8 @@
  * IMPORTS
  */
 import {HttpsError} from 'firebase-functions/v2/https';
-import {addUser, deleteUser, getUser, getUserByCpf} from '../../db/users/storage';
+import db from '../../configs';
+import {deleteUser} from '../../db/users/storage';
 import {createWallet} from '../../db/wallets/storage';
 import {createNotification} from '../../db/notifications/storage';
 import {verifyAuth} from '../../utils/auth';
@@ -62,36 +63,55 @@ export async function handleOnUserCreated(request: CallableRequest)
         // validate request data
         const parsed = parseRequest(CreateUserRequest, request.data);
 
-        // reject duplicate UID (prevents duplicate docs on retries)
-        const existingUid = await getUser(uid);
-        if (existingUid !== null)
-        {
-            throw new ValidationError('Usuário já cadastrado.');
-        }
+        // reject duplicate UID and CPF atomically in a transaction
+        const cleanCpf = parsed.cpf.replace(/\D/g, '');
 
-        // reject duplicate CPF
-        const existing = await getUserByCpf(parsed.cpf);
-        if (existing !== null)
+        logger.info(`Adding user "${uid}" in transaction...`, {data: {email, uid}});
+        const addedUser = await db.runTransaction(async (tx) =>
         {
-            throw new ValidationError('CPF já cadastrado.');
-        }
+            const cpfRef = db.collection('cpfs').doc(cleanCpf);
+            const cpfSnap = await tx.get(cpfRef);
+            if (cpfSnap.exists)
+            {
+                throw new ValidationError('CPF já cadastrado.');
+            }
 
-        // add user
-        logger.info(`Adding user "${uid}"...`, {data: {email, uid}});
-        const addedUser = await addUser(
-            parsed.birthDate,
-            parsed.cpf,
-            email,
-            parsed.fullName,
-            parsed.phone,
-            uid,
-        );
+            const userRef = db.collection('users').doc(uid);
+            const userSnap = await tx.get(userRef);
+            if (userSnap.exists)
+            {
+                throw new ValidationError('Usuário já cadastrado.');
+            }
+
+            const user = {
+                'birth_date': parsed.birthDate,
+                'cpf': parsed.cpf,
+                'created_at': new Date(),
+                'email': email,
+                'favorite_ids': [],
+                'full_name': parsed.fullName,
+                'phone': parsed.phone,
+                'photo_url': null,
+                'status': 'active',
+                'totp_secret': null,
+                'two_fa_enabled': false,
+                'uid': uid,
+                'updated_at': null,
+            };
+
+            tx.set(userRef, user);
+            tx.set(cpfRef, {'created_at': new Date(), 'uid': uid});
+            return user;
+        });
         logger.info(`User "${uid}" added successfully.`, {data: addedUser});
 
         // roll back user document if wallet creation fails
-        try {
+        try
+        {
             await createWallet(uid);
-        } catch (walletError) {
+        }
+        catch (walletError)
+        {
             logger.error(`Wallet creation failed for "${uid}", rolling back user document.`);
             await deleteUser(uid);
             throw walletError;

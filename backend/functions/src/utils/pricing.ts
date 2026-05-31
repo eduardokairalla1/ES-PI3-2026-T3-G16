@@ -28,6 +28,10 @@ export function calcTokenPrice(
     k: number,
 ): number
 {
+    if (totalTokens <= 0)
+    {
+        return basePrice;
+    }
     const tokensSold = totalTokens - availableTokens;
     return basePrice * (1 + k * (tokensSold / totalTokens));
 }

@@ -97,6 +97,11 @@ export async function verifyAuth(
     const userSnap = await db.collection('users').doc(uid).get();
     const user = userSnap.exists ? userSnap.data() : null;
 
+    if (user && user.status !== 'active')
+    {
+        throw new AuthError('Sua conta está inativa ou suspensa.');
+    }
+
     if (user?.two_fa_enabled === true)
     {
         const sessionId = getTwoFASessionId(request);

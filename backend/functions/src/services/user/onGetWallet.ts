@@ -47,10 +47,11 @@ export async function handleOnGetWallet(request: CallableRequest)
         const uid = await verifyAuth(request);
 
         logger.info(`Fetching wallet and startups for user "${uid}"...`);
-        let [wallet, startups] = await Promise.all([
+        const [walletResult, startups] = await Promise.all([
             getWallet(uid),
             getStartups(),
         ]);
+        let wallet = walletResult;
 
         if (wallet === null)
         {
@@ -60,17 +61,28 @@ export async function handleOnGetWallet(request: CallableRequest)
         }
 
         const startupPriceMap = new Map<string, number>();
+        const startupBasePriceMap = new Map<string, number>();
         for (const s of startups)
         {
             startupPriceMap.set(s.id, s.token_price);
+            startupBasePriceMap.set(s.id, s.base_price);
         }
 
-        const {weeklyReturn, weeklyReturnPct} = await computeWalletState(uid, startupPriceMap);
+        const {weeklyReturn, weeklyReturnPct, holdingsByStartup} = await computeWalletState(uid, startupPriceMap, startupBasePriceMap);
+
+        let assetsValue = 0;
+        for (const [startupId, holding] of holdingsByStartup.entries())
+        {
+            const currentPrice = startupPriceMap.get(startupId) ?? 0;
+            assetsValue += holding.quantity * currentPrice;
+        }
+
+        const patrimonioTotal = Math.round((wallet.balance + assetsValue) * 100) / 100;
 
         logger.info(`Wallet for user "${uid}" fetched successfully.`);
 
         return {
-            patrimonioTotal: wallet.balance,
+            patrimonioTotal,
             weeklyReturn,
             weeklyReturnPct,
         };

@@ -8,11 +8,10 @@
  * IMPORTS
  */
 import {HttpsError} from 'firebase-functions/v2/https';
-import {depositToWallet, getWalletBalance} from '../../db/wallets/storage';
-import {recordTransaction} from '../../db/transactions/storage';
 import {createNotification} from '../../db/notifications/storage';
 import {logger} from '../../utils/logger';
 import {verifyAuth} from '../../utils/auth';
+import db from '../../configs';
 
 
 /**
@@ -64,21 +63,40 @@ export async function handleOnDeposit(request: CallableRequest)
 
         logger.info(`Processing deposit of R$ ${amount} for user "${uid}"...`);
 
-        // 4. Incrementa o saldo do usuário na carteira digital (Firestore)
-        await depositToWallet(uid, amount);
+        // 4. Executa o depósito de forma atômica no banco de dados
+        const newBalance = await db.runTransaction(async (tx) =>
+        {
+            const walletRef = db.collection('wallets').doc(uid);
+            const walletSnap = await tx.get(walletRef);
 
-        // 5. Registra o depósito no histórico geral de transações do usuário
-        await recordTransaction(uid, {
-            amount: amount,
-            description: 'Depósito em conta',
-            status: 'completed',
-            type: 'deposit',
+            if (!walletSnap.exists)
+            {
+                throw new HttpsError('not-found', `Carteira não encontrada para o usuário "${uid}".`);
+            }
+
+            const currentBalance = (walletSnap.data()?.balance as number) ?? 0;
+            const updatedBalance = Math.round((currentBalance + amount) * 100) / 100;
+            const now = new Date();
+
+            tx.update(walletRef, {
+                balance: updatedBalance,
+                updated_at: now,
+            });
+
+            const txRef = db.collection('users').doc(uid).collection('transactions').doc();
+            tx.set(txRef, {
+                amount: amount,
+                created_at: now,
+                description: 'Depósito em conta',
+                id: txRef.id,
+                status: 'completed',
+                type: 'deposit',
+            });
+
+            return updatedBalance;
         });
 
-        // 6. Consulta o saldo atualizado pós-transação para retorno da interface
-        const newBalance = await getWalletBalance(uid);
-
-        // 7. In-app notification of the confirmed deposit (best-effort).
+        // 5. In-app notification of the confirmed deposit (best-effort).
         const formattedAmount = new Intl.NumberFormat('pt-BR', {
             currency: 'BRL',
             style: 'currency',
@@ -92,8 +110,8 @@ export async function handleOnDeposit(request: CallableRequest)
         );
 
         return {
-            newBalance,
             message: `Depósito de R$ ${amount} realizado com sucesso.`,
+            newBalance,
         };
 
     }

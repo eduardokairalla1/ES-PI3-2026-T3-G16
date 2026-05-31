@@ -85,12 +85,12 @@ export async function handleOnGetPortfolio(request: CallableRequest)
                 created_at: data.created_at,
             };
         }).filter(o => o.status === 'completed') // Only completed orders have reliable avg_fill_price
-          .sort((a, b) =>
-        {
-            const timeA = a.created_at?.toDate?.()?.getTime() || 0;
-            const timeB = b.created_at?.toDate?.()?.getTime() || 0;
-            return timeA - timeB;
-        });
+            .sort((a, b) =>
+            {
+                const timeA = a.created_at?.toDate?.()?.getTime() || 0;
+                const timeB = b.created_at?.toDate?.()?.getTime() || 0;
+                return timeA - timeB;
+            });
 
         for (const data of buyDocs)
         {

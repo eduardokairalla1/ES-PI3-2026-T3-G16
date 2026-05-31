@@ -729,38 +729,39 @@ export async function handleOnCreateOrder(request: CallableRequest)
 
         // --- AUDIT TRAIL (best-effort, outside the tx) ---
 
-        // record one transaction entry per side of each trade
-        for (const trade of outcome.trades)
+        // record one transaction entry per side of each trade in parallel
+        await Promise.all(outcome.trades.map(async (trade) =>
         {
             const amt = Math.round(trade.tradeQty * trade.tradePrice * 100) / 100;
 
             try
             {
-                // author's side
-                await recordTransaction(uid, {
-                    amount:      amt,
-                    description: type === 'buy'
-                        ? `Compra no balcão — ${startup.name}`
-                        : `Venda no balcão — ${startup.name}`,
-                    status:      'completed',
-                    type,
-                });
-
-                // counter party's side (mirrored)
-                await recordTransaction(trade.counterUid, {
-                    amount:      amt,
-                    description: type === 'buy'
-                        ? `Venda no balcão — ${startup.name}`
-                        : `Compra no balcão — ${startup.name}`,
-                    status:      'completed',
-                    type:        type === 'buy' ? 'sell' : 'buy',
-                });
+                await Promise.all([
+                    // author's side
+                    recordTransaction(uid, {
+                        amount:      amt,
+                        description: type === 'buy'
+                            ? `Compra no balcão — ${startup.name}`
+                            : `Venda no balcão — ${startup.name}`,
+                        status:      'completed',
+                        type,
+                    }),
+                    // counter party's side (mirrored)
+                    recordTransaction(trade.counterUid, {
+                        amount:      amt,
+                        description: type === 'buy'
+                            ? `Venda no balcão — ${startup.name}`
+                            : `Compra no balcão — ${startup.name}`,
+                        status:      'completed',
+                        type:        type === 'buy' ? 'sell' : 'buy',
+                    })
+                ]);
             }
             catch (e)
             {
                 logger.warning(`Failed to record audit transaction for order "${outcome.orderId}": ${e}`);
             }
-        }
+        }));
 
         logger.info(
             `Order "${outcome.orderId}" created (type=${type}). ` +

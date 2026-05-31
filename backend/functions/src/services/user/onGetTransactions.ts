@@ -104,7 +104,7 @@ export async function handleOnGetTransactions(request: CallableRequest)
 
         // E ordena as transações pela data de criação em ordem decrescente (mais recente primeiro)
         const all = [...depositsOnly, ...orderTransactions].sort((a, b) =>
-            toJsDate(b.created_at).getTime() - toJsDate(a.created_at).getTime()
+            toJsDate(b.created_at).getTime() - toJsDate(a.created_at).getTime(),
         );
 
         // 6. Filtra transações do mês/ano solicitado

@@ -95,6 +95,7 @@ export function getOrderEventDate(order: OrderDocument): Date
 export async function computeWalletState(
     uid: string,
     startupPriceMap: Map<string, number>,
+    startupBasePriceMap: Map<string, number>,
 ): Promise<{
     holdingsByStartup: Map<string, {quantity: number; buyQuantity: number; totalCost: number}>;
     weeklyReturn: number;
@@ -257,8 +258,7 @@ export async function computeWalletState(
             const weeklyBuysCost = weeklyBuysCostByStartup.get(startupId) ?? 0;
             const weeklySalesProceeds = weeklySalesProceedsByStartup.get(startupId) ?? 0;
 
-            const startupDoc = await db.collection('startups').doc(startupId).get();
-            const basePrice = startupDoc.exists ? (startupDoc.data()?.base_price ?? currentPrice) : currentPrice;
+            const basePrice = startupBasePriceMap.get(startupId) ?? currentPrice;
             const pastPrice = await getHistoricalPrice(startupId, weekAgo, basePrice, currentPrice);
 
             return {

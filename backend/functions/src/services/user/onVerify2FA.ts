@@ -108,7 +108,7 @@ export async function handleOnVerify2FA(request: CallableRequest)
         logger.info(`2FA verified for user "${uid}".`);
         return {verified: true};
     }
-    
+
     // handle errors
     catch (error: unknown)
     {
