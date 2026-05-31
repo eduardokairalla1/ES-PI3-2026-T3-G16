@@ -49,7 +49,7 @@ export async function handleOnToggleFavorite(request: CallableRequest)
     try
     {
         // 1. Valida se a requisição provém de um usuário devidamente autenticado
-        const uid = verifyAuth(request);
+        const uid = await verifyAuth(request);
 
         // 2. Valida os parâmetros de entrada utilizando o esquema Zod (ToggleFavoriteRequest)
         const parsed = parseRequest(ToggleFavoriteRequest, request.data);

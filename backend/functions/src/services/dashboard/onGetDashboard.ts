@@ -16,7 +16,7 @@ import {getUserFavoriteIds} from '../../db/favorites/storage';
 import {getStartups} from '../../db/startups/storage';
 import {getWallet} from '../../db/wallets/storage';
 import {countActiveInvestors} from '../../db/orders/storage';
-import {getOldestSnapshotSince} from '../../db/price_history/storage';
+import {getHistoricalPrice} from '../../db/price_history/storage';
 import {computeWalletState} from '../../utils/walletUtils';
 import {logger} from '../../utils/logger';
 import {verifyAuth} from '../../utils/auth';
@@ -53,7 +53,7 @@ export async function handleOnGetDashboard(request: CallableRequest)
     try
     {
         // 1. Valida se a requisição provém de um usuário devidamente autenticado
-        const uid = verifyAuth(request);
+        const uid = await verifyAuth(request);
 
         // 2. Dispara consultas assíncronas em paralelo no Firestore para otimizar o tempo de resposta (latência)
         logger.info(`Fetching consolidated dashboard data for user "${uid}"...`);
@@ -125,32 +125,29 @@ export async function handleOnGetDashboard(request: CallableRequest)
 
         // --- Pedro Henrique Medeiros dos Reis - 24801656 ---
         // Maior alta do mês: encontra a startup com a maior valorização de preço
-        // nos últimos 30 dias comparando o preço atual com o snapshot mais antigo do período.
+        // nos últimos 30 dias comparando o preço atual com o preço histórico de 30 dias atrás.
         const monthAgo = new Date();
         monthAgo.setDate(monthAgo.getDate() - 30);
 
-        // Para cada startup, busca o snapshot mais antigo desde há 30 dias e calcula a variação percentual
+        // Para cada startup, busca o preço histórico de 30 dias atrás e calcula a variação percentual
         const startupChanges = await Promise.all(
             startups.map(async (s) =>
             {
-                const snap = await getOldestSnapshotSince(s.id, monthAgo);
-                if (snap === null || snap.price <= 0) return {name: s.name, pct: null as number | null};
-                const pct = ((s.token_price - snap.price) / snap.price) * 100;
+                const histPrice = await getHistoricalPrice(s.id, monthAgo, s.base_price, s.token_price);
+                const pct = histPrice > 0 ? ((s.token_price - histPrice) / histPrice) * 100 : 0;
                 return {name: s.name, pct};
             }),
         );
 
-        // Filtra apenas as startups que possuem dados válidos
-        const withData = startupChanges.filter(s => s.pct !== null);
         let maiorAltaNome: string | null = null;
         let maiorAltaPct: number | null  = null;
         
-        // Se houver startups com dados válidos, encontra a que teve a maior valorização percentual
-        if (withData.length > 0)
+        // Encontra a startup que teve a maior valorização percentual (incluindo as de 0% de variação)
+        if (startupChanges.length > 0)
         {
-            const best = withData.reduce((a, b) => (a.pct! > b.pct! ? a : b));
+            const best = startupChanges.reduce((a, b) => (a.pct > b.pct ? a : b));
             maiorAltaNome = best.name;
-            maiorAltaPct  = Math.round(best.pct! * 100) / 100;
+            maiorAltaPct  = Math.round(best.pct * 100) / 100;
         }
         // --- end Pedro ---
 

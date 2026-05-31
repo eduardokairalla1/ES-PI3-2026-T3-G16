@@ -14,7 +14,6 @@ import {logger} from '../../utils/logger';
 import db from '../../configs';
 import {parseRequest} from '../../utils/validation';
 import {GetPatrimonyHistoryRequest} from '../../types/responders/dashboard';
-import {getUserDocId} from '../../db/users/storage';
 import {getWallet} from '../../db/wallets/storage';
 import {getStartups} from '../../db/startups/storage';
 import {getPriceSnapshots} from '../../db/price_history/storage';
@@ -53,17 +52,12 @@ export async function handleOnGetPatrimonyHistory(request: CallableRequest)
     try
     {
         // 1. Valida se a requisição provém de um usuário autenticado
-        const uid = verifyAuth(request);
+        const uid = await verifyAuth(request);
         const {period} = parseRequest(GetPatrimonyHistoryRequest, request.data);
 
         const days = PERIOD_TO_DAYS[period] ?? 30;
         logger.info(`Computing patrimony history for user "${uid}", period "${period}" (${days} days)...`);
 
-        const userDocId = await getUserDocId(uid);
-        if (!userDocId)
-        {
-            throw new ValidationError(`Usuário com UID "${uid}" não foi localizado.`);
-        }
 
         // 2. Define a data de início da janela de busca
         const startDate = new Date();
@@ -74,8 +68,9 @@ export async function handleOnGetPatrimonyHistory(request: CallableRequest)
         const [wallet, ordersSnap, txSnap, startups] = await Promise.all([
             getWallet(uid),
             db.collection('orders').where('uid', '==', uid).get(),
+            // O documento do usuário sempre tem o mesmo ID que seu Firebase Auth UID
             db.collection('users')
-                .doc(userDocId)
+                .doc(uid)
                 .collection('transactions')
                 .where('created_at', '>=', startDate)
                 .get(),
@@ -133,8 +128,10 @@ export async function handleOnGetPatrimonyHistory(request: CallableRequest)
             startupPrices.set(s.id, s.token_price);
             if (startupIds.has(s.id))
             {
-                // Busca o histórico de preços completo para esta startup
-                const snaps = await getPriceSnapshots(s.id, new Date(0));
+                // Busca os snapshots de preço apenas dentro da janela de tempo solicitada.
+                // Usa startDate (início do período) em vez de new Date(0) para evitar
+                // carregar todos os snapshots históricos de uma startup desde a época Unix.
+                const snaps = await getPriceSnapshots(s.id, startDate);
                 startupSnapshots.set(s.id, snaps);
             }
         }

@@ -48,7 +48,7 @@ export async function handleOnGetQuestions(request: CallableRequest)
     try
     {
         // verify authentication and extract uid
-        const uid = verifyAuth(request);
+        const uid = await verifyAuth(request);
 
         // validate request data
         const parsed = parseRequest(GetQuestionsRequest, request.data);

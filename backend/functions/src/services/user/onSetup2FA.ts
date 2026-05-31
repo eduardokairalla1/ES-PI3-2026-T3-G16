@@ -6,7 +6,8 @@
 
 import * as speakeasy from 'speakeasy';
 import {HttpsError} from 'firebase-functions/v2/https';
-import {getUser, setTotpSecret} from '../../db/users/storage';
+import {getUser, setPendingTotpSecret} from '../../db/users/storage';
+import {verifyAuth} from '../../utils/auth';
 import {logger} from '../../utils/logger';
 import {AuthError} from '../../errors/authError';
 import {InternalError} from '../../errors/internalError';
@@ -26,14 +27,8 @@ export async function handleOnSetup2FA(request: CallableRequest)
     try
     {
 
-        // validate authentication
-        if (request.auth === null || request.auth === undefined)
-        {
-            throw new AuthError('User must be authenticated.');
-        }
-
         // retrieve user
-        const {uid} = request.auth;
+        const uid   = await verifyAuth(request);
         const user  = await getUser(uid);
         if (user === null)
         {
@@ -48,7 +43,7 @@ export async function handleOnSetup2FA(request: CallableRequest)
         });
 
         // persist secret
-        await setTotpSecret(uid, secret.base32);
+        await setPendingTotpSecret(uid, secret.base32);
         logger.info(`TOTP secret generated for user "${uid}".`);
 
         // return otpauth URI for QR code generation

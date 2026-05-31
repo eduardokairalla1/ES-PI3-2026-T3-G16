@@ -30,6 +30,7 @@ import {InternalError} from '../../errors/internalError';
 
 // --- TYPES ---
 import type {CallableRequest} from 'firebase-functions/v2/https';
+import type {OrderDocument} from '../../db/orders/model';
 import {BuyFromStartupRequest} from '../../types/responders/investment';
 import {parseRequest} from '../../utils/validation';
 
@@ -58,7 +59,7 @@ export async function handleOnBuyFromStartup(request: CallableRequest)
     try
     {
         // verify authentication and extract uid
-        const uid = verifyAuth(request);
+        const uid = await verifyAuth(request);
 
         // validate input
         const {startupId, quantity} = parseRequest(BuyFromStartupRequest, request.data);
@@ -99,11 +100,16 @@ export async function handleOnBuyFromStartup(request: CallableRequest)
             const startupRef = db.collection('startups').doc(startupId);
             const walletRef  = db.collection('wallets').doc(uid);
             const investmentRef = db.collection('users').doc(userDocId).collection('investments').doc(startupId);
+            const pendingBuysQuery = db.collection('orders')
+                .where('uid', '==', uid)
+                .where('type', '==', 'buy')
+                .where('status', '==', 'pending');
 
-            const [startupSnap, walletSnap, investmentSnap] = await Promise.all([
+            const [startupSnap, walletSnap, investmentSnap, pendingBuysSnap] = await Promise.all([
                 tx.get(startupRef),
                 tx.get(walletRef),
                 tx.get(investmentRef),
+                tx.get(pendingBuysQuery),
             ]);
 
             const available          = startupSnap.data()!.available_tokens    as number;
@@ -112,7 +118,18 @@ export async function handleOnBuyFromStartup(request: CallableRequest)
             const totalTokens        = startupSnap.data()!.total_tokens        as number;
             const appreciationFactor = startupSnap.data()!.appreciation_factor as number;
             const unitPrice          = startupSnap.data()!.token_price         as number;
-            const amount             = unitPrice * quantity;
+            const amount             = Math.round((unitPrice * quantity) * 100) / 100;
+
+            // Calculate BRL locked in pending buy orders
+            let lockedBrl = 0;
+            for (const doc of pendingBuysSnap.docs)
+            {
+                const o = doc.data() as OrderDocument;
+                const remainingQty = o.quantity - (o.filled_quantity ?? 0);
+                lockedBrl += remainingQty * o.unit_price;
+            }
+            lockedBrl = Math.round(lockedBrl * 100) / 100;
+            const availableBrl = Math.round((balance - lockedBrl) * 100) / 100;
 
             // validate inside transaction — sees the committed state
             if (available < quantity)
@@ -122,10 +139,10 @@ export async function handleOnBuyFromStartup(request: CallableRequest)
                 );
             }
 
-            if (balance < amount)
+            if (availableBrl < amount)
             {
                 throw new ValidationError(
-                    `Insufficient balance. Required: ${amount}, available: ${balance}.`,
+                    `Insufficient balance. Required: ${amount}, available: ${availableBrl} (balance: ${balance}, locked: ${lockedBrl}).`,
                 );
             }
 
@@ -134,7 +151,7 @@ export async function handleOnBuyFromStartup(request: CallableRequest)
             const tokensSold   = totalTokens - newAvailable;
             const now          = new Date();
 
-            tx.update(walletRef, {balance: balance - amount, updated_at: now});
+            tx.update(walletRef, {balance: Math.round((balance - amount) * 100) / 100, updated_at: now});
             tx.update(startupRef, {
                 available_tokens: newAvailable,
                 token_price:      newPrice,

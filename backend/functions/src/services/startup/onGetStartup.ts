@@ -47,7 +47,7 @@ export async function handleOnGetStartup(request: CallableRequest)
     try
     {
         // verify authentication
-        verifyAuth(request);
+        await verifyAuth(request);
 
         // validate request data
         const parsed = parseRequest(GetStartupRequest, request.data);
@@ -77,6 +77,7 @@ export async function handleOnGetStartup(request: CallableRequest)
             stage: startup.stage,
             tagline: startup.tagline,
             availableTokens: startup.available_tokens,
+            tokenName: startup.token_name,
             tokenPrice: startup.token_price,
             totalTokens: startup.total_tokens,
             updatedAt: startup.updated_at,

@@ -8,7 +8,7 @@
  * IMPORTS
  */
 import {HttpsError} from 'firebase-functions/v2/https';
-import {getOldestSnapshotSince} from '../../db/price_history/storage';
+import {getHistoricalPrice} from '../../db/price_history/storage';
 import {getStartups} from '../../db/startups/storage';
 import {verifyAuth} from '../../utils/auth';
 import {logger} from '../../utils/logger';
@@ -47,7 +47,7 @@ export async function handleOnGetStartups(request: CallableRequest)
     try
     {
         // verify authentication
-        verifyAuth(request);
+        await verifyAuth(request);
 
         // validate request data
         const parsed = parseRequest(GetStartupsRequest, request.data);
@@ -61,17 +61,17 @@ export async function handleOnGetStartups(request: CallableRequest)
         const weekAgo = new Date();
         weekAgo.setDate(weekAgo.getDate() - 7);
 
-        const changePercents = await Promise.all(
-            startups.map(s => getOldestSnapshotSince(s.id, weekAgo)),
+        const historicalPrices = await Promise.all(
+            startups.map(s => getHistoricalPrice(s.id, weekAgo, s.base_price, s.token_price)),
         );
 
         return {
             startups: startups.map((s, i) =>
             {
-                const oldSnapshot = changePercents[i];
-                const changePercent = oldSnapshot !== null && oldSnapshot.price !== 0
-                    ? ((s.token_price - oldSnapshot.price) / oldSnapshot.price) * 100
-                    : null;
+                const oldPrice = historicalPrices[i];
+                const changePercent = oldPrice > 0
+                    ? ((s.token_price - oldPrice) / oldPrice) * 100
+                    : 0;
 
                 return {
                     advisors:         s.advisors,
@@ -87,6 +87,7 @@ export async function handleOnGetStartups(request: CallableRequest)
                     stage:            s.stage,
                     tagline:          s.tagline,
                     availableTokens:  s.available_tokens,
+                    tokenName:        s.token_name,
                     tokenPrice:       s.token_price,
                     totalTokens:      s.total_tokens,
                     updatedAt:        s.updated_at,
