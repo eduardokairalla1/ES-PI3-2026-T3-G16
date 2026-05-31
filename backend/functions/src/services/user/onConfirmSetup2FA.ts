@@ -6,7 +6,8 @@
 
 import * as speakeasy from 'speakeasy';
 import {HttpsError} from 'firebase-functions/v2/https';
-import {getUser, enableTwoFA} from '../../db/users/storage';
+import {getUser, confirmTwoFA} from '../../db/users/storage';
+import {verifyAuth} from '../../utils/auth';
 import {logger} from '../../utils/logger';
 import {parseRequest} from '../../utils/validation';
 import {AuthError} from '../../errors/authError';
@@ -29,14 +30,8 @@ export async function handleOnConfirmSetup2FA(request: CallableRequest)
 {
     try
     {
-        // validate authentication
-        if (request.auth === null || request.auth === undefined)
-        {
-            throw new AuthError('User must be authenticated.');
-        }
-
         // parse and validate request data
-        const {uid} = request.auth;
+        const uid = await verifyAuth(request);
         const {code} = parseRequest(TwoFACodeRequest, request.data);
 
         // retrieve user and verify setup in progress
@@ -47,14 +42,14 @@ export async function handleOnConfirmSetup2FA(request: CallableRequest)
         }
 
         // verify that user has a pending 2FA setup
-        if (user.totp_secret === null)
+        if (user.pending_totp_secret === undefined || user.pending_totp_secret === null)
         {
             throw new ValidationError('No 2FA setup in progress. Call onSetup2FA first.');
         }
 
         // verify code against stored secret
         const valid = speakeasy.totp.verify({
-            secret: user.totp_secret,
+            secret: user.pending_totp_secret,
             encoding: 'base32',
             token: code,
             window: 1,
@@ -67,7 +62,7 @@ export async function handleOnConfirmSetup2FA(request: CallableRequest)
         }
 
         // code is valid: enable 2FA for user
-        await enableTwoFA(uid);
+        await confirmTwoFA(uid, user.pending_totp_secret);
         logger.info(`2FA enabled for user "${uid}".`);
 
         // return success response

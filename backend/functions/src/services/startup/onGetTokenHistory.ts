@@ -75,7 +75,7 @@ export async function handleOnGetTokenHistory(request: CallableRequest)
     try
     {
         // verify authentication and extract uid
-        const uid                 = verifyAuth(request);
+        const uid                 = await verifyAuth(request);
         const {startupId, period} = parseRequest(GetTokenHistoryRequest, request.data);
 
         logger.info(`Fetching token history for "${startupId}" — uid: ${uid}, period: ${period}`);
@@ -86,17 +86,20 @@ export async function handleOnGetTokenHistory(request: CallableRequest)
             throw new NotFoundError(`Startup "${startupId}" not found.`);
         }
 
-        // Single query sorted by created_at — docs[0] gives firstPurchase, all docs give tokenQuantity.
-        const ordersSnap = await db
+        // Single query sorted by created_at — the first filled buy anchors the chart.
+        const buyOrdersSnap = await db
             .collection('orders')
             .where('uid', '==', uid)
             .where('startup_id', '==', startupId)
             .where('type', '==', 'buy')
-            .where('status', '==', 'completed')
             .orderBy('created_at', 'asc')
             .get();
 
-        if (ordersSnap.empty)
+        const buyOrders = buyOrdersSnap.docs
+            .map(doc => doc.data())
+            .filter(data => ((data.filled_quantity as number) ?? 0) > 0);
+
+        if (buyOrders.length === 0)
         {
             return {
                 currentPrice:   startup.token_price,
@@ -107,13 +110,33 @@ export async function handleOnGetTokenHistory(request: CallableRequest)
             };
         }
 
-        const firstTs       = ordersSnap.docs[0].data().created_at;
+        const firstTs       = buyOrders[0].created_at;
         const firstPurchase = firstTs?.toDate ? firstTs.toDate() : new Date(firstTs);
 
-        const tokenQuantity = ordersSnap.docs.reduce(
-            (sum, doc) => sum + (doc.data().quantity as number),
+        const buyQuantity = buyOrders.reduce(
+            (sum, data) => sum + ((data.filled_quantity as number) ?? 0),
             0,
         );
+        const buyCost = buyOrders.reduce(
+            (sum, data) =>
+                sum + (((data.avg_fill_price as number | null) ?? (data.unit_price as number)) *
+                ((data.filled_quantity as number) ?? 0)),
+            0,
+        );
+
+        const sellOrdersSnap = await db
+            .collection('orders')
+            .where('uid', '==', uid)
+            .where('startup_id', '==', startupId)
+            .where('type', '==', 'sell')
+            .get();
+
+        const soldQuantity = sellOrdersSnap.docs.reduce(
+            (sum, doc) => sum + ((doc.data().filled_quantity as number) ?? 0),
+            0,
+        );
+        const tokenQuantity = Math.max(0, buyQuantity - soldQuantity);
+        const avgPurchasePrice = buyQuantity > 0 ? buyCost / buyQuantity : null;
 
         // since = latest of (period start, first purchase date)
         const periodStart = sinceDate(period);
@@ -125,7 +148,7 @@ export async function handleOnGetTokenHistory(request: CallableRequest)
 
         return {
             currentPrice:   startup.token_price,
-            purchasePrice:  snapshots.length > 0 ? snapshots[0].price : startup.token_price,
+            purchasePrice:  tokenQuantity > 0 ? avgPurchasePrice : null,
             tokenQuantity,
             totalValue:     tokenQuantity * startup.token_price,
             snapshots:      snapshots.map(s => ({

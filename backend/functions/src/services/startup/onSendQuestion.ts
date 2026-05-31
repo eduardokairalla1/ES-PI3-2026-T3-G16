@@ -50,7 +50,7 @@ export async function handleOnSendQuestion(request: CallableRequest)
     try
     {
         // verify authentication and extract uid
-        const uid = verifyAuth(request);
+        const uid = await verifyAuth(request);
 
         // validate request data
         const parsed = parseRequest(SendQuestionRequest, request.data);

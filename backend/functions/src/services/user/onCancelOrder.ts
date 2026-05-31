@@ -11,6 +11,8 @@
 // --- IMPORTS ---
 import {HttpsError} from 'firebase-functions/v2/https';
 import {getOrder, getOrderRef} from '../../db/orders/storage';
+import {getStartup} from '../../db/startups/storage';
+import {createNotification} from '../../db/notifications/storage';
 import {verifyAuth} from '../../utils/auth';
 import {logger} from '../../utils/logger';
 import db from '../../configs';
@@ -53,7 +55,7 @@ export async function handleOnCancelOrder(request: CallableRequest)
     try
     {
         // verify auth and validate input
-        const uid           = verifyAuth(request);
+        const uid           = await verifyAuth(request);
         const {orderId}     = parseRequest(CancelOrderRequest, request.data);
 
         // load the order to validate ownership/status before mutating it
@@ -103,6 +105,20 @@ export async function handleOnCancelOrder(request: CallableRequest)
         });
 
         logger.info(`Order "${orderId}" cancelled by user "${uid}".`);
+
+        // Notify user about the cancellation (best-effort)
+        const startup = await getStartup(order.startup_id).catch(() => null);
+        const startupName = startup?.name ?? order.startup_id;
+        const sideLabel   = order.type === 'buy' ? 'compra' : 'venda';
+
+        await createNotification(
+            uid,
+            'order_cancelled',
+            `Sua ordem de ${sideLabel} foi cancelada`,
+            `Ordem de ${order.quantity} ${startupName} cancelada com sucesso. ` +
+            (order.type === 'buy' ? 'O saldo reservado está disponível novamente.' : ''),
+            {orderId, startupId: order.startup_id, startupName},
+        );
 
         return {
             orderId,
