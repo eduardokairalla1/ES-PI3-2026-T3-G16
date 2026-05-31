@@ -10,6 +10,29 @@
 
 set -euo pipefail
 
+# --- PARSING DE ARGUMENTOS ---
+AUTO_YES=false
+START_ENV=""
+
+for arg in "$@"; do
+    case $arg in
+        -y|--yes|--non-interactive)
+            AUTO_YES=true
+            ;;
+        --start)
+            START_ENV="S"
+            ;;
+        --no-start)
+            START_ENV="N"
+            ;;
+    esac
+done
+
+# Se nao for um terminal (TTY), ativa AUTO_YES por padrao
+if [ ! -t 0 ]; then
+    AUTO_YES=true
+fi
+
 # ============================================================
 # FASE 0: PREPARACAO DO SISTEMA
 # ============================================================
@@ -34,6 +57,10 @@ gray() { echo -e "${C_GRAY}       $*${C_RESET}"; }
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BASE_DIR="$SCRIPT_DIR"
 cd "$BASE_DIR"
+
+if [ "$AUTO_YES" = "true" ]; then
+    info "Modo automatico/nao-interativo ativado (AUTO_YES=true)"
+fi
 
 # Pastas do projeto
 BACKEND_DIR="$BASE_DIR/backend"
@@ -66,8 +93,17 @@ free_ports() {
     step "[Setup] Liberando portas localhost usadas pelo projeto..."
     local killed=0
     for port in "${ALL_PORTS[@]}"; do
-        local pids
-        pids=$(lsof -ti tcp:"$port" 2>/dev/null || true)
+        local pids=""
+        if command -v lsof &>/dev/null; then
+            pids=$(lsof -ti tcp:"$port" 2>/dev/null || true)
+        elif command -v ss &>/dev/null; then
+            pids=$(ss -lptn "sport = :$port" 2>/dev/null | grep -oP 'pid=\K\d+' || true)
+        elif command -v netstat &>/dev/null; then
+            pids=$(netstat -lptn 2>/dev/null | grep ":$port " | awk '{print $7}' | cut -d/ -f1 || true)
+        elif command -v fuser &>/dev/null; then
+            pids=$(fuser "$port"/tcp 2>/dev/null || true)
+        fi
+
         if [ -n "$pids" ]; then
             for pid in $pids; do
                 local name
@@ -89,7 +125,17 @@ free_ports() {
 # Testar se uma porta esta aberta
 test_port() {
     local port="$1"
-    (echo >/dev/tcp/localhost/"$port") 2>/dev/null
+    if (echo >/dev/tcp/localhost/"$port") 2>/dev/null; then
+        return 0
+    elif command -v nc &>/dev/null; then
+        nc -z localhost "$port" 2>/dev/null
+    elif command -v node &>/dev/null; then
+        node -e "const net = require('net'); const client = net.createConnection($port, '127.0.0.1', () => { client.end(); process.exit(0); }); client.on('error', () => { process.exit(1); });" 2>/dev/null
+    elif command -v python3 &>/dev/null; then
+        python3 -c "import socket; s = socket.socket(); s.connect(('127.0.0.1', $port))" 2>/dev/null
+    else
+        return 1
+    fi
 }
 
 # Aguardar portas ficarem acessiveis
@@ -209,9 +255,15 @@ hide_emulator_banner() {
     local web_index="$FRONTEND_DIR/web/index.html"
     if [ -f "$web_index" ]; then
         if ! grep -q "firebase-emulator-warning" "$web_index"; then
-            local css_snippet="  <style>\n    .firebase-emulator-warning { display: none !important; }\n  </style>"
-            # Inserir antes de </head>
-            sed -i "s|</head>|${css_snippet}\n</head>|" "$web_index"
+            node -e '
+                const fs = require("fs");
+                const filePath = process.argv[1];
+                let html = fs.readFileSync(filePath, "utf8");
+                if (!html.includes("firebase-emulator-warning")) {
+                    html = html.replace("</head>", "  <style>\n    .firebase-emulator-warning { display: none !important; }\n  </style>\n</head>");
+                    fs.writeFileSync(filePath, html, "utf8");
+                }
+            ' "$web_index"
             ok "Banner do emulador ocultado em web/index.html"
         else
             ok "Banner do emulador ja esta configurado para ser oculto"
@@ -225,11 +277,11 @@ java_major_version() {
     local ver
     ver=$("$java_cmd" -version 2>&1 | head -1 || true)
     # Exemplo: 'openjdk version "21.0.3"' ou 'java version "1.8.0_391"'
-    local major
-    if echo "$ver" | grep -qE '"1\.[0-9]'; then
-        major=$(echo "$ver" | grep -oE '"1\.[0-9]+' | head -1 | cut -d. -f2)
+    local major=""
+    if echo "$ver" | grep -qE '"1\.[0-9]' >/dev/null 2>&1; then
+        major=$(echo "$ver" | grep -oE '"1\.[0-9]+' | head -1 | cut -d. -f2 || echo "0")
     else
-        major=$(echo "$ver" | grep -oE '"[0-9]+' | head -1 | tr -d '"')
+        major=$(echo "$ver" | grep -oE '"[0-9]+' | head -1 | tr -d '"' || echo "0")
     fi
     echo "${major:-0}"
 }
@@ -242,7 +294,11 @@ step "--- FASE 1: Verificando ferramentas ---"
 # --- Git ---
 if ! command -v git &>/dev/null; then
     warn "Git nao encontrado."
-    read -rp "Deseja instalar o Git agora? (S/N) " choice
+    if [ "$AUTO_YES" = "true" ]; then
+        choice="S"
+    else
+        read -rp "Deseja instalar o Git agora? (S/N) " choice
+    fi
     if [[ "$choice" =~ ^[Ss]$ ]]; then
         if command -v apt-get &>/dev/null; then
             sudo apt-get update -y && sudo apt-get install -y git
@@ -265,7 +321,11 @@ fi
 if ! command -v node &>/dev/null; then
     warn "Node.js nao encontrado."
     gray "Esta maquina usa Node $NODE_EXPECTED / npm $NPM_EXPECTED"
-    read -rp "Deseja instalar o Node.js via NodeSource? (S/N) " choice
+    if [ "$AUTO_YES" = "true" ]; then
+        choice="S"
+    else
+        read -rp "Deseja instalar o Node.js via NodeSource? (S/N) " choice
+    fi
     if [[ "$choice" =~ ^[Ss]$ ]]; then
         # Instalar a mesma versao major desta maquina (Node 24)
         NODE_MAJOR="24"
@@ -328,7 +388,11 @@ if [ -z "$FLUTTER_CMD" ]; then
     gray "  2. Snap: sudo snap install flutter --classic"
     gray "  3. Download manual: https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_stable.tar.xz"
     echo ""
-    read -rp "Deseja tentar instalar via snap agora? (S/N) " choice
+    if [ "$AUTO_YES" = "true" ]; then
+        choice="N"
+    else
+        read -rp "Deseja tentar instalar via snap agora? (S/N) " choice
+    fi
     if [[ "$choice" =~ ^[Ss]$ ]]; then
         if command -v snap &>/dev/null; then
             sudo snap install flutter --classic
@@ -349,7 +413,14 @@ if [ -z "$FLUTTER_CMD" ]; then
     exit 1
 fi
 
-ok "Flutter detectado: $($FLUTTER_CMD --version --machine 2>/dev/null | grep -o '"frameworkVersion":"[^"]*"' | cut -d'"' -f4 || $FLUTTER_CMD --version 2>/dev/null | head -1)"
+FLUTTER_VER=""
+if FLUTTER_VER_JSON=$($FLUTTER_CMD --version --machine 2>/dev/null); then
+    FLUTTER_VER=$(echo "$FLUTTER_VER_JSON" | grep -o '"frameworkVersion":"[^"]*"' | cut -d'"' -f4 || echo "")
+fi
+if [ -z "$FLUTTER_VER" ]; then
+    FLUTTER_VER=$($FLUTTER_CMD --version 2>/dev/null | head -1 || echo "Desconhecido")
+fi
+ok "Flutter detectado: $FLUTTER_VER"
 
 # Habilitar web e desabilitar Linux Desktop (para que flutter run vá para web por padrão)
 "$FLUTTER_CMD" config --enable-web &>/dev/null || true
@@ -387,7 +458,11 @@ if command -v apt-get &>/dev/null; then
     done
     if [ "${#MISSING_DEPS[@]}" -gt 0 ]; then
         warn "Dependencias de build do Flutter ausentes: ${MISSING_DEPS[*]}"
-        read -rp "Deseja instalar agora via apt? (S/N) " choice
+        if [ "$AUTO_YES" = "true" ]; then
+            choice="S"
+        else
+            read -rp "Deseja instalar agora via apt? (S/N) " choice
+        fi
         if [[ "$choice" =~ ^[Ss]$ ]]; then
             sudo apt-get install -y "${MISSING_DEPS[@]}"
             ok "Dependencias de build instaladas: ${MISSING_DEPS[*]}"
@@ -408,7 +483,11 @@ if command -v google-chrome &>/dev/null || command -v google-chrome-stable &>/de
     ok "Chromium/Chrome detectado"
 else
     warn "Google Chrome/Chromium nao encontrado. E o recomendado para Flutter Web."
-    read -rp "Deseja instalar o Chromium agora? (S/N) " choice
+    if [ "$AUTO_YES" = "true" ]; then
+        choice="S"
+    else
+        read -rp "Deseja instalar o Chromium agora? (S/N) " choice
+    fi
     if [[ "$choice" =~ ^[Ss]$ ]]; then
         if command -v apt-get &>/dev/null; then
             sudo apt-get install -y chromium-browser || sudo apt-get install -y chromium
@@ -464,12 +543,12 @@ if ! $JAVA_OK; then
 
     # Obter URL de download do JDK via API do Adoptium
     if command -v curl &>/dev/null; then
-        DOWNLOAD_URL=$(curl -s "$ADOPTIUM_URL" | grep -o '"link":"[^"]*\.tar\.gz"' | head -1 | cut -d'"' -f4)
-        FILE_NAME=$(curl -s "$ADOPTIUM_URL" | grep -o '"name":"[^"]*\.tar\.gz"' | head -1 | cut -d'"' -f4)
+        DOWNLOAD_URL=$(curl -s "$ADOPTIUM_URL" | grep -o '"link"[[:space:]]*:[[:space:]]*"[^"]*\.tar\.gz"' | head -1 | cut -d'"' -f4 || echo "")
+        FILE_NAME=$(curl -s "$ADOPTIUM_URL" | grep -o '"name"[[:space:]]*:[[:space:]]*"[^"]*\.tar\.gz"' | head -1 | cut -d'"' -f4 || echo "")
     elif command -v wget &>/dev/null; then
-        RESPONSE=$(wget -qO- "$ADOPTIUM_URL")
-        DOWNLOAD_URL=$(echo "$RESPONSE" | grep -o '"link":"[^"]*\.tar\.gz"' | head -1 | cut -d'"' -f4)
-        FILE_NAME=$(echo "$RESPONSE" | grep -o '"name":"[^"]*\.tar\.gz"' | head -1 | cut -d'"' -f4)
+        RESPONSE=$(wget -qO- "$ADOPTIUM_URL" || echo "")
+        DOWNLOAD_URL=$(echo "$RESPONSE" | grep -o '"link"[[:space:]]*:[[:space:]]*"[^"]*\.tar\.gz"' | head -1 | cut -d'"' -f4 || echo "")
+        FILE_NAME=$(echo "$RESPONSE" | grep -o '"name"[[:space:]]*:[[:space:]]*"[^"]*\.tar\.gz"' | head -1 | cut -d'"' -f4 || echo "")
     fi
 
     if [ -n "${DOWNLOAD_URL:-}" ] && [ -n "${FILE_NAME:-}" ]; then
@@ -515,7 +594,11 @@ fi
 
 if ! $JAVA_OK && command -v apt-get &>/dev/null; then
     warn "Tentando instalar via apt: openjdk-21-jdk..."
-    read -rp "Deseja instalar o OpenJDK 21 via apt agora? (S/N) " choice
+    if [ "$AUTO_YES" = "true" ]; then
+        choice="S"
+    else
+        read -rp "Deseja instalar o OpenJDK 21 via apt agora? (S/N) " choice
+    fi
     if [[ "$choice" =~ ^[Ss]$ ]]; then
         sudo apt-get update -y && sudo apt-get install -y openjdk-21-jdk
         sys_ver=$(java_major_version "java")
@@ -552,13 +635,21 @@ FB_VER=""
 FB_CMD_RESOLVED=""
 
 # 1. Tentar versao local/global sem baixar
-if FB_VER=$(npx --no-install firebase-tools --version 2>/dev/null) && [ -n "$FB_VER" ]; then
+FB_VER=$(npx --no-install firebase-tools --version 2>/dev/null || true)
+if [ -n "$FB_VER" ]; then
+    FB_VER=$(echo "$FB_VER" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1 || true)
+fi
+if [ -n "$FB_VER" ]; then
     FB_CMD_RESOLVED="npx firebase-tools"
 fi
 
 # 2. Tentar comando global 'firebase'
 if [ -z "$FB_VER" ] && command -v firebase &>/dev/null; then
-    if FB_VER=$(firebase --version 2>/dev/null) && [ -n "$FB_VER" ]; then
+    FB_VER=$(firebase --version 2>/dev/null || true)
+    if [ -n "$FB_VER" ]; then
+        FB_VER=$(echo "$FB_VER" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1 || true)
+    fi
+    if [ -n "$FB_VER" ]; then
         FB_CMD_RESOLVED="firebase"
     fi
 fi
@@ -566,7 +657,11 @@ fi
 # 3. Tentar via npx com versao pinada
 if [ -z "$FB_VER" ]; then
     warn "firebase-tools nao detectado local/globalmente. Tentando via npx..."
-    if FB_VER=$(npx --yes "$FIREBASE_TOOLS_VER" --version 2>/dev/null) && [ -n "$FB_VER" ]; then
+    FB_VER=$(npx --yes "$FIREBASE_TOOLS_VER" --version 2>/dev/null || true)
+    if [ -n "$FB_VER" ]; then
+        FB_VER=$(echo "$FB_VER" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1 || true)
+    fi
+    if [ -n "$FB_VER" ]; then
         FB_CMD_RESOLVED="npx --yes $FIREBASE_TOOLS_VER"
     fi
 fi
@@ -575,7 +670,11 @@ fi
 if [ -z "$FB_VER" ]; then
     warn "Instalando firebase-tools localmente no backend..."
     npm install --save-dev firebase-tools
-    if FB_VER=$(npx --no-install firebase-tools --version 2>/dev/null) && [ -n "$FB_VER" ]; then
+    FB_VER=$(npx --no-install firebase-tools --version 2>/dev/null || true)
+    if [ -n "$FB_VER" ]; then
+        FB_VER=$(echo "$FB_VER" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1 || true)
+    fi
+    if [ -n "$FB_VER" ]; then
         FB_CMD_RESOLVED="npx firebase-tools"
     fi
 fi
@@ -628,7 +727,13 @@ if [ -d "$FRONTEND_DIR" ]; then
 
     if [ -f ".env" ]; then
         if grep -q "USE_EMULATOR=false" ".env"; then
-            sed -i 's/USE_EMULATOR=false/USE_EMULATOR=true/' ".env"
+            node -e '
+                const fs = require("fs");
+                const filePath = process.argv[1];
+                let env = fs.readFileSync(filePath, "utf8");
+                env = env.replace(/USE_EMULATOR=false/g, "USE_EMULATOR=true");
+                fs.writeFileSync(filePath, env, "utf8");
+            ' ".env"
             ok ".env configurado: USE_EMULATOR=true"
         elif grep -q "USE_EMULATOR=true" ".env"; then
             ok ".env ja configurado para emuladores"
@@ -643,10 +748,11 @@ if [ -d "$FRONTEND_DIR" ]; then
         # Criar .env basico se nao existir
         cat > ".env" <<EOF
 USE_EMULATOR=true
-FIREBASE_AUTH_EMULATOR_HOST=localhost:9099
-FIRESTORE_EMULATOR_HOST=localhost:8080
-FIREBASE_STORAGE_EMULATOR_HOST=localhost:9199
-FUNCTIONS_EMULATOR_HOST=localhost:5001
+EMULATOR_HOST=localhost
+AUTH_EMULATOR_PORT=9099
+FUNCTIONS_EMULATOR_PORT=5001
+FIRESTORE_EMULATOR_PORT=8080
+STORAGE_EMULATOR_PORT=9199
 EOF
         ok ".env criado com configuracoes de emulador"
     fi
@@ -680,8 +786,13 @@ if ! $JAVA_OK; then
     exit 0
 fi
 
-echo ""
-read -rp "Deseja iniciar o ambiente completo agora? (S/N) " start_all
+if [ -n "$START_ENV" ]; then
+    start_all="$START_ENV"
+elif [ "$AUTO_YES" = "true" ]; then
+    start_all="N" # Em CI/non-interactive, nao queremos iniciar o ambiente interativo por padrao
+else
+    read -rp "Deseja iniciar o ambiente completo agora? (S/N) " start_all
+fi
 if [[ ! "$start_all" =~ ^[Ss]$ ]]; then
     echo ""
     step "Para iniciar manualmente:"
@@ -839,10 +950,12 @@ run_seed() {
 
 SEED_OUT="$FUNCTIONS_DIR/lib/scripts"
 
-run_seed "$SEED_OUT/seed-startups.js"    "startups"         "startups criadas no Firestore"
-run_seed "$SEED_OUT/seed-users.js"       "usuarios demo"    "usuarios criados no Auth + Firestore"
-run_seed "$SEED_OUT/seed-investments.js" "investimentos"    "investimentos registrados"
-run_seed "$SEED_OUT/seed-orderbook.js"   "ordens do balcao" "ordens criadas no balcao"
+run_seed "$SEED_OUT/seed-startups.js"    "startups"         "startups criadas no Firestore" || true
+run_seed "$SEED_OUT/seed-users.js"       "usuarios demo"    "usuarios criados no Auth + Firestore" || true
+run_seed "$SEED_OUT/seed-investments.js" "investimentos"    "investimentos registrados" || true
+run_seed "$SEED_OUT/seed-orderbook.js"   "ordens do balcao" "ordens criadas no balcao" || true
+run_seed "$SEED_OUT/seed-questions.js"   "perguntas e respostas" "perguntas criadas nas startups" || true
+run_seed "$SEED_OUT/seed-notifications.js" "notificacoes" "notificacoes criadas na inbox dos usuarios demo" || true
 
 # Limpar variaveis de ambiente do seed
 unset GCLOUD_PROJECT FIREBASE_CONFIG FIRESTORE_EMULATOR_HOST FIREBASE_AUTH_EMULATOR_HOST
@@ -856,7 +969,7 @@ gray "  Senha:  Mescla@2026"
 echo ""
 step "[3/4] Iniciando Flutter ($FLUTTER_DEVICE)..."
 
-FLUTTER_COMMAND="cd '$FRONTEND_DIR' && $FLUTTER_CMD run -d $FLUTTER_DEVICE --web-port $FLUTTER_WEB_PORT --release"
+FLUTTER_COMMAND="cd '$FRONTEND_DIR' && $FLUTTER_CMD run -d $FLUTTER_DEVICE --web-port $FLUTTER_WEB_PORT"
 
 if [ -n "$TERM_CMD" ]; then
     case "$TERM_CMD" in

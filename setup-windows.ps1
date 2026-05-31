@@ -1,3 +1,9 @@
+param(
+    [switch]$Yes = $false,
+    [switch]$NonInteractive = $false,
+    [string]$Start = $null
+)
+
 # --- SETUP MESCLAINVEST PARA WINDOWS ---
 # Execute com: .\setup-windows.ps1 (na raiz do projeto)
 #
@@ -6,6 +12,27 @@
 #   2. Instala dependencias (npm install, flutter pub get, firebase-tools)
 #   3. Configura o .env do frontend para emuladores
 #   4. (Opcional) Inicia o ambiente completo (emuladores + Flutter)
+
+$autoYes = $Yes -or $NonInteractive
+
+# Detectar se há flags nos argumentos posicionais/raw ($args)
+$startEnv = $Start
+foreach ($arg in $args) {
+    if ($arg -eq "-y" -or $arg -eq "--yes" -or $arg -eq "--non-interactive" -or $arg -eq "-Yes" -or $arg -eq "-NonInteractive") {
+        $autoYes = $true
+    }
+    if ($arg -eq "--start") {
+        $startEnv = "yes"
+    }
+    if ($arg -eq "--no-start") {
+        $startEnv = "no"
+    }
+}
+
+# Auto-detectar se está rodando em sessão não interativa
+if (-not [Environment]::UserInteractive) {
+    $autoYes = $true
+}
 
 # ============================================================
 # FASE 0: PREPARACAO DO SISTEMA
@@ -23,7 +50,7 @@ if (-not $isAdmin) {
     Write-Host "como Administrador." -ForegroundColor Gray
     Write-Host ""
     
-    $elevate = Read-Host "Deseja tentar relancar como Administrador para uma instalacao completa? (S/N)"
+    $elevate = if ($autoYes) { "N" } else { Read-Host "Deseja tentar relancar como Administrador para uma instalacao completa? (S/N)" }
     if ($elevate -eq "S" -or $elevate -eq "s") {
         $elevateArgs = "-NoExit -ExecutionPolicy Bypass -File `"$PSCommandPath`""
         try {
@@ -63,18 +90,39 @@ $requiredBackendPorts = @(8080, 5001, 9099, 9199)
 
 # Pub cache em caminho sem espaço — Flutter native asset hooks (objective_c etc)
 # quebram quando o caminho contém espaço (ex.: "C:\Users\Pedro Medeiros\...").
-$pubCacheDir = "C:\.pub-cache"
+$pubCacheDir = "C:\Users\Public\.pub-cache"
 if (-not (Test-Path $pubCacheDir)) {
-    New-Item -ItemType Directory -Path $pubCacheDir -Force | Out-Null
+    try {
+        New-Item -ItemType Directory -Path $pubCacheDir -Force | Out-Null
+    } catch {
+        # Fallback se falhar ou se pasta pública não for gravável
+        $pubCacheDir = Join-Path $env:USERPROFILE ".pub-cache"
+        if ($pubCacheDir -match " ") {
+            try {
+                $pubCacheDir = "C:\.pub-cache"
+                New-Item -ItemType Directory -Path $pubCacheDir -Force | Out-Null
+            } catch {
+                # Fallback final
+                $pubCacheDir = Join-Path $env:LOCALAPPDATA "pub-cache"
+            }
+        }
+    }
 }
 $env:PUB_CACHE = $pubCacheDir
-[Environment]::SetEnvironmentVariable("PUB_CACHE", $pubCacheDir, "User")
+try {
+    [Environment]::SetEnvironmentVariable("PUB_CACHE", $pubCacheDir, "User")
+} catch {
+    # Ignorar erro se SetEnvironmentVariable falhar (ex: sem permissões de registro em ambiente muito restrito)
+}
 
 Write-Host ""
 Write-Host "========================================" -ForegroundColor $cInfo
 Write-Host "   SETUP MESCLAINVEST - WINDOWS         " -ForegroundColor $cInfo
 Write-Host "========================================" -ForegroundColor $cInfo
 Write-Host "Pasta: $baseDir" -ForegroundColor Gray
+if ($autoYes) {
+    Write-Host "Modo-automatico/nao-interativo ativado" -ForegroundColor $cInfo
+}
 Write-Host ""
 
 # ============================================================
@@ -340,7 +388,7 @@ function Install-WithWinget {
 # --- Git ---
 if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
     Write-Host "[AVISO] Git nao encontrado." -ForegroundColor $cWarning
-    $choice = Read-Host "Deseja instalar o Git agora? (S/N)"
+    $choice = if ($autoYes) { "S" } else { Read-Host "Deseja instalar o Git agora? (S/N)" }
     if ($choice -eq "S" -or $choice -eq "s") {
         if (Install-WithWinget -PackageId "Git.Git" -Name "Git") { $toolsInstalled = $true }
     } else {
@@ -351,7 +399,7 @@ if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
 # --- Node.js ---
 if (-not (Get-Command node -ErrorAction SilentlyContinue)) {
     Write-Host "[AVISO] Node.js nao encontrado." -ForegroundColor $cWarning
-    $choice = Read-Host "Deseja instalar o Node.js LTS agora? (S/N)"
+    $choice = if ($autoYes) { "S" } else { Read-Host "Deseja instalar o Node.js LTS agora? (S/N)" }
     if ($choice -eq "S" -or $choice -eq "s") {
         if (Install-WithWinget -PackageId "OpenJS.NodeJS.LTS" -Name "Node.js") { $toolsInstalled = $true }
     } else {
@@ -367,7 +415,7 @@ if (-not (Get-Command flutter -ErrorAction SilentlyContinue)) {
     Refresh-Environment
     if (-not (Get-Command flutter -ErrorAction SilentlyContinue)) {
         Write-Host "[AVISO] Flutter SDK nao encontrado." -ForegroundColor $cWarning
-        $choice = Read-Host "Deseja instalar o Flutter SDK agora? (S/N)"
+        $choice = if ($autoYes) { "S" } else { Read-Host "Deseja instalar o Flutter SDK agora? (S/N)" }
         if ($choice -eq "S" -or $choice -eq "s") {
             if (Install-WithWinget -PackageId "Flutter.Flutter" -Name "Flutter") { $toolsInstalled = $true }
         } else {
@@ -444,7 +492,7 @@ $chromeExists = (Test-Path "C:\Program Files\Google\Chrome\Application\chrome.ex
                 (Test-Path "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe")
 if (-not $chromeExists) {
     Write-Host "[AVISO] Google Chrome nao encontrado. E o recomendado para o MesclaInvest (Web)." -ForegroundColor $cWarning
-    $choice = Read-Host "Deseja instalar o Google Chrome agora? (S/N)"
+    $choice = if ($autoYes) { "S" } else { Read-Host "Deseja instalar o Google Chrome agora? (S/N)" }
     if ($choice -eq "S" -or $choice -eq "s") {
         if (Install-WithWinget -PackageId "Google.Chrome" -Name "Google Chrome") {
             $chromeExists = $true
@@ -694,6 +742,18 @@ if (Test-Path $frontendDir) {
         } elseif ($envContent -match "USE_EMULATOR=true") {
             Write-Host "[OK] .env ja configurado para emuladores" -ForegroundColor $cSuccess
         }
+    } else {
+        # Criar .env basico se nao existir
+        $defaultEnv = @"
+USE_EMULATOR=true
+EMULATOR_HOST=localhost
+AUTH_EMULATOR_PORT=9099
+FUNCTIONS_EMULATOR_PORT=5001
+FIRESTORE_EMULATOR_PORT=8080
+STORAGE_EMULATOR_PORT=9199
+"@
+        Set-Content ".env" $defaultEnv -Encoding UTF8
+        Write-Host "[OK] .env criado com configuracoes de emulador" -ForegroundColor $cSuccess
     }
 
     Ensure-FlutterFirebaseOptions
@@ -738,7 +798,7 @@ if (-not $javaOk) {
     exit 0
 }
 
-$startAll = Read-Host "Deseja iniciar o ambiente completo agora? (S/N)"
+$startAll = if ($null -ne $startEnv) { $startEnv } elseif ($autoYes) { "N" } else { Read-Host "Deseja iniciar o ambiente completo agora? (S/N)" }
 if ($startAll -ne "S" -and $startAll -ne "s") {
     Write-Host "" 
     Write-Host "Para iniciar manualmente:" -ForegroundColor $cStep
