@@ -153,19 +153,20 @@ export async function getHistoricalPrice(
     currentPrice: number,
 ): Promise<number>
 {
-    const latestBefore = await getLatestSnapshotBefore(startupId, date);
+    const [latestBefore, firstSnapshot] = await Promise.all([
+        getLatestSnapshotBefore(startupId, date),
+        db.collection('price_history')
+            .doc(startupId)
+            .collection('snapshots')
+            .orderBy('recorded_at', 'asc')
+            .limit(1)
+            .get(),
+    ]);
+
     if (latestBefore !== null)
     {
         return latestBefore.price;
     }
-
-    const firstSnapshot = await db
-        .collection('price_history')
-        .doc(startupId)
-        .collection('snapshots')
-        .orderBy('recorded_at', 'asc')
-        .limit(1)
-        .get();
 
     if (firstSnapshot.empty)
     {

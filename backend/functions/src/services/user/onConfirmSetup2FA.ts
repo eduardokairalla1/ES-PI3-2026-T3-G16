@@ -7,7 +7,7 @@
 import * as speakeasy from 'speakeasy';
 import {HttpsError} from 'firebase-functions/v2/https';
 import {getUser, confirmTwoFA} from '../../db/users/storage';
-import {verifyAuth} from '../../utils/auth';
+import {verifyAuth, markTwoFASessionVerified} from '../../utils/auth';
 import {logger} from '../../utils/logger';
 import {parseRequest} from '../../utils/validation';
 import {AuthError} from '../../errors/authError';
@@ -63,6 +63,7 @@ export async function handleOnConfirmSetup2FA(request: CallableRequest)
 
         // code is valid: enable 2FA for user
         await confirmTwoFA(uid, user.pending_totp_secret);
+        await markTwoFASessionVerified(request);
         logger.info(`2FA enabled for user "${uid}".`);
 
         // return success response

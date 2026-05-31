@@ -60,13 +60,12 @@ export async function getUserInvestments(uid: string): Promise<InvestmentDocumen
 export async function isUserInvestorInStartup(uid: string, startupId: string): Promise<boolean>
 {
     // O documento do usuário sempre tem o mesmo ID que seu Firebase Auth UID
-    const snapshot = await db
+    const doc = await db
         .collection('users')
         .doc(uid)
         .collection('investments')
-        .where('startup_id', '==', startupId)
-        .limit(1)
+        .doc(startupId)
         .get();
 
-    return !snapshot.empty;
+    return doc.exists;
 }

@@ -100,13 +100,14 @@ export async function addUser(
 }
 
 
-/**
- * I delete a user document.
- *
- * @param uid Firebase Auth UID of the user
- */
 export async function deleteUser(uid: string): Promise<void>
 {
+    const user = await getUser(uid);
+    if (user && user.cpf)
+    {
+        const cleanCpf = user.cpf.replace(/\D/g, '');
+        await db.collection('cpfs').doc(cleanCpf).delete();
+    }
     await db.collection('users').doc(uid).delete();
 }
 
@@ -175,17 +176,28 @@ export async function confirmTwoFA(uid: string, secret: string): Promise<void>
 }
 
 
-/**
- * I disable 2FA and clear the TOTP secret for a user.
- *
- * @param uid Firebase Auth UID
- */
 export async function disableTwoFA(uid: string): Promise<void>
 {
-    await db.collection('users').doc(uid).update({
-        'two_fa_enabled': false,
+    const batch = db.batch();
+    const userRef = db.collection('users').doc(uid);
+    batch.update(userRef, {
         'totp_secret': null,
+        'two_fa_enabled': false,
     });
+
+    const sessionsSnap = await db.collection('users').doc(uid).collection('two_fa_sessions').get();
+    for (const doc of sessionsSnap.docs)
+    {
+        batch.delete(doc.ref);
+    }
+
+    const attemptsSnap = await db.collection('users').doc(uid).collection('two_fa_attempts').get();
+    for (const doc of attemptsSnap.docs)
+    {
+        batch.delete(doc.ref);
+    }
+
+    await batch.commit();
 }
 
 
@@ -219,14 +231,11 @@ export async function toggleUserTwoFA(uid: string): Promise<boolean>
  */
 export async function getUserDocId(uid: string): Promise<string | null>
 {
-    const snapshot = await db.collection('users')
-        .where('uid', '==', uid)
-        .limit(1)
-        .get();
+    const docSnap = await db.collection('users').doc(uid).get();
 
-    if (snapshot.empty) return null;
+    if (!docSnap.exists) return null;
 
-    return snapshot.docs[0].id;
+    return docSnap.id;
 }
 
 
@@ -254,27 +263,24 @@ import {FieldValue} from 'firebase-admin/firestore';
  */
 export async function toggleFavoriteId(uid: string, startupId: string): Promise<boolean>
 {
-    const snapshot = await db.collection('users')
-        .where('uid', '==', uid)
-        .limit(1)
-        .get();
+    const docRef = db.collection('users').doc(uid);
+    const docSnap = await docRef.get();
 
-    if (snapshot.empty) throw new Error(`User "${uid}" not found.`);
+    if (!docSnap.exists) throw new Error(`User "${uid}" not found.`);
 
-    const doc = snapshot.docs[0];
-    const current = (doc.data() as userDocument).favorite_ids ?? [];
+    const current = (docSnap.data() as userDocument).favorite_ids ?? [];
     const isFavorited = current.includes(startupId);
 
     if (isFavorited)
     {
-        await doc.ref.update({
+        await docRef.update({
             'favorite_ids': FieldValue.arrayRemove(startupId),
             'updated_at': new Date(),
         });
         return false;
     }
 
-    await doc.ref.update({
+    await docRef.update({
         'favorite_ids': FieldValue.arrayUnion(startupId),
         'updated_at': new Date(),
     });
@@ -291,12 +297,9 @@ export async function toggleFavoriteId(uid: string, startupId: string): Promise<
  */
 export async function getFavoriteIds(uid: string): Promise<string[]>
 {
-    const snapshot = await db.collection('users')
-        .where('uid', '==', uid)
-        .limit(1)
-        .get();
+    const docSnap = await db.collection('users').doc(uid).get();
 
-    if (snapshot.empty) return [];
+    if (!docSnap.exists) return [];
 
-    return (snapshot.docs[0].data() as userDocument).favorite_ids ?? [];
+    return (docSnap.data() as userDocument).favorite_ids ?? [];
 }

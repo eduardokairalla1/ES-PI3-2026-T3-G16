@@ -74,15 +74,17 @@ export async function handleOnGetDashboard(request: CallableRequest)
 
         // 3. Constrói mapas de busca (lookup maps) para otimizar a associação de startups por ID (complexidade O(1))
         const startupPriceMap = new Map<string, number>();
-        const startupNameMap  = new Map<string, {name: string; logoUrl: string; tokenName: string}>();
+        const startupBasePriceMap = new Map<string, number>();
+        const startupNameMap  = new Map<string, {logoUrl: string; name: string; tokenName: string}>();
         for (const s of startups)
         {
             startupPriceMap.set(s.id, s.token_price);
-            startupNameMap.set(s.id, {name: s.name, logoUrl: s.logo_url ?? '', tokenName: s.token_name ?? ''});
+            startupBasePriceMap.set(s.id, s.base_price);
+            startupNameMap.set(s.id, {logoUrl: s.logo_url ?? '', name: s.name, tokenName: s.token_name ?? ''});
         }
 
         // 4. Calcula a custódia (holdings) atual do usuário e o rendimento semanal utilizando a nova função com fluxo de caixa
-        const {holdingsByStartup, weeklyReturn, weeklyReturnPct} = await computeWalletState(uid, startupPriceMap);
+        const {holdingsByStartup, weeklyReturn, weeklyReturnPct} = await computeWalletState(uid, startupPriceMap, startupBasePriceMap);
 
         let assetsValue = 0;
 
@@ -101,7 +103,7 @@ export async function handleOnGetDashboard(request: CallableRequest)
             // Incrementa o patrimônio total investido em ativos
             assetsValue += currentValue;
 
-            const details = startupNameMap.get(startupId) ?? {name: '', logoUrl: '', tokenName: ''};
+            const details = startupNameMap.get(startupId) ?? {logoUrl: '', name: '', tokenName: ''};
 
             return {
                 currentPrice,
@@ -141,7 +143,7 @@ export async function handleOnGetDashboard(request: CallableRequest)
 
         let maiorAltaNome: string | null = null;
         let maiorAltaPct: number | null  = null;
-        
+
         // Encontra a startup que teve a maior valorização percentual (incluindo as de 0% de variação)
         if (startupChanges.length > 0)
         {
@@ -160,12 +162,12 @@ export async function handleOnGetDashboard(request: CallableRequest)
         return {
             favoriteIds,
             investimentos: investimentosFormatted,
+            maiorAltaNome,
+            maiorAltaPct,
             nomeUsuario: user.full_name,
             patrimonioTotal,
             rendimentoDiarioPorcentagem,
             rendimentoDiarioValor,
-            maiorAltaNome,
-            maiorAltaPct,
             saldoDisponivel: wallet?.balance ?? 0,
             totalInvestidoresMercado: activeInvestors,
             totalStartupsMercado: totalStartups,

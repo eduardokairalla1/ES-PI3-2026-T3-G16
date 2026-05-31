@@ -123,17 +123,19 @@ export async function handleOnGetPatrimonyHistory(request: CallableRequest)
         const startupPrices = new Map<string, number>();
         const startupSnapshots = new Map<string, any[]>();
 
+        const startupIdsList = Array.from(startupIds);
+        const allSnaps = await Promise.all(
+            startupIdsList.map(sid => getPriceSnapshots(sid, startDate)),
+        );
+
         for (const s of startups)
         {
             startupPrices.set(s.id, s.token_price);
-            if (startupIds.has(s.id))
-            {
-                // Busca os snapshots de preço apenas dentro da janela de tempo solicitada.
-                // Usa startDate (início do período) em vez de new Date(0) para evitar
-                // carregar todos os snapshots históricos de uma startup desde a época Unix.
-                const snaps = await getPriceSnapshots(s.id, startDate);
-                startupSnapshots.set(s.id, snaps);
-            }
+        }
+
+        for (let i = 0; i < startupIdsList.length; i++)
+        {
+            startupSnapshots.set(startupIdsList[i], allSnaps[i]);
         }
 
         // 7. Gera os timestamps alvo para o fim de cada dia no período (de startDate até hoje)

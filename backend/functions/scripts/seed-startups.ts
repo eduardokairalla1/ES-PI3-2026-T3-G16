@@ -23,7 +23,7 @@ import type {StartupDocument} from '../src/db/startups/model';
  */
 
 const PROJECT_ID   = 'mesclainvest-eda16';
-const BUCKET       = `${PROJECT_ID}.firebasestorage.app`;
+const BUCKET       = `${PROJECT_ID}.appspot.com`;
 const VIDEOS_DIR   = path.resolve(__dirname, '../../videos');
 const STORAGE_HOST = process.env.FIREBASE_STORAGE_EMULATOR_HOST ?? 'localhost:9199';
 
@@ -1146,13 +1146,16 @@ const extraStartups: RawStartup[] = [
 
 startups.push(...extraStartups);
 
-async function uploadVideos(): Promise<Record<string, string>> {
+async function uploadVideos(): Promise<Record<string, string>>
+{
     const bucket = storage.bucket();
     const urls: Record<string, string> = {};
 
-    for (const [startupName, fileName] of Object.entries(VIDEO_MAP)) {
+    for (const [startupName, fileName] of Object.entries(VIDEO_MAP))
+    {
         const filePath = path.join(VIDEOS_DIR, `${fileName}.mp4`);
-        if (!fs.existsSync(filePath)) {
+        if (!fs.existsSync(filePath))
+        {
             console.warn(`  ⚠ Video not found for "${startupName}": ${filePath}`);
             continue;
         }

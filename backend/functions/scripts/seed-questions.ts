@@ -1141,7 +1141,7 @@ async function seed(): Promise<void>
         );
     }
 
-    console.log(`\nSeed complete.`);
+    console.log('\nSeed complete.');
     console.log(`  Total questions created : ${totalCreated}`);
     console.log(`  Startups seeded         : ${startups.length - totalSkipped}`);
     console.log(`  Startups skipped        : ${totalSkipped}`);
