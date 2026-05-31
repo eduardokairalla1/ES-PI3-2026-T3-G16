@@ -1,4 +1,17 @@
 /**
+ * ATENÇÃO: DEAD CODE — Arquivo não registrado como Cloud Function.
+ *
+ * Este arquivo existe mas handleOnToggle2FA NÃO está importado em responders/index.ts
+ * e NÃO é exportado em index.ts. Portanto nunca pode ser invocado pelo frontend.
+ *
+ * O fluxo correto de habilitação/desabilitação do 2FA é:
+ *   - Habilitar: onSetup2FA → onConfirmSetup2FA
+ *   - Desabilitar: onDisable2FAByPassword (requer reautenticação + senha)
+ *
+ * toggleUserTwoFA não deve ser exposta diretamente pois não requer validação TOTP.
+ *
+ * @deprecated Não utilizar. Manter apenas para referência histórica.
+ *
  * Function callable onToggle2FA.
  *
  * Eduardo Kairalla - 24024241
@@ -43,7 +56,7 @@ export async function handleOnToggle2FA(request: CallableRequest)
     try
     {
         // verify authentication and extract uid
-        const uid = verifyAuth(request);
+        const uid = await verifyAuth(request);
 
         logger.info(`Toggling 2FA for user "${uid}"...`);
         const twoFaEnabled = await toggleUserTwoFA(uid);

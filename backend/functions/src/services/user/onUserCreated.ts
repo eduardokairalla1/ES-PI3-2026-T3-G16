@@ -47,7 +47,7 @@ export async function handleOnUserCreated(request: CallableRequest)
     try
     {
         // verify authentication and extract uid
-        const uid   = verifyAuth(request);
+        const uid   = await verifyAuth(request, {skipTwoFa: true});
         const token = request.auth!.token;
 
         // ensure email is present in auth token

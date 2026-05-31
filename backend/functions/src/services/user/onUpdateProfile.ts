@@ -46,7 +46,7 @@ export async function handleOnUpdateProfile(request: CallableRequest)
     try
     {
         // verify authentication and extract uid
-        const uid = verifyAuth(request);
+        const uid = await verifyAuth(request);
 
         // validate request data
         const parsed = parseRequest(UpdateProfileRequest, request.data);

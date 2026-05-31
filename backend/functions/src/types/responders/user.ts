@@ -19,9 +19,15 @@ export const CreateUserRequest = z.object(
             /^\d{4}-\d{2}-\d{2}$/,
             'Birth date must be in YYYY-MM-DD format',
         ),
-        cpf: z.string(),
-        fullName: z.string(),
-        phone: z.string(),
+        cpf: z.preprocess(
+            val => typeof val === 'string' ? val.replace(/\D/g, '') : val,
+            z.string().regex(/^\d{11}$/, 'CPF must contain exactly 11 digits'),
+        ),
+        fullName: z.string().trim().min(2).max(100),
+        phone: z.preprocess(
+            val => typeof val === 'string' ? val.replace(/\D/g, '') : val,
+            z.string().min(10).max(11),
+        ),
     },
 );
 

@@ -6,7 +6,9 @@
 
 import * as speakeasy from 'speakeasy';
 import {HttpsError} from 'firebase-functions/v2/https';
+import db from '../../configs';
 import {getUser} from '../../db/users/storage';
+import {markTwoFASessionVerified} from '../../utils/auth';
 import {logger} from '../../utils/logger';
 import {parseRequest} from '../../utils/validation';
 import {AuthError} from '../../errors/authError';
@@ -14,6 +16,17 @@ import {InternalError} from '../../errors/internalError';
 import {ValidationError} from '../../errors/validationError';
 import type {CallableRequest} from 'firebase-functions/v2/https';
 import {TwoFACodeRequest} from '../../types/responders/user';
+
+
+const MAX_ATTEMPTS = 5;
+const LOCK_MS      = 5 * 60 * 1000;
+
+
+function toDate(value: any): Date | null
+{
+    if (!value) return null;
+    return value.toDate ? value.toDate() : new Date(value);
+}
 
 
 /**
@@ -38,6 +51,11 @@ export async function handleOnVerify2FA(request: CallableRequest)
         // parse and validate request data
         const {uid} = request.auth;
         const {code} = parseRequest(TwoFACodeRequest, request.data);
+        const attemptRef = db
+            .collection('users')
+            .doc(uid)
+            .collection('two_fa_attempts')
+            .doc('lockout');
 
         // retrieve user
         const user = await getUser(uid);
@@ -52,6 +70,14 @@ export async function handleOnVerify2FA(request: CallableRequest)
             throw new ValidationError('2FA is not enabled for this account.');
         }
 
+        const attemptSnap = await attemptRef.get();
+        const attempt = attemptSnap.exists ? attemptSnap.data() : null;
+        const lockedUntil = toDate(attempt?.locked_until);
+        if (lockedUntil !== null && lockedUntil.getTime() > Date.now())
+        {
+            throw new ValidationError('Muitas tentativas. Tente novamente em alguns minutos.');
+        }
+
         // verify code against stored secret
         const valid = speakeasy.totp.verify({
             secret: user.totp_secret,
@@ -63,8 +89,21 @@ export async function handleOnVerify2FA(request: CallableRequest)
         // code is invalid: throw error
         if (!valid)
         {
+            const currentAttempts = (attempt?.attempts as number | undefined) ?? 0;
+            const nextAttempts = currentAttempts + 1;
+            const locked = nextAttempts >= MAX_ATTEMPTS;
+
+            await attemptRef.set({
+                'attempts': nextAttempts,
+                'locked_until': locked ? new Date(Date.now() + LOCK_MS) : null,
+                'updated_at': new Date(),
+            }, {merge: true});
+
             throw new ValidationError('Código inválido. Tente novamente.');
         }
+
+        await attemptRef.delete();
+        await markTwoFASessionVerified(request);
 
         logger.info(`2FA verified for user "${uid}".`);
         return {verified: true};

@@ -271,7 +271,7 @@ class _QATabState extends State<QATab> {
               child: Image.network(
                 photoUrl,
                 fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Center(
+                errorBuilder: (_, _, _) => Center(
                   child: Text(
                     initial,
                     style: TextStyle(

@@ -8,7 +8,7 @@
  * IMPORTS
  */
 import db from '../configs';
-import {getOldestSnapshotSince} from '../db/price_history/storage';
+import {getHistoricalPrice} from '../db/price_history/storage';
 
 /**
  * TYPES
@@ -257,8 +257,9 @@ export async function computeWalletState(
             const weeklyBuysCost = weeklyBuysCostByStartup.get(startupId) ?? 0;
             const weeklySalesProceeds = weeklySalesProceedsByStartup.get(startupId) ?? 0;
 
-            const snapshot = await getOldestSnapshotSince(startupId, weekAgo);
-            const pastPrice = snapshot?.price ?? currentPrice;
+            const startupDoc = await db.collection('startups').doc(startupId).get();
+            const basePrice = startupDoc.exists ? (startupDoc.data()?.base_price ?? currentPrice) : currentPrice;
+            const pastPrice = await getHistoricalPrice(startupId, weekAgo, basePrice, currentPrice);
 
             return {
                 currentValue: (currentQty * currentPrice) + weeklySalesProceeds,
