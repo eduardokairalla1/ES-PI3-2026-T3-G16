@@ -374,6 +374,15 @@ class AuthService {
       // build and return a UserProfile from the result
       return UserProfile.fromMap(Map<String, dynamic>.from(result.data));
     } on FirebaseFunctionsException catch (e) {
+      if (e.code == 'unauthenticated') {
+        final msg = e.message?.toLowerCase() ?? '';
+        if (msg.contains('2fa') || msg.contains('two_fa')) {
+          throw AuthException.twoFARequired(
+            originalError: e,
+            stackTrace:    StackTrace.current,
+          );
+        }
+      }
       // If the profile is not found on the backend (orphaned account),
       // we delete the Auth user and sign out to avoid leaving them in a broken state.
       if (e.code == 'unauthenticated' &&

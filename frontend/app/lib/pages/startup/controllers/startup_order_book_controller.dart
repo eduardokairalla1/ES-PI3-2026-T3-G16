@@ -22,6 +22,8 @@ import 'package:mesclainvest/pages/dashboard/services/dashboard_service.dart';
 /// backend every 5 seconds via [refresh] so the book stays fresh while the
 /// panel is visible; callers must invoke [dispose] to cancel the timer.
 class StartupOrderBookController extends ChangeNotifier {
+  bool _disposed = false;
+
   /// Creates a controller bound to [startupId]. Call [load] to fetch.
   StartupOrderBookController({required this.startupId});
 
@@ -213,7 +215,15 @@ class StartupOrderBookController extends ChangeNotifier {
   }
 
   @override
+  void notifyListeners() {
+    if (!_disposed) {
+      super.notifyListeners();
+    }
+  }
+
+  @override
   void dispose() {
+    _disposed = true;
     _refreshTimer?.cancel();
     super.dispose();
   }

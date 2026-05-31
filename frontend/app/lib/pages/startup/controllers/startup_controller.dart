@@ -12,6 +12,21 @@ import 'package:mesclainvest/pages/startup/services/startup_service.dart';
 
 /// I manage state and logic for the startup detail screen.
 class StartupController extends ChangeNotifier {
+  bool _disposed = false;
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
+  }
+
+  @override
+  void notifyListeners() {
+    if (!_disposed) {
+      super.notifyListeners();
+    }
+  }
+
   final StartupService _service = StartupService();
 
   bool isLoading = true;

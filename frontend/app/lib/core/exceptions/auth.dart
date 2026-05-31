@@ -220,6 +220,18 @@ class AuthException implements Exception {
     );
 
 
+  /// I create an AuthException for 2FA verification required.
+  factory AuthException.twoFARequired(
+    {Object? originalError, Object? stackTrace}
+  ) =>
+    AuthException._(
+      message: 'Verificação de duas etapas necessária.',
+      code: 'two_fa_required',
+      originalError: originalError,
+      stackTrace: stackTrace,
+    );
+
+
   /// I create an AuthException from a FirebaseAuthException code.
   ///
   /// :param code: the FirebaseAuthException code.

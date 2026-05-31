@@ -5,6 +5,20 @@ import 'package:mesclainvest/pages/startup/models/startup_model.dart';
 import 'package:mesclainvest/pages/startup/services/startup_service.dart';
 
 class ValorizacaoController extends ChangeNotifier {
+  bool _disposed = false;
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
+  }
+
+  @override
+  void notifyListeners() {
+    if (!_disposed) {
+      super.notifyListeners();
+    }
+  }
 
   final StartupService      _startupService = StartupService();
   final TokenHistoryService _historyService = TokenHistoryService();

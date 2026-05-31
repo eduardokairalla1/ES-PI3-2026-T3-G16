@@ -184,17 +184,21 @@ class _EvolucaoPatrimonioCardState extends State<EvolucaoPatrimonioCard> {
                           ),
                         ),
                       )
-                    : (spots == null || spots.isEmpty)
-                        ? Center(
-                            child: Text(
-                              'Carregando histórico...',
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: AppColors.textMuted(context),
-                              ),
-                            ),
+                    : spots == null
+                        ? const Center(
+                            child: CircularProgressIndicator(),
                           )
-                        : _Chart(spots: spots, period: _period),
+                        : spots.isEmpty
+                            ? Center(
+                                child: Text(
+                                  'Nenhuma movimentação registrada no período.',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: AppColors.textMuted(context),
+                                  ),
+                                ),
+                              )
+                            : _Chart(spots: spots, period: _period),
           ),
         ],
       ),

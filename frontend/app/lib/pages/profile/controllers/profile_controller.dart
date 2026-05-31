@@ -13,6 +13,20 @@ import 'package:mesclainvest/pages/dashboard/services/dashboard_service.dart';
 
 /// I manage state and actions for the user profile screen.
 class ProfileController extends ChangeNotifier {
+  bool _disposed = false;
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
+  }
+
+  @override
+  void notifyListeners() {
+    if (!_disposed) {
+      super.notifyListeners();
+    }
+  }
 
   final AuthService _authService = AuthService();
   final DashboardService _dashboardService = DashboardService();

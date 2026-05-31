@@ -205,6 +205,15 @@ class _InvestPanelState extends State<_InvestPanel> {
     _qtyCtrl.addListener(_onFieldChanged);
   }
 
+  @override
+  void didUpdateWidget(covariant _InvestPanel oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.controller != oldWidget.controller) {
+      oldWidget.controller.removeListener(_onControllerChanged);
+      widget.controller.addListener(_onControllerChanged);
+    }
+  }
+
   void _onControllerChanged() {
     final expected = '${_controller.orderQuantity}';
     if (_qtyCtrl.text != expected) {

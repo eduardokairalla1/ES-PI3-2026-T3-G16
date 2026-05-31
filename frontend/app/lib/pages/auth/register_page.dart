@@ -623,7 +623,7 @@ class _RegisterPageState extends State<RegisterPage>
                             'Fazer Login',
                             style: GoogleFonts.inter(
                               fontWeight: FontWeight.w700,
-                              fontSize: 20,
+                              fontSize: 15,
                               color: kAuthBody,
                             ),
                           ),

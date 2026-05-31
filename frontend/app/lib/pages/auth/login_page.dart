@@ -353,7 +353,7 @@ class _LoginPageState extends State<LoginPage>
                             'Cadastrar',
                             style: GoogleFonts.inter(
                               fontWeight: FontWeight.w700,
-                              fontSize: 20,
+                              fontSize: 15,
                               color: kAuthBody,
                             ),
                           ),
